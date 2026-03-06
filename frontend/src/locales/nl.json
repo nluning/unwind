@@ -1,0 +1,10 @@
+  {
+    "app": {
+      "title": "Unwind"
+    },
+    "health": {
+      "loading": "Laden...",
+      "success": "Verbinding met server gelukt",
+      "error": "Kan geen verbinding maken met server"
+    }
+  }

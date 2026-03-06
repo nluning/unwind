@@ -1,0 +1,25 @@
+{
+  "name": "unwind",
+  "version": "0.0.0",
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/server.ts"
+  },
+  "author": "Noor",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    
+    "pg": "^8.20.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "@types/pg": "^8.18.0",
+    "@fastify/cors": "^11.2.0",
+    "fastify": "^5.8.1"
+  }
+}
