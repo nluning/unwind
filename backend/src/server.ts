@@ -9,7 +9,7 @@ await fastify.register(cors, {})
 
 const pool = new pg.Pool({
     host: 'localhost',
-    port: 5432,
+    port: 5555,
     user: 'unwind',
     password: 'unwind',
     database: 'unwind',
