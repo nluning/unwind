@@ -72,7 +72,7 @@ They share a repo, not dependencies.
 - Docker Compose quickstart: https://docs.docker.com/compose/gettingstarted/
 - node-postgres (`pg`): https://node-postgres.com/
 
-### Step 6: Deploy to VPS [todo]
+### Step 6: Deploy to VPS [skipped — waiting for mentor confirmation]
 
 - Rent a VPS (Hetzner has a Dutch data center, good pricing)
 - SSH in, install Docker and Docker Compose

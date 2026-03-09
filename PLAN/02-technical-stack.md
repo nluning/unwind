@@ -156,6 +156,22 @@ does under the hood — and can debug it when it breaks.
   especially helpful when working solo.
 - It's an industry expectation at this point.
 
+### Why a framework at all (not raw Node.js `http`)
+
+Node's built-in `http.createServer()` can do everything Fastify does — but you'd
+spend your first days writing a router and a JSON body parser. Those are solved
+problems that teach very little. Fastify is a *thin* convenience layer, not a full
+framework like Laravel: it gives you routing, JSON parsing, schema validation, and
+logging. There's no ORM, no auth, no migrations — you build all of that yourself.
+
+The interesting learning is in application-level problems (database design, auth,
+offline sync, AI integration), not in parsing HTTP request bodies. Fastify handles
+the boring parts so you can focus on the parts that matter.
+
+To build intuition for what Fastify replaces, there's a throwaway exercise: build
+a tiny server with raw `http.createServer()` (see `PLAN/06-throwaway-raw-http.md`).
+Do it once, understand it, then move on.
+
 ### Why Fastify (not Express)
 
 Express is the most commonly taught Node.js framework, but it has not had a major
