@@ -163,10 +163,10 @@ Getting this right now prevents painful migrations later.
 ```
 
 **Design note — categories vs. tags:** The Head/Hands/Heart grouping works well
-for Mode 3 (counterbalance logic), but it's very broad. Consider using HHH as a
-PostgreSQL enum (not a separate table — three values don't need a join table) and
-adding freeform tags (e.g., "indoor", "creative", "solo") for finer-grained
-filtering and AI personalization. Decide this when designing the actual schema.
+for Mode 3 (counterbalance logic), but it's very broad. Categories are stored as
+a regular table with integer IDs (not a PG enum) — see ADR-009. TypeScript enums
+in the codebase provide type safety. Freeform tags (e.g., "indoor", "creative",
+"solo") may be added later for finer-grained filtering and AI personalization.
 
 Key relationships:
 - **users → activities**: one-to-many. Each user has their own activities.

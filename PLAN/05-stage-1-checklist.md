@@ -80,9 +80,8 @@ usage_events
 ```
 
 **Design decisions to think about while writing the SQL:**
-- `categories` as a table vs. enum: the plan mentions this. A table is more
-  flexible if you ever add categories. An enum is simpler for 3 fixed values.
-  Make a choice and note it — this is ADR material.
+- `categories` as a table vs. enum: decided — using a table with integer IDs,
+  not a PG enum. TypeScript enums in the codebase for type safety. See ADR-009.
 - `usage_events.mode`: not in the original data model diagram, but useful to
   know which mode generated the event.
 - `is_hidden` on activities: supports "never suggest this again" without
