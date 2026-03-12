@@ -23,7 +23,7 @@ fastify.get('/health', function (request, reply) {
   } catch (err) { 
     fastify.log.error(err, 'Failed to connect to database')
   }
-fastify.listen({port: 3000}, function (err, address) {
+fastify.listen({port: 5555}, function (err, address) {
     if (err) {
         fastify.log.error(err)
         process.exit(1)
