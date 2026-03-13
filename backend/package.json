@@ -1,17 +1,18 @@
 {
   "name": "unwind",
   "version": "0.0.0",
-
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/rawserver.ts",
-    "migrate": "tsx src/db/migrate.ts"
+    "dev": "tsx watch src/server.ts",
+    "migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx src/db/seed.ts"
   },
   "author": "Noor",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "@fastify/cors": "^11.2.0",
+    "dotenv": "^17.3.1",
     "fastify": "^5.8.1",
     "pg": "^8.20.0"
   },
