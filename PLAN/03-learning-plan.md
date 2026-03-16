@@ -47,8 +47,8 @@ Each stage lists:
 - **What you build** — the concrete output
 - **What you learn** — the transferable skills and concepts
 - **Tests** — what to test and how
-- **When to use AI assistance vs. figure it out yourself** — guidelines for
-  productive learning (relevant in an era of AI-assisted development)
+- **AI assistance notes** — what's worth understanding deeply vs. what's a
+  lookup (see CLAUDE.md for the overall AI assistance philosophy)
 - **Definition of done** — how to know the stage is complete
 
 Estimated effort per stage is intentionally omitted. Learning speed varies, and
@@ -85,10 +85,11 @@ of this map.
 - **Server basics (first pass)**: SSH into a VPS, run Docker on it, configure
   nginx with HTTPS, see your "Hello World" live on the internet
 
-### AI assistance guideline
-Use AI to explain concepts and generate boilerplate (tsconfig, docker-compose,
-nginx config). Write the Fastify routes and Vue components yourself — they're
-simple enough and you need the muscle memory.
+### AI assistance notes
+Config files (tsconfig, docker-compose, nginx) are pure lookup — use AI freely.
+**Understand deeply:** the HTTP request lifecycle, what Docker actually does,
+how the frontend-backend connection works. These are the mental models that
+carry forward.
 
 ### Definition of done
 You can run `docker-compose up` locally and see the Vue app display data from the
@@ -182,10 +183,12 @@ Key relationships:
   `POST /activities` validate required fields?
 - Test the seed script: does it populate the expected number of activities?
 
-### AI assistance guideline
-Use AI to review your schema design — ask it to find flaws or suggest improvements.
-Write the SQL and API code yourself. If you get stuck on a specific SQL query for
-more than 30 minutes, ask AI to explain the concept (not to write the query).
+### AI assistance notes
+SQL syntax and `pg` library conventions are lookups — ask freely. Use AI to
+review your schema for design flaws. **Understand deeply:** why you normalize
+data, how JOINs connect tables, what parameterized queries prevent (SQL
+injection), and REST conventions (status codes, resource naming). Try writing
+the next query solo after seeing a pattern once.
 
 ### Definition of done
 You can create a user, add activities, fetch a filtered activity list (by category,
@@ -240,11 +243,12 @@ This is the most important stage to test well:
 - Test the upgrade flow: anonymous user → adds email/password → data is preserved
 - Test failure cases: wrong password, expired token, invalid refresh token
 
-### AI assistance guideline
-This is security-sensitive. Use AI to review your implementation for
-vulnerabilities. Use Lucia and its crypto primitives — do not implement crypto
-yourself. Write the middleware and auth flow yourself to understand it. For the
-throwaway JWT exercise, build it fully manually to learn.
+### AI assistance notes
+Security-sensitive — use AI to review your implementation for vulnerabilities.
+Lucia's API and bcrypt usage are lookups. Never implement crypto yourself.
+**Understand deeply:** how JWT works (the throwaway exercise teaches this), the
+middleware pattern, why httpOnly cookies matter, what happens when tokens expire.
+These concepts apply everywhere — the library-specific API does not.
 
 ### Definition of done
 You can register, log in, access a protected route, have your session expire,
@@ -300,9 +304,11 @@ portfolio milestone: a working, deployed, useful app.
 - Test edge cases: what happens when no activities match the filter? What if the
   user's list is empty?
 
-### AI assistance guideline
-Build this yourself — it's core Vue work that you should be fluent in. Use AI
-only if you get stuck on a specific CSS layout or animation issue.
+### AI assistance notes
+This is your home turf — Vue, components, CSS. You should lead here. CSS
+tricks and animation specifics are lookups. **Understand deeply:** component
+composition, reactive state management, how the frontend talks to your API.
+This stage is where your existing Vue skills prove themselves.
 
 ### Definition of done
 A logged-in user can use all three modes, see relevant suggestions, accept/skip
@@ -352,11 +358,12 @@ that most junior developers never encounter.
   back online, verify they're sent
 - Test on both Android and iOS devices — not just desktop browsers
 
-### AI assistance guideline
-Service worker code is notoriously tricky and hard to debug. Use AI to help you
-understand the lifecycle and generate the initial service worker. But manually test
-offline scenarios yourself — turn off your network and use the app. That's how you
-find the bugs.
+### AI assistance notes
+Service worker boilerplate and IndexedDB API are lookups — this stuff is
+notoriously fiddly and nobody memorizes it. **Understand deeply:** the service
+worker lifecycle, cache strategies (cache-first vs. network-first and when to
+use which), and how the sync queue works conceptually. Manually test offline
+scenarios — turn off your network and use the app. That's how you find the bugs.
 
 ### Definition of done
 You can install the app on your phone from the browser. You can turn on airplane
@@ -427,11 +434,12 @@ Mode 4 system prompt:
   JSON? Does the app recover gracefully?
 - Test cost controls: does the per-user rate limit work?
 
-### AI assistance guideline
-This is where you should use AI the most — to help you understand the Claude API,
-draft system prompts, and debug streaming. Prompt engineering is a skill best
-learned by iterating, and having AI help you iterate on prompts is efficient
-and meta.
+### AI assistance notes
+Use AI the most here — for understanding the Claude API, drafting system
+prompts, and debugging streaming. Prompt engineering is learned by iterating,
+and AI helping you iterate on prompts is efficient and meta. **Understand
+deeply:** how system prompts shape behavior, how token usage drives cost, and
+the privacy implications of what you send to an external API.
 
 ### Definition of done
 A new user can go through an onboarding flow that generates 10-15 personalized
@@ -466,11 +474,12 @@ knowledge that separates "I built a project" from "I run a project."
   production configuration
 - **Server hardening basics**: the minimum security for a public-facing server
 
-### AI assistance guideline
-Use AI heavily for Docker, nginx, and CI/CD configuration — these are declarative
-configs where understanding what the config does matters more than memorizing
-syntax. But SSH into the server yourself, run the commands, watch the logs. Don't
-automate what you don't yet understand.
+### AI assistance notes
+Docker, nginx, and CI/CD configs are declarative and lookup-heavy — use AI
+freely. **Understand deeply:** what each part of the pipeline does, how
+containers talk to each other, what happens between `git push` and the user
+seeing the update. SSH into the server yourself, run the commands, watch the
+logs. Don't automate what you don't yet understand.
 
 ### Definition of done
 The app is live on a domain with HTTPS. You can push to main and the app
