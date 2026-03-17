@@ -2,10 +2,13 @@
   "name": "unwind",
   "version": "0.0.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "pretest": "dotenv -e .env.test -- tsx src/db/migrate.ts",
+    "test": "vitest run",
     "dev": "tsx watch src/server.ts",
     "migrate": "tsx src/db/migrate.ts",
-    "seed": "tsx src/db/seed.ts"
+    "seed": "tsx src/db/seed.ts",
+    "migrate:test": "dotenv -e .env.test -- tsx src/db/migrate.ts",
+    "seed:test": "dotenv -e .env.test -- tsx src/db/seed.ts"
   },
   "author": "Noor",
   "license": "ISC",
@@ -20,7 +23,9 @@
   "devDependencies": {
     "@types/node": "^25.3.5",
     "@types/pg": "^8.18.0",
+    "dotenv-cli": "^11.0.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
   }
 }

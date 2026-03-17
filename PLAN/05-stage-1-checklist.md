@@ -257,6 +257,31 @@ and categories.
 
 ---
 
+## Scalability notes
+
+Most of Stage 1's code is foundational and **survives as the app grows**:
+
+**Stays as-is:**
+- Test infrastructure (`setup.ts`, vitest config, `.env.test`) — add more test
+  files, don't change the setup
+- Migration system — keep adding numbered `.sql` files
+- DB plugin (`db/index.ts`) — one pool on the Fastify instance, standard pattern
+- `app.ts` / `server.ts` split — needed for testability, never changes
+- Validation schemas — get *more* valuable at scale, not less
+
+**Will need reorganizing (not rewriting) around Stage 3:**
+- `routes.ts` → `routes/activities.ts`, `routes/usage-events.ts`, etc. Each
+  file stays a Fastify plugin, registered in `app.ts`. Handlers stay the same.
+- Schemas → `schemas/activities.ts` etc. Same schemas, just split out.
+- Test helpers → `tests/helpers/`. Same functions, just organized.
+
+The key: restructuring is moving code into better file organization. The route
+handlers, SQL queries, validation logic, and tests all survive unchanged.
+If you can move a route file without changing its imports or logic, the
+foundation is solid.
+
+---
+
 ## Definition of done
 
 - Migration runner works: `npm run migrate` applies SQL files in order and

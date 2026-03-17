@@ -36,7 +36,33 @@ async function activityRoutes(fastify: FastifyInstance) {
         reply.send(result.rows)
     })
 
-    fastify.get<{ Params: { id: string } }>('/activities/:id', async function (request, reply) {
+    // Fastify validation schemas (JSON Schema format)
+    // ------------------------------------------------
+    // These run BEFORE your route handler. If the request doesn't match,
+    // Fastify auto-responds with 400 — your handler never executes.
+    //
+    // How it works:
+    //   1. You define a schema object with `params`, `body`, or `querystring` keys
+    //   2. You pass it as { schema: mySchema } in the route options (2nd argument)
+    //   3. Fastify uses Ajv (a JSON Schema validator) to check the incoming request
+    //
+    // Key differences between POST and PUT schemas:
+    //   - POST has `required: [...]` — you can't create without all fields
+    //   - PUT has NO required fields — partial updates are allowed
+    //
+    // `as const` preserves literal types for better TypeScript inference.
+
+    const idParamSchema = {
+        params: {
+            type: 'object',
+            properties: {
+                id: { type: 'string', format: 'uuid' }
+            },
+            required: ['id']
+        }
+    } as const
+
+    fastify.get<{ Params: { id: string } }>('/activities/:id', { schema: idParamSchema }, async function (request, reply) {
         const { id } = request.params
         const result = await fastify.pg.query(
             'SELECT * FROM activities WHERE id = $1',
@@ -49,8 +75,23 @@ async function activityRoutes(fastify: FastifyInstance) {
         reply.status(200).send(result.rows[0])
     })
 
+    const postBodySchema = {
+        body: {
+            type: 'object',
+            required: ['title', 'suggested_duration', 'min_stress_level', 'max_stress_level', 'category_ids'],
+            properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+                suggested_duration: { type: 'integer', minimum: 1 },
+                min_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
+                max_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
+                category_ids: { type: 'array', items: { type: 'integer' }, minItems: 1 },
+            },
+        }
+    } as const
+
     fastify.post<{ Body: { title: string; description?: string; suggested_duration: number; min_stress_level: number; max_stress_level: number; category_ids: number[] } }>
-                ('/activities', async (request, reply) => {
+                ('/activities', { schema: postBodySchema }, async (request, reply) => {
                     const { title, description, suggested_duration, min_stress_level, max_stress_level, category_ids } = request.body
 
                     const result = await fastify.pg.query(
@@ -72,8 +113,23 @@ async function activityRoutes(fastify: FastifyInstance) {
                     reply.status(201).send(activity)
                     })
 
+    const putBodySchema = {
+        ...idParamSchema,
+        body: {
+            type: 'object',
+            properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+                suggested_duration: { type: 'integer', minimum: 1 },
+                min_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
+                max_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
+                category_ids: { type: 'array', items: { type: 'integer' }, minItems: 1 },
+            },
+        }
+    } as const
+
     fastify.put<{ Params: { id: string }, Body: { title?: string; description?: string; suggested_duration?: number; min_stress_level?: number; max_stress_level?: number; category_ids?: number[] } }>
-                ('/activities/:id', async function (request, reply) {
+                ('/activities/:id', { schema: putBodySchema }, async function (request, reply) {
                     const { id } = request.params
                     const { title, description, suggested_duration, min_stress_level, max_stress_level, category_ids } = request.body
 
@@ -107,7 +163,7 @@ async function activityRoutes(fastify: FastifyInstance) {
                     reply.send(result.rows[0])
                 }
             )
-    fastify.delete<{Params: {id:string}}>('/activities/:id', async function (request, reply) {
+    fastify.delete<{Params: {id:string}}>('/activities/:id', { schema: idParamSchema }, async function (request, reply) {
         const { id } = request.params
         const result = await fastify.pg.query(
             'DELETE FROM activities WHERE id = $1 RETURNING *',
