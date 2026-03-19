@@ -4,4 +4,7 @@
     interface FastifyInstance {
       pg: Pool
     }
+    interface FastifyRequest {
+      user?: { id: string; email: string }
+    }
   }
