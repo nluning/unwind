@@ -43,6 +43,27 @@ npm run dev
 
 The app runs on `http://localhost:5173`.
 
+### 4. Set up the database
+
+Run migrations and seed the base activity list:
+
+```bash
+cd backend
+npm run migrate
+npm run seed
+```
+
+### 5. Run tests
+
+Tests run against a separate `unwind_test` database. Make sure `.env.test` exists in `backend/` with the test DB credentials, then:
+
+```bash
+cd backend
+npm test
+```
+
+This automatically runs migrations on the test DB before the test suite starts.
+
 ## Project structure
 
 ```
