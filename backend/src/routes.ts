@@ -75,7 +75,7 @@ async function activityRoutes(fastify: FastifyInstance) {
         reply.status(200).send(result.rows[0])
     })
 
-    const postBodySchema = {
+    const postActivitySchema = {
         body: {
             type: 'object',
             required: ['title', 'suggested_duration', 'min_stress_level', 'max_stress_level', 'category_ids'],
@@ -91,7 +91,7 @@ async function activityRoutes(fastify: FastifyInstance) {
     } as const
 
     fastify.post<{ Body: { title: string; description?: string; suggested_duration: number; min_stress_level: number; max_stress_level: number; category_ids: number[] } }>
-                ('/activities', { schema: postBodySchema }, async (request, reply) => {
+                ('/activities', { schema: postActivitySchema }, async (request, reply) => {
                     const { title, description, suggested_duration, min_stress_level, max_stress_level, category_ids } = request.body
 
                     const result = await fastify.pg.query(
@@ -174,6 +174,26 @@ async function activityRoutes(fastify: FastifyInstance) {
             return
         }
         reply.status(200).send(result.rows[0])
+    })
+
+    const postActivitySchema = {
+        body: {
+            type: 'object',
+            required: ['email', 'password'],
+            properties: {
+                email: {type: 'string'},
+                password: {type: 'string'}
+            }
+        }
+    }
+
+    fastify.post<{ Body: { email: string; password: string }}> ('/register', {schema: postRegistrationSchema}, async (request, reply) => {
+            const { email, password } = request.body
+
+            const saltRounds = 10
+            const hashedPassword = 
+
+            const result = 
     })
 };
 
