@@ -123,6 +123,105 @@ async function authRoutes(fastify: FastifyInstance) {
       reply.send(request.user)
     }
   )
+
+  // --- POST /auth/device ---
+
+  const deviceSchema = {
+    body: {
+      type: 'object',
+      required: ['device_id'],
+      properties: {
+        device_id: { type: 'string', minLength: 1 },
+      },
+    },
+  } as const
+
+  fastify.post<{ Body: { device_id: string } }>(
+    '/auth/device',
+    { schema: deviceSchema },
+    async (request, reply) => {
+      const { device_id } = request.body
+
+      // Check if this device already has a user
+      const existing = await fastify.pg.query(
+        'SELECT id, email FROM users WHERE device_id = $1',
+        [device_id]
+      )
+
+      let user: { id: string; email: string | null }
+
+      if (existing.rows.length > 0) {
+        user = existing.rows[0]
+      } else {
+        // Create an anonymous user (no email, no password)
+        const result = await fastify.pg.query(
+          'INSERT INTO users (device_id) VALUES ($1) RETURNING id, email',
+          [device_id]
+        )
+        user = result.rows[0]
+      }
+
+      const token = generateSessionToken()
+      await createSession(fastify.pg, user.id, token)
+
+      reply
+        .setCookie('session', token, cookieOptions(fastify))
+        .status(existing.rows.length > 0 ? 200 : 201)
+        .send({ id: user.id, email: user.email })
+    }
+  )
+
+  // --- POST /auth/upgrade ---
+
+  const upgradeSchema = {
+    body: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: { type: 'string', format: 'email' },
+        password: { type: 'string', minLength: 8 },
+      },
+    },
+  } as const
+
+  fastify.post<{ Body: { email: string; password: string } }>(
+    '/auth/upgrade',
+    { schema: upgradeSchema, preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.user!.id
+
+      // Check if this user already has an email (already upgraded)
+      const current = await fastify.pg.query(
+        'SELECT email FROM users WHERE id = $1',
+        [userId]
+      )
+
+      if (current.rows[0].email) {
+        reply.status(409).send({ error: 'Account already has an email' })
+        return
+      }
+
+      // Check if the email is already taken by another user
+      const emailTaken = await fastify.pg.query(
+        'SELECT id FROM users WHERE email = $1',
+        [request.body.email]
+      )
+
+      if (emailTaken.rows.length > 0) {
+        reply.status(409).send({ error: 'Email already registered' })
+        return
+      }
+
+      const passwordHash = await hashPassword(request.body.password)
+
+      const result = await fastify.pg.query(
+        'UPDATE users SET email = $1, password_hash = $2 WHERE id = $3 RETURNING id, email',
+        [request.body.email, passwordHash, userId]
+      )
+
+      reply.status(200).send(result.rows[0])
+    }
+  )
 }
 
 // --- Cookie config ---

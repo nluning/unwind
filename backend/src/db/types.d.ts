@@ -5,6 +5,6 @@
       pg: Pool
     }
     interface FastifyRequest {
-      user?: { id: string; email: string }
+      user?: { id: string; email: string | null }
     }
   }

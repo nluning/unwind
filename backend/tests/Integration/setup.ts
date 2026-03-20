@@ -1,5 +1,5 @@
 
-  import { buildApp } from '../src/app.js'
+  import { buildApp } from '../../src/app.js'
   import type { FastifyInstance } from 'fastify'
 
   let app: FastifyInstance

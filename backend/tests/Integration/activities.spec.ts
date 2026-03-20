@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
-import { getApp, truncateAll, closeApp } from './setup.js'
+import { getApp, truncateAll, closeApp } from '../setup.js'
 
 let app: FastifyInstance
+let cookie: string
 
 beforeAll(async () => {
   app = await getApp()
@@ -10,6 +11,15 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await truncateAll(app)
+  // Every test needs an authenticated user
+  const response = await app.inject({
+    method: 'POST',
+    url: '/register',
+    payload: { email: 'test@example.com', password: 'password123' },
+  })
+  const raw = response.headers['set-cookie']
+  const cookies = Array.isArray(raw) ? raw : [raw]
+  cookie = cookies.find((c) => c?.startsWith('session='))!.split(';')[0]
 })
 
 afterAll(async () => {
@@ -35,14 +45,15 @@ async function createTestActivity(overrides: Record<string, any> = {}) {
     min_stress_level: 1,
     max_stress_level: 5,
     source: 'base',
+    user_id: null,
   }
   const data = { ...defaults, ...overrides }
 
   const result = await app.pg.query(
-    `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source)
-      VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source, user_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`,
-    [data.title, data.description, data.suggested_duration, data.min_stress_level, data.max_stress_level, data.source]
+    [data.title, data.description, data.suggested_duration, data.min_stress_level, data.max_stress_level, data.source, data.user_id]
   )
   return result.rows[0]
 }
@@ -54,6 +65,12 @@ async function linkActivityToCategory(activityId: string, categoryId: number) {
   )
 }
 
+/** Get the logged-in user's ID from the database */
+async function getTestUserId(): Promise<string> {
+  const result = await app.pg.query("SELECT id FROM users WHERE email = 'test@example.com'")
+  return result.rows[0].id
+}
+
 // ---------- GET /activities ----------
 
 describe('GET /activities', () => {
@@ -61,6 +78,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -74,6 +92,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -94,6 +113,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities?category=Head',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -112,6 +132,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities?category=Heart',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -125,6 +146,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities?stress_level=4',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -139,6 +161,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities?stress_level=5',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -161,6 +184,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities?category=Head&stress_level=4',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -179,6 +203,7 @@ describe('GET /activities', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities?category=Head&stress_level=5',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -197,6 +222,7 @@ describe('GET /activities/:id', () => {
     const response = await app.inject({
       method: 'GET',
       url: `/activities/${activity.id}`,
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -207,6 +233,7 @@ describe('GET /activities/:id', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities/00000000-0000-0000-0000-000000000000',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(404)
@@ -217,6 +244,7 @@ describe('GET /activities/:id', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/activities/not-a-uuid',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(400)
@@ -233,6 +261,7 @@ describe('POST /activities', () => {
     const response = await app.inject({
       method: 'POST',
       url: '/activities',
+      headers: { cookie },
       payload: {
         title: 'Go for a walk',
         description: 'A nice walk outside',
@@ -257,6 +286,7 @@ describe('POST /activities', () => {
     const response = await app.inject({
       method: 'POST',
       url: '/activities',
+      headers: { cookie },
       payload: {
         title: 'Coloring book',
         description: 'Creative and relaxing',
@@ -278,12 +308,11 @@ describe('POST /activities', () => {
     expect(links.rows.map((r: any) => r.category_id)).toEqual([headId, handsId])
   })
 
-  // NOTE: This test will FAIL with 500 until you add a body validation schema
-  // to the POST route (similar to how idParamSchema validates params).
   it('returns 400 when required fields are missing', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/activities',
+      headers: { cookie },
       payload: {
         title: 'Walk',
         // missing: suggested_duration, min/max_stress_level, category_ids
@@ -293,11 +322,11 @@ describe('POST /activities', () => {
     expect(response.statusCode).toBe(400)
   })
 
-  // NOTE: This test will also FAIL until body validation is added.
   it('returns 400 when fields have wrong types', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/activities',
+      headers: { cookie },
       payload: {
         title: 'Walk',
         suggested_duration: 'twenty',
@@ -315,11 +344,13 @@ describe('POST /activities', () => {
 
 describe('PUT /activities/:id', () => {
   it('updates an activity', async () => {
-    const activity = await createTestActivity({ title: 'Old title' })
+    const userId = await getTestUserId()
+    const activity = await createTestActivity({ title: 'Old title', source: 'user', user_id: userId })
 
     const response = await app.inject({
       method: 'PUT',
       url: `/activities/${activity.id}`,
+      headers: { cookie },
       payload: {
         title: 'New title',
       },
@@ -330,15 +361,19 @@ describe('PUT /activities/:id', () => {
   })
 
   it('partial update preserves unchanged fields', async () => {
+    const userId = await getTestUserId()
     const activity = await createTestActivity({
       title: 'Walk',
       description: 'A nice walk',
       suggested_duration: 20,
+      source: 'user',
+      user_id: userId,
     })
 
     const response = await app.inject({
       method: 'PUT',
       url: `/activities/${activity.id}`,
+      headers: { cookie },
       payload: {
         title: 'Long walk',
       },
@@ -351,12 +386,14 @@ describe('PUT /activities/:id', () => {
   })
 
   it('updates the right activity when multiple exist', async () => {
-    const first = await createTestActivity({ title: 'First' })
-    const second = await createTestActivity({ title: 'Second' })
+    const userId = await getTestUserId()
+    const first = await createTestActivity({ title: 'First', source: 'user', user_id: userId })
+    const second = await createTestActivity({ title: 'Second', source: 'user', user_id: userId })
 
     await app.inject({
       method: 'PUT',
       url: `/activities/${second.id}`,
+      headers: { cookie },
       payload: { title: 'Updated second' },
     })
 
@@ -366,17 +403,19 @@ describe('PUT /activities/:id', () => {
   })
 
   it('updates category links in the pivot table', async () => {
+    const userId = await getTestUserId()
     const categories = await seedCategories()
     const headId = categories.find((c: any) => c.name === 'Head').id
     const handsId = categories.find((c: any) => c.name === 'Hands').id
     const heartId = categories.find((c: any) => c.name === 'Heart').id
 
-    const activity = await createTestActivity({ title: 'Flexible activity' })
+    const activity = await createTestActivity({ title: 'Flexible activity', source: 'user', user_id: userId })
     await linkActivityToCategory(activity.id, headId)
 
     const response = await app.inject({
       method: 'PUT',
       url: `/activities/${activity.id}`,
+      headers: { cookie },
       payload: {
         category_ids: [handsId, heartId],
       },
@@ -400,6 +439,7 @@ describe('PUT /activities/:id', () => {
     const response = await app.inject({
       method: 'PUT',
       url: '/activities/00000000-0000-0000-0000-000000000000',
+      headers: { cookie },
       payload: { title: 'Ghost' },
     })
 
@@ -411,19 +451,21 @@ describe('PUT /activities/:id', () => {
     const response = await app.inject({
       method: 'PUT',
       url: '/activities/not-a-uuid',
+      headers: { cookie },
       payload: { title: 'Nope' },
     })
 
     expect(response.statusCode).toBe(400)
   })
 
-  // NOTE: This test will FAIL until body validation is added to the PUT route.
   it('returns 400 when fields have wrong types', async () => {
-    const activity = await createTestActivity()
+    const userId = await getTestUserId()
+    const activity = await createTestActivity({ source: 'user', user_id: userId })
 
     const response = await app.inject({
       method: 'PUT',
       url: `/activities/${activity.id}`,
+      headers: { cookie },
       payload: {
         suggested_duration: 'twenty',
       },
@@ -437,11 +479,13 @@ describe('PUT /activities/:id', () => {
 
 describe('DELETE /activities/:id', () => {
   it('deletes an activity and returns it', async () => {
-    const activity = await createTestActivity({ title: 'To be deleted' })
+    const userId = await getTestUserId()
+    const activity = await createTestActivity({ title: 'To be deleted', source: 'user', user_id: userId })
 
     const response = await app.inject({
       method: 'DELETE',
       url: `/activities/${activity.id}`,
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(200)
@@ -456,6 +500,7 @@ describe('DELETE /activities/:id', () => {
     const response = await app.inject({
       method: 'DELETE',
       url: '/activities/00000000-0000-0000-0000-000000000000',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(404)
@@ -466,6 +511,7 @@ describe('DELETE /activities/:id', () => {
     const response = await app.inject({
       method: 'DELETE',
       url: '/activities/not-a-uuid',
+      headers: { cookie },
     })
 
     expect(response.statusCode).toBe(400)
