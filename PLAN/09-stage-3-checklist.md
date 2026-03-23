@@ -34,12 +34,6 @@ Install `vue-router`. Create a router with these routes:
 
 Register the router in `main.ts`.
 
-**Open question from session 2 (answer before continuing):**
-A user who is NOT logged in types `localhost:5173/stress` into their browser.
-Trace what happens — from the URL being entered to what they see on screen.
-Touch every piece: the router, the guard, the redirect, and which component
-renders.
-
 ### Step 2: API client
 
 Create a composable or utility (`src/api/client.ts`) that wraps `fetch` for
@@ -71,6 +65,12 @@ Create `src/composables/useAuth.ts`:
 
 Protected routes redirect to `/login` if not authenticated. The login page
 redirects to `/suggest` if already authenticated.
+
+**Known issue to solve here:** on page reload, `user` ref starts as `null`
+(before `fetchMe()` finishes), so the guard briefly thinks the user is
+unauthenticated and flashes the login page. Fix this — e.g. by having the
+guard wait for `fetchMe()` to complete before deciding, or by using the
+localStorage hint to assume logged-in until `fetchMe()` confirms or denies.
 
 ---
 

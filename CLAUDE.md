@@ -6,9 +6,10 @@ documentation.
 
 ## Project status
 
-**Current stage: Stage 1 — Database design & API foundations (in progress).**
-Stage 0 complete. Schema, migrations, and seed script done. CRUD endpoints
-for activities built. Next: integration tests, then deploy to VPS.
+**Current stage: Stage 3 — Modes 1-3 frontend (in progress).**
+Stages 0-2 complete. Auth working (Lucia, device auth, upgrade flow, 49 tests
+green). Vue Router, API client, and i18n set up. Next: auth composable, then
+building out the three modes.
 
 ## Plan files (read these for full context)
 

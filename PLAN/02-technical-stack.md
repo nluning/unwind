@@ -334,7 +334,7 @@ Containerization is an essential skill. Docker lets you:
 Managed platforms are convenient but hide what's actually happening. For learning,
 it's more valuable to:
 
-- Set up a Linux server (even a small one — DigitalOcean at ~6 EUR/month)
+- Set up a Linux server (even a small one — Hetzner at ~4 EUR/month, with a Dutch data center)
 - Install Docker, configure nginx as a reverse proxy, set up HTTPS with Let's
   Encrypt
 - Understand what a port is, what a process is, what happens when you deploy

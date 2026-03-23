@@ -1,0 +1,66 @@
+import { ref, computed } from 'vue'
+import { api } from '../api/client.js'
+
+interface User {
+  id: string
+  email: string | null
+}
+
+// Module-level state — shared across all components that call useAuth()
+const user = ref<User | null>(null)
+
+export function useAuth() {
+  const isLoggedIn = computed(() => user.value !== null)
+  const isAnonymous = computed(() => user.value !== null && user.value.email === null)
+
+  async function fetchMe() {
+    try {
+      user.value = await api<User>('/me')
+      localStorage.setItem('unwind-user', 'true')
+    } catch {
+      user.value = null
+      localStorage.removeItem('unwind-user')
+    }
+  }
+
+  async function login(email: string, password: string) {
+    user.value = await api<User>('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    localStorage.setItem('unwind-user', 'true')
+  }
+
+  async function register(email: string, password: string) {
+    user.value = await api<User>('/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    localStorage.setItem('unwind-user', 'true')
+  }
+
+  async function deviceLogin(deviceId: string) {
+    user.value = await api<User>('/auth/device', {
+      method: 'POST',
+      body: JSON.stringify({ device_id: deviceId }),
+    })
+    localStorage.setItem('unwind-user', 'true')
+  }
+
+  async function logout() {
+    await api('/logout', { method: 'POST' })
+    user.value = null
+    localStorage.removeItem('unwind-user')
+  }
+
+  return {
+    user,
+    isLoggedIn,
+    isAnonymous,
+    fetchMe,
+    login,
+    register,
+    deviceLogin,
+    logout,
+  }
+}

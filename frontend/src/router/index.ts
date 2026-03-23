@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '../composables/useAuth.js'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -34,16 +35,13 @@ const router = createRouter({
 // Navigation guard — redirect to login if not authenticated
 router.beforeEach((to) => {
   const isPublic = to.meta.public === true
+  const { isLoggedIn } = useAuth()
 
-  // For now, check if we have a user in localStorage as a simple flag.
-  // This will be replaced by the auth composable in Step 3.
-  const isLoggedIn = localStorage.getItem('unwind-user') !== null
-
-  if (!isPublic && !isLoggedIn) {
+  if (!isPublic && !isLoggedIn.value) {
     return { name: 'login' }
   }
 
-  if (to.name === 'login' && isLoggedIn) {
+  if (to.name === 'login' && isLoggedIn.value) {
     return { name: 'suggest' }
   }
 })
