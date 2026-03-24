@@ -8,6 +8,7 @@ interface User {
 
 // Module-level state — shared across all components that call useAuth()
 const user = ref<User | null>(null)
+let initPromise: Promise<void> | null = null
 
 export function useAuth() {
   const isLoggedIn = computed(() => user.value !== null)
@@ -21,6 +22,13 @@ export function useAuth() {
       user.value = null
       localStorage.removeItem('unwind-user')
     }
+  }
+
+  function initialize(): Promise<void> {
+    if (!initPromise) {
+      initPromise = fetchMe()
+    }
+    return initPromise
   }
 
   async function login(email: string, password: string) {
@@ -57,6 +65,7 @@ export function useAuth() {
     user,
     isLoggedIn,
     isAnonymous,
+    initialize,
     fetchMe,
     login,
     register,

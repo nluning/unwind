@@ -1,10 +1,22 @@
-  {
-    "app": {
-      "title": "Unwind"
-    },
-    "health": {
-      "loading": "Laden...",
-      "success": "Verbinding met server gelukt",
-      "error": "Kan geen verbinding maken met server"
-    }
+{
+  "app": {
+    "title": "Unwind"
+  },
+  "health": {
+    "loading": "Laden...",
+    "success": "Verbinding met server gelukt",
+    "error": "Kan geen verbinding maken met server"
+  },
+  "auth": {
+    "login": "Inloggen",
+    "register": "Registreren",
+    "email": "E-mailadres",
+    "password": "Wachtwoord",
+    "loginButton": "Log in",
+    "registerButton": "Maak account aan",
+    "switchToRegister": "Nog geen account? Registreer hier",
+    "switchToLogin": "Al een account? Log in",
+    "deviceButton": "Gebruik zonder account",
+    "error": "Er ging iets mis. Probeer het opnieuw."
   }
+}

@@ -29,11 +29,12 @@ async function activityRoutes(fastify: FastifyInstance) {
         const where = 'WHERE ' + conditions.join(' AND ')
 
         const result = await fastify.pg.query(
-            `SELECT DISTINCT a.*
+            `SELECT a.*, COALESCE(array_agg(c.name) FILTER (WHERE c.name IS NOT NULL), '{}') AS categories
              FROM activities a
              LEFT JOIN activity_categories ac ON a.id = ac.activity_id
              LEFT JOIN categories c ON ac.category_id = c.id
-             ${where}`,
+             ${where}
+             GROUP BY a.id`,
             values
         )
 

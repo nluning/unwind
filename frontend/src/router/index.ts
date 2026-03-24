@@ -32,10 +32,12 @@ const router = createRouter({
   ],
 })
 
-// Navigation guard — redirect to login if not authenticated
-router.beforeEach((to) => {
+// Navigation guard — wait for auth check, then redirect if needed
+router.beforeEach(async (to) => {
+  const { isLoggedIn, initialize } = useAuth()
+  await initialize()
+
   const isPublic = to.meta.public === true
-  const { isLoggedIn } = useAuth()
 
   if (!isPublic && !isLoggedIn.value) {
     return { name: 'login' }

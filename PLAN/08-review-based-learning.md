@@ -76,15 +76,49 @@ If not: adjust — maybe a mix of writing and reviewing.
 2. Auth composable (`src/composables/useAuth.ts`) — written and reviewed
 3. Router guard updated to use `useAuth()` instead of raw localStorage
 
-**Still to do next session:**
-- Step 4: Auth pages (login/register UI, device auth button)
-- Step 5: Route guard fix — handle the reload flash (noted in checklist)
-
 **What worked well:**
 - try/catch clicked for the first time through a real use case (fetchMe
   swallowing the 401 throw from api())
 - Noor caught that the router guard still used localStorage — good attention
   to loose ends
 
+### Session 5 (2026-03-24)
+
+**Chunks completed:**
+1. Step 4: LoginPage.vue — login/register toggle, device auth, error handling.
+   Reviewed. All 3 questions answered (trace had a small mixup about
+   handleDeviceAuth running alongside handleSubmit — corrected).
+2. Step 5: Reload flash fix — `initialize()` singleton promise in useAuth,
+   async router guard that awaits it. Reviewed. Both questions answered.
+3. Step 6 (partial): Backend `GET /activities` updated to include categories
+   via `array_agg` + `GROUP BY`. Reviewed. Both questions answered. Noor
+   connected it to Laravel's `with()` eager loading — good transfer.
+4. Step 6 (partial): `useActivities.ts` composable — fetch, filter by stress,
+   filter by excluded categories, weighted random suggestion algorithm.
+   Noor designed the weighting logic (base weight scales with max skips,
+   history penalty, session penalty, floor of 1). Implementation written.
+
+**Unanswered review questions (start here next session):**
+- Trace: Brand new user, 20 activities, all `times_skipped: 0`. What does
+  `maxSkips` equal? What weight does every activity get? Is it effectively
+  plain random?
+- What if: One activity skipped 15 times, another skipped once. What's the
+  weight ratio? Does the floor hold?
+
+**Still to do:**
+- Step 7: Backend `POST /usage-events` endpoint
+- Step 8: Activity card component
+- Steps 9-11: Mode 1, 2, 3 pages
+- Steps 12-15: Navigation, themes, loading/error states, mobile styling
+- Steps 16-17: Tests
+- Refactor: single-letter variables in existing backend code (routes.ts etc.)
+
+**What worked well:**
+- Noor drove the algorithm design for weighted suggestions — came up with
+  the "scale base weight to max skips" idea independently
+- Good connection between `array_agg` and Laravel's eager loading
+- Chose option B (review-based) for auth pages since Vue forms wouldn't
+  teach much new by hand
+
 **Watch for next time:**
-- Step 4 is Vue territory — offer to let Noor write it first
+- Noor has unanswered review questions — start there before new code
