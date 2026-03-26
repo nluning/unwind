@@ -8,8 +8,10 @@ documentation.
 
 **Current stage: Stage 3 — Modes 1-3 frontend (in progress).**
 Stages 0-2 complete. Auth working (Lucia, device auth, upgrade flow, 49 tests
-green). Vue Router, API client, and i18n set up. Next: auth composable, then
-building out the three modes.
+green). All three mode pages built (Suggest, Stress, Counterbalance) with shared
+`useSuggestionFlow` composable, ActivityCard component, usage event tracking, and
+Dutch i18n for all activities. UnoCSS installed. Next: navigation (Step 12),
+then themes/UnoCSS migration (Step 13).
 
 ## Plan files (read these for full context)
 

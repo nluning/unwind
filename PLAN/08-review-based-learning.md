@@ -104,12 +104,8 @@ If not: adjust — maybe a mix of writing and reviewing.
 - What if: Skipped 15 vs 1 → walked through, understood 15:1 ratio and floor behavior.
 
 **Still to do:**
-- Step 7: Backend `POST /usage-events` endpoint
-- Step 8: Activity card component
-- Steps 9-11: Mode 1, 2, 3 pages
-- Steps 12-15: Navigation, themes, loading/error states, mobile styling
+- Steps 12-15: Navigation, themes/UnoCSS migration, loading/error states, mobile styling
 - Steps 16-17: Tests
-- Refactor: single-letter variables in existing backend code (routes.ts etc.)
 
 **What worked well:**
 - Noor drove the algorithm design for weighted suggestions — came up with
@@ -118,5 +114,55 @@ If not: adjust — maybe a mix of writing and reviewing.
 - Chose option B (review-based) for auth pages since Vue forms wouldn't
   teach much new by hand
 
+### Session 6 (2026-03-26)
+
+**Chunks completed:**
+1. Weighted picking review questions from Session 5 — walked through both,
+   Noor needed the walkthrough (low-energy day) but confirmed understanding.
+2. Step 7: `POST /usage-events` endpoint — schema validation, insert event,
+   increment counter. Reviewed. All 3 questions answered (denormalization,
+   schema validation safety for SQL interpolation, full trace).
+3. Step 8: `ActivityCard.vue` — presentational component with props/emits.
+   Reviewed. Q1 (why emit not call composable directly) needed a redirect
+   — Noor initially thought session weight, corrected to reusability across
+   modes. Q2 (v-if null) correct. Q3 (trace) correct.
+4. Step 9: Mode 1 (SuggestPage) — suggestion flow wired to composable.
+5. Step 10: Mode 2 (StressPage) — stress selector + filtered suggestions.
+6. Step 11: Mode 3 (CounterbalancePage) — category picker + counterbalance
+   filtering. Noor correctly spotted missing empty state (bug in Q1).
+7. Refactor: extracted `useSuggestionFlow.ts` composable — shared state and
+   logic across all three modes. Removed intermediate "Geef me een suggestie"
+   button; watch on pool auto-suggests. Noor initiated this refactor.
+8. UnoCSS installed and configured (uno.config.ts, vite plugin). Migration
+   to utility classes deferred to Step 13 (themes). Noor chose UnoCSS
+   (prior experience) over Tailwind/vanilla CSS.
+9. Noor added Dutch i18n translations for all 20+ seed activities and
+   categories, plus slug-based lookup with fallbacks in ActivityCard.
+10. Fixed `noUncheckedIndexedAccess` TS errors in useActivities.ts.
+11. Fixed single-char variable `n` → `level` in StressPage.
+
+**Review questions answered:**
+- Usage events: denormalization (correct), schema validation safety (mostly
+  right — clarified that TS types erase at runtime, Fastify JSON Schema is
+  the real guard), full accept trace (correct but needed frontend half filled in)
+- ActivityCard: emit vs direct call (needed redirect), v-if null (correct),
+  full trace from click to DB (correct)
+- SuggestPage: skip-all behavior (initially confused pool refill with
+  sessionAccepted filter — corrected), suggested events (good reasoning
+  about unnecessary writes), accept trace (walked through)
+- StressPage: computed vs ref (understood concept, needed concrete example),
+  navigation/remount (walked through module vs function-level state)
+- CounterbalancePage: empty state bug (caught it), watch auto-suggest
+  (correct)
+
+**What worked well:**
+- Noor initiated the refactoring conversation — recognized duplication and
+  proposed extracting shared logic before being prompted
+- Good instinct on UX: removed unnecessary intermediate button, requested
+  chip styling for meta, swapped button order
+- Added full Dutch translations independently (i18n, activity slugs)
+- Caught the empty-state bug in Mode 3 during review
+
 **Watch for next time:**
-- Noor has unanswered review questions — start there before new code
+- Step 12 (navigation) is next
+- Button extraction deferred to Step 13 (UnoCSS migration)

@@ -151,10 +151,17 @@ A simple nav element (bottom tabs or a minimal header) to switch between the
 three modes. Mode 1 is the default. Keep it unobtrusive — the user shouldn't
 feel like they're making a choice when they're stressed.
 
-### Step 13: Theme presets
+### Step 13: Theme presets + UnoCSS migration
 
 Three themes via CSS custom properties: calm, warm, playful. User picks in a
 small settings area. Store the choice in localStorage.
+
+UnoCSS is installed and configured (uno.config.ts). This step should also:
+
+- Migrate existing scoped CSS to UnoCSS utility classes across all components
+- Define theme color tokens in uno.config.ts for each preset
+- Evaluate whether repeated button patterns (stress-btn, category-btn, link-button)
+  should be extracted into shared components once utility classes are in place
 
 ### Step 14: Loading, error, and empty states
 

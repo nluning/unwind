@@ -1,9 +1,9 @@
 <template>
   <div class="activity-card">
-    <h2 class="activity-title">{{ activity.title }}</h2>
+    <h2 class="activity-title">{{ $t(`activities.${slug}.title`, activity.title) }}</h2>
 
     <p v-if="activity.description" class="activity-description">
-      {{ activity.description }}
+      {{ $t(`activities.${slug}.description`, activity.description) }}
     </p>
 
     <div class="activity-meta">
@@ -11,7 +11,7 @@
         {{ $t('activity.duration', { minutes: activity.suggested_duration }) }}
       </span>
       <span v-for="cat in activity.categories" :key="cat" class="chip">
-        {{ cat }}
+        {{ $t(`categories.${cat}`, cat) }}
       </span>
     </div>
 
@@ -27,9 +27,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Activity } from '../composables/useActivities.js'
 
-defineProps<{
+const props = defineProps<{
   activity: Activity
 }>()
 
@@ -37,6 +38,10 @@ defineEmits<{
   accept: []
   skip: []
 }>()
+
+const slug = computed(() =>
+  props.activity.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+)
 </script>
 
 <style scoped>

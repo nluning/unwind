@@ -20,6 +20,10 @@
     "accepted": "Veel plezier!",
     "loading": "Laden..."
   },
+  "counterbalance": {
+    "heading": "Balanceer je dag",
+    "prompt": "Wat heb je vandaag veel gedaan?"
+  },
   "stress": {
     "heading": "Hoe gestrest ben je?",
     "level": "Niveau {n}",
@@ -38,5 +42,120 @@
     "switchToLogin": "Al een account? Log in",
     "deviceButton": "Gebruik zonder account",
     "error": "Er ging iets mis. Probeer het opnieuw."
+  },
+  "categories": {
+    "Head": "Hoofd",
+    "Hands": "Handen",
+    "Heart": "Hart"
+  },
+  "activities": {
+    "listen-to-a-podcast-episode": {
+      "title": "Luister naar een podcastaflevering",
+      "description": "Kies iets luchtigs — comedy, verhalen of een onderwerp dat je leuk vindt. Niets werkgerelateerd."
+    },
+    "do-a-crossword-or-word-puzzle": {
+      "title": "Doe een kruiswoordpuzzel of woordpuzzel",
+      "description": "Een kleine puzzel die je hersenen net genoeg bezighoudt."
+    },
+    "read-a-chapter-of-a-book": {
+      "title": "Lees een hoofdstuk van een boek",
+      "description": "Fictie werkt het best om af te schakelen. Hou het bij één hoofdstuk."
+    },
+    "watch-a-short-documentary": {
+      "title": "Kijk een korte documentaire",
+      "description": "Iets waar je nieuwsgierig naar bent, maar dat niets met werk te maken heeft."
+    },
+    "write-down-three-things-that-went-well-today": {
+      "title": "Schrijf drie dingen op die vandaag goed gingen",
+      "description": "Geen dankbaarheidsdagboek — gewoon een snelle braindump van wat niet tegenzat."
+    },
+    "organize-one-small-digital-space": {
+      "title": "Ruim één klein digitaal hoekje op",
+      "description": "Eén map, één tabgroep of één playlist opruimen. Meer niet."
+    },
+    "learn-five-words-in-a-new-language": {
+      "title": "Leer vijf woorden in een nieuwe taal",
+      "description": "Gebruik een app of een lijstje. Vijf woorden, dat is alles."
+    },
+    "play-a-simple-strategy-game": {
+      "title": "Speel een simpel strategiespel",
+      "description": "Iets turn-based of zonder druk. Schaakpuzzel, Sudoku, een rustige city builder."
+    },
+    "go-for-a-walk-around-the-block": {
+      "title": "Ga een rondje lopen",
+      "description": "Geen bestemming, geen podcast. Gewoon lopen en rondkijken."
+    },
+    "stretch-for-ten-minutes": {
+      "title": "Stretch tien minuten",
+      "description": "Focus op schouders, nek en rug. Langzaam en bewust."
+    },
+    "doodle-or-sketch-something": {
+      "title": "Teken of schets iets",
+      "description": "Geen doel, geen vaardigheid nodig. Krabbel vormen, teken je koffiemok, maakt niet uit."
+    },
+    "tidy-one-surface-in-your-home": {
+      "title": "Ruim één oppervlak op in huis",
+      "description": "Eén bureau, één aanrecht, één plank. Dat is de hele taak."
+    },
+    "cook-or-prepare-a-simple-snack": {
+      "title": "Maak een simpele snack klaar",
+      "description": "Iets met je handen: fruit snijden, toast met beleg, thee goed zetten."
+    },
+    "water-your-plants": {
+      "title": "Geef je planten water",
+      "description": "Als je die hebt. Voel de grond, geef water waar nodig, verwijder dode blaadjes."
+    },
+    "do-a-short-bodyweight-workout": {
+      "title": "Doe een korte workout",
+      "description": "Tien minuten squats, push-ups en planks. Niets bijzonders."
+    },
+    "dance-to-three-songs": {
+      "title": "Dans op drie nummers",
+      "description": "Doe de deur dicht als je wilt. Beweeg zoals het goed voelt."
+    },
+    "take-a-shower-or-bath": {
+      "title": "Neem een douche of bad",
+      "description": "Doe het bewust — niet alleen om schoon te worden, maar om te resetten."
+    },
+    "text-someone-you-haven-t-talked-to-in-a-while": {
+      "title": "Stuur iemand een berichtje die je lang niet gesproken hebt",
+      "description": "Geen diep gesprek — gewoon een 'hé, ik dacht aan je.'"
+    },
+    "play-with-a-pet": {
+      "title": "Speel met een huisdier",
+      "description": "Als je er een hebt. Volle aandacht, geen telefoon."
+    },
+    "watch-a-comfort-show-episode": {
+      "title": "Kijk een aflevering van je comfortserie",
+      "description": "Iets dat je al gezien hebt en waar je je veilig bij voelt. Eén aflevering."
+    },
+    "listen-to-music-that-matches-your-mood": {
+      "title": "Luister naar muziek die bij je stemming past",
+      "description": "Niet om je stemming te veranderen — maar om die te erkennen. Maak er bewust 15 minuten van."
+    },
+    "call-or-voice-note-a-friend": {
+      "title": "Bel of stuur een spraakbericht naar een vriend",
+      "description": "Een echte stemverbinding, al is het kort."
+    },
+    "write-about-how-you-re-feeling": {
+      "title": "Schrijf op hoe je je voelt",
+      "description": "Geen dagboekroutine — gewoon de huidige chaos uit je hoofd op papier."
+    },
+    "look-through-photos-that-make-you-happy": {
+      "title": "Kijk door foto's die je blij maken",
+      "description": "Oude reizen, huisdieren, vrienden. Zet een timer zodat je niet in nostalgie verdrinkt."
+    },
+    "sit-outside-and-do-nothing": {
+      "title": "Ga buiten zitten en doe niets",
+      "description": "Letterlijk niets. Bankje, stoepje, balkon. Vijf minuten lucht."
+    },
+    "do-a-guided-breathing-exercise": {
+      "title": "Doe een begeleide ademhalingsoefening",
+      "description": "Vier tellen in, zeven tellen vasthouden, acht tellen uit. Drie rondes."
+    },
+    "color-in-a-coloring-book": {
+      "title": "Kleur in een kleurboek",
+      "description": "Het soort voor volwassenen, of voor kinderen — maakt niet uit."
+    }
   }
 }
