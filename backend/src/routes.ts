@@ -170,6 +170,51 @@ async function activityRoutes(fastify: FastifyInstance) {
                     reply.send(result.rows[0])
                 }
             )
+    // ── Usage events ──────────────────────────────────────────────
+
+    const usageEventSchema = {
+        body: {
+            type: 'object',
+            required: ['activity_id', 'action', 'mode'],
+            properties: {
+                activity_id: { type: 'string', format: 'uuid' },
+                action: { type: 'string', enum: ['suggested', 'accepted', 'skipped'] },
+                mode: { type: 'string', enum: ['mode1', 'mode2', 'mode3', 'mode4'] },
+                stress_level_before: { type: 'integer', minimum: 1, maximum: 5 },
+                stress_level_after: { type: 'integer', minimum: 1, maximum: 5 },
+            },
+        }
+    } as const
+
+    fastify.post<{
+        Body: {
+            activity_id: string
+            action: 'suggested' | 'accepted' | 'skipped'
+            mode: 'mode1' | 'mode2' | 'mode3' | 'mode4'
+            stress_level_before?: number
+            stress_level_after?: number
+        }
+    }>('/usage-events', { schema: usageEventSchema, preHandler: requireAuth }, async function (request, reply) {
+        const userId = request.user!.id
+        const { activity_id, action, mode, stress_level_before, stress_level_after } = request.body
+
+        // Insert the event
+        await fastify.pg.query(
+            `INSERT INTO usage_events (user_id, activity_id, action, mode, stress_level_before, stress_level_after)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [userId, activity_id, action, mode, stress_level_before ?? null, stress_level_after ?? null]
+        )
+
+        // Update the counter on the activity
+        const column = `times_${action}`
+        await fastify.pg.query(
+            `UPDATE activities SET ${column} = ${column} + 1 WHERE id = $1`,
+            [activity_id]
+        )
+
+        reply.status(201).send({ ok: true })
+    })
+
     fastify.delete<{Params: {id:string}}>('/activities/:id', { schema: idParamSchema, preHandler: requireAuth }, async function (request, reply) {
         const { id } = request.params
         const userId = request.user!.id

@@ -53,10 +53,10 @@ export function useActivities() {
 
     let roll = Math.random() * totalWeight
     for (let index = 0; index < candidates.length; index++) {
-      roll -= weights[index]
-      if (roll <= 0) return candidates[index]
+      roll -= weights[index]!
+      if (roll <= 0) return candidates[index]!
     }
-    return candidates[candidates.length - 1]
+    return candidates[candidates.length - 1]!
   }
 
   function suggest(pool?: Activity[]): Activity | null {

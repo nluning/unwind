@@ -9,6 +9,7 @@
 | Database   | PostgreSQL                       | New       |
 | AI         | Anthropic Claude API             | New       |
 | Auth       | Lucia (lightweight auth library) | New       |
+| CSS        | UnoCSS (utility-first)           | Yes       |
 | Testing    | Vitest                           | Yes       |
 | Deployment | Docker on a VPS                  | New       |
 | CI/CD      | GitHub Actions                   | New       |
@@ -306,6 +307,19 @@ later by adding email/password, linking their existing data.
 Use httpOnly cookies for refresh tokens (not localStorage) — this protects against
 XSS attacks. Access tokens can be kept in memory. This is slightly more complex
 to implement in a PWA context but significantly more secure.
+
+## CSS: UnoCSS
+
+Utility-first CSS engine, similar to Tailwind but built for Vite. Noor has prior
+experience with it. Chosen over:
+
+- **Vanilla CSS / custom properties** — would work for theming but leads to
+  duplicated layout CSS across components.
+- **Tailwind** — more widely adopted but heavier setup, and CSS fundamentals
+  aren't a priority for this project's learning goals.
+
+UnoCSS handles the utility layer. Theme switching (calm/warm/playful presets)
+will use CSS custom properties defined in UnoCSS's theme config.
 
 ## Testing: Vitest
 

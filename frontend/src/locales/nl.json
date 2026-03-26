@@ -7,6 +7,26 @@
     "success": "Verbinding met server gelukt",
     "error": "Kan geen verbinding maken met server"
   },
+  "activity": {
+    "duration": "{minutes} min",
+    "accept": "Doen",
+    "skip": "Volgende",
+    "empty": "Geen activiteiten gevonden.",
+    "categories": "Categorieën"
+  },
+  "suggest": {
+    "heading": "Wat zal ik doen?",
+    "start": "Geef me een suggestie",
+    "accepted": "Veel plezier!",
+    "loading": "Laden..."
+  },
+  "stress": {
+    "heading": "Hoe gestrest ben je?",
+    "level": "Niveau {n}",
+    "low": "Relaxed",
+    "high": "Heel gestrest",
+    "noMatch": "Geen activiteiten voor dit stressniveau."
+  },
   "auth": {
     "login": "Inloggen",
     "register": "Registreren",

@@ -98,12 +98,10 @@ If not: adjust — maybe a mix of writing and reviewing.
    Noor designed the weighting logic (base weight scales with max skips,
    history penalty, session penalty, floor of 1). Implementation written.
 
-**Unanswered review questions (start here next session):**
-- Trace: Brand new user, 20 activities, all `times_skipped: 0`. What does
-  `maxSkips` equal? What weight does every activity get? Is it effectively
-  plain random?
-- What if: One activity skipped 15 times, another skipped once. What's the
-  weight ratio? Does the floor hold?
+**Review questions (answered Session 6):**
+- Trace: Brand new user, 20 activities, all `times_skipped: 0` → walked through,
+  understood that maxSkips=0, every weight=1, effectively plain random.
+- What if: Skipped 15 vs 1 → walked through, understood 15:1 ratio and floor behavior.
 
 **Still to do:**
 - Step 7: Backend `POST /usage-events` endpoint
