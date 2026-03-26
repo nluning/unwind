@@ -103,3 +103,5 @@ ON CONFLICT DO NOTHING;
 --   WHERE a.source = 'base' AND a.title IN (...)
 
 --   Same result, just more explicit about the join.
+
+-- Dev seed user is created in seed.ts (needs Argon2 hashing at runtime)

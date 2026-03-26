@@ -6,9 +6,12 @@
   import authRoutes from './routes/auth.js'
 
   export async function buildApp() {
-    const fastify = Fastify({ logger: false })
+    const fastify = Fastify({ logger: true })
 
-    await fastify.register(cors, {})
+    await fastify.register(cors, {
+      origin: process.env.FRONTEND_URL,
+      credentials: true,
+    })
     await fastify.register(cookie)
     await fastify.register(dbPlugin)
     await fastify.register(authRoutes)
