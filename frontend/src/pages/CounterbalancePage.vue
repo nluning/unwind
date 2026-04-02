@@ -51,11 +51,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useActivities } from '../composables/useActivities.js'
+import { useActivities, CATEGORY_ID_MAP } from '../composables/useActivities.js'
 import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
 
-const categories = ['Head', 'Hands', 'Heart'] as const
+const categories = Object.keys(CATEGORY_ID_MAP)
 
 const { loaded, fetchActivities, filterByExcludedCategories } = useActivities()
 

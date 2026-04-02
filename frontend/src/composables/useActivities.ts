@@ -1,26 +1,8 @@
 import { ref, computed } from 'vue'
 import { api } from '../api/client.js'
+import type { Activity, CreateActivityPayload } from '../types/activity.js'
 
-export interface Activity {
-  id: string
-  title: string
-  description: string | null
-  suggested_duration: number
-  min_stress_level: number
-  max_stress_level: number
-  source: 'base' | 'user' | 'ai'
-  times_skipped: number
-  categories: string[]
-}
-
-export interface CreateActivityPayload {
-  title: string
-  description: string | null
-  suggested_duration: number
-  min_stress_level: number
-  max_stress_level: number
-  category_ids: number[]
-}
+export type { Activity, CreateActivityPayload }
 
 // Hardcoded to match seed.sql SERIAL IDs. If categories become user-configurable,
 // replace with a GET /categories endpoint.

@@ -1,6 +1,21 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyReply } from 'fastify'
 import { hashPassword, verifyPassword, generateSessionToken, createSession, invalidateSession } from '../auth.js'
 import { requireAuth } from '../middleware/auth.js'
+
+async function sendAuthResponse(
+  fastify: FastifyInstance,
+  reply: FastifyReply,
+  user: { id: string; email: string | null },
+  status: number
+) {
+  const token = generateSessionToken()
+  await createSession(fastify.pg, user.id, token)
+
+  reply
+    .setCookie('session', token, cookieOptions(fastify))
+    .status(status)
+    .send({ id: user.id, email: user.email })
+}
 
 async function authRoutes(fastify: FastifyInstance) {
 
@@ -41,13 +56,7 @@ async function authRoutes(fastify: FastifyInstance) {
       )
 
       const user = result.rows[0]
-      const token = generateSessionToken()
-      await createSession(fastify.pg, user.id, token)
-
-      reply
-        .setCookie('session', token, cookieOptions(fastify))
-        .status(201)
-        .send({ id: user.id, email: user.email })
+      await sendAuthResponse(fastify, reply, user, 201)
     }
   )
 
@@ -88,13 +97,7 @@ async function authRoutes(fastify: FastifyInstance) {
         return
       }
 
-      const token = generateSessionToken()
-      await createSession(fastify.pg, user.id, token)
-
-      reply
-        .setCookie('session', token, cookieOptions(fastify))
-        .status(200)
-        .send({ id: user.id, email: user.email })
+      await sendAuthResponse(fastify, reply, user, 200)
     }
   )
 
@@ -161,13 +164,7 @@ async function authRoutes(fastify: FastifyInstance) {
         user = result.rows[0]
       }
 
-      const token = generateSessionToken()
-      await createSession(fastify.pg, user.id, token)
-
-      reply
-        .setCookie('session', token, cookieOptions(fastify))
-        .status(existing.rows.length > 0 ? 200 : 201)
-        .send({ id: user.id, email: user.email })
+      await sendAuthResponse(fastify, reply, user, existing.rows.length > 0 ? 200 : 201)
     }
   )
 

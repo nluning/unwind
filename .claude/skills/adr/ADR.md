@@ -26,6 +26,12 @@ description: Generate an Architecture Decision Record. Use when a significant te
 {Tradeoffs — what becomes easier, what becomes harder.}
 ```
 
+## After writing
+
+Update `docs/adr/INDEX.md` — add a row to the table with the ADR number, a
+one-line summary of the decision, and the area(s) of code it applies to.
+This index is referenced by CLAUDE.md and the `/evaluate` skill.
+
 ## Tone
 
 Concise — a few paragraphs, not an essay. Focus on *why*, not just *what*. Include tradeoffs honestly. Frame decisions as engineering judgment at the project's current scale, not as educational exercises.

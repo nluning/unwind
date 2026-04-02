@@ -1,5 +1,6 @@
 import { ref, type Ref, type ComputedRef, watch } from 'vue'
-import { useActivities, type Activity } from './useActivities.js'
+import { useActivities } from './useActivities.js'
+import type { Activity } from '../types/activity.js'
 import { api } from '../api/client.js'
 
 interface SuggestionFlowOptions {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import type { FastifyInstance } from 'fastify'
-import { getApp, truncateAll, closeApp } from '../setup.js'
+import { getApp, truncateAll, closeApp } from './setup.js'
 
 let app: FastifyInstance
 let cookie: string

@@ -33,7 +33,9 @@ loading/error states deferred to polish pass.
 
 ## Key decisions
 
-See `docs/adr/` for full rationale. Summary:
+See `docs/adr/INDEX.md` for a quick-reference table mapping each ADR to the
+area of code it governs. **Before modifying code in an area covered by an ADR,
+read the relevant ADR first.** Summary:
 
 - Vue 3 + Fastify + PostgreSQL + Claude API
 - PWA, offline-first for modes 1-3

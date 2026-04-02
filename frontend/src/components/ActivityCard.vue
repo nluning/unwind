@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Activity } from '../composables/useActivities.js'
+import type { Activity } from '../types/activity.js'
 
 const props = defineProps<{
   activity: Activity

@@ -206,7 +206,12 @@ async function activityRoutes(fastify: FastifyInstance) {
         )
 
         // Update the counter on the activity
-        const column = `times_${action}`
+        const columnMap: Record<string, string> = {
+            suggested: 'times_suggested',
+            accepted: 'times_accepted',
+            skipped: 'times_skipped',
+        }
+        const column = columnMap[action]
         await fastify.pg.query(
             `UPDATE activities SET ${column} = ${column} + 1 WHERE id = $1`,
             [activity_id]
