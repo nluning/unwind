@@ -3,13 +3,22 @@
 Activity suggestion app for neurodivergent brains that struggle to switch off.
 Suggests relaxation activities tailored to the user.
 
+This project has a dual purpose: build a genuinely useful app **and** develop
+the skills that matter in an AI-driven development landscape. The focus is on
+higher-order skills that AI can't replace — architecture decisions, system
+design, deployment, and understanding what happens under the hood — rather than
+framework-specific syntax. The stack (Node.js/Fastify instead of Laravel,
+raw SQL instead of an ORM) is deliberately chosen to build fundamental
+knowledge: understanding what a framework like Laravel abstracts away. 
+See `docs/plan/03-learning-plan.md` for the full rationale.
+
 ## Architecture
 
 Monorepo: `frontend/` (Vue 3 + Vite) and `backend/` (Fastify + TypeScript).
 PostgreSQL for persistence, raw SQL via `pg`. Custom session-based auth using
 oslo crypto primitives (`@oslojs/crypto`, `@node-rs/argon2`) with device-based
 anonymous flow and email upgrade path. Refresh tokens in httpOnly cookies.
-Dutch-only UI with vue-i18n. See `PLAN/` for detailed design docs and
+Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 `docs/adr/` for architecture decisions.
 
 ## Project status
@@ -55,8 +64,8 @@ Wrong answers are signal, not failure — they identify gaps to fill before
 moving on. When a pattern repeats later, I write it independently before
 seeing the AI version, to verify retention.
 
-See `PLAN/08-review-based-learning.md` for the full methodology and session
-logs.
+See `docs/plan/08-review-based-learning.md` for the full methodology and
+session logs.
 
 ### Principles for AI
 

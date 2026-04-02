@@ -50,4 +50,4 @@ better than reviewing code you already understand.
 
 ## Session log
 
-Session logs are maintained in `PLAN/archive/session-log.md`.
+Session logs are maintained in `docs/plan/archive/session-log.md`.

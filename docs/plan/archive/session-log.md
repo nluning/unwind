@@ -1,6 +1,6 @@
 # Review session log
 
-Moved from `PLAN/08-review-based-learning.md`. Sessions 1-3 covered Stage 2
+Moved from `docs/plan/08-review-based-learning.md`. Sessions 1-3 covered Stage 2
 completion and Stage 3 steps 1-2 (logs cleared before Session 4).
 
 ### Session 4 (2026-03-23)

@@ -56,7 +56,7 @@ suggestion, stress-filtered, counterbalance-based, and AI-guided conversation.
 Modes 1-3 work entirely from local data — no server needed. Only mode 4 (AI
 chat), syncing, and auth require a connection.
 
-See `PLAN/` for design docs, `docs/adr/` for architecture decisions.
+See `docs/plan/` for design docs, `docs/adr/` for architecture decisions.
 
 ## Prerequisites
 
@@ -125,7 +125,7 @@ unwind/
 ├── frontend/          # Vue 3 + Vite + UnoCSS
 ├── backend/           # Fastify + TypeScript + raw SQL
 ├── docs/adr/          # Architecture Decision Records
-├── PLAN/              # Design docs and build plan
+├── docs/plan/         # Design docs and build plan
 └── docker-compose.yml # PostgreSQL
 ```
 

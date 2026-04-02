@@ -19,7 +19,7 @@ unwind/
 ├── frontend/          # Vue 3 + Vite
 ├── backend/           # Fastify + TypeScript
 ├── docker-compose.yml # PostgreSQL (for now)
-├── PLAN/
+├── docs/plan/
 ├── CLAUDE.md
 └── .gitignore
 ```

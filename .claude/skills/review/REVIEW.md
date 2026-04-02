@@ -21,4 +21,4 @@ If the reviewer says "I'll write this one" — step back and let them. Review is
 
 ## Session tracking
 
-Log chunks and observations in `PLAN/08-review-based-learning.md` under the current session heading.
+Log chunks and observations in `docs/plan/08-review-based-learning.md` under the current session heading.
