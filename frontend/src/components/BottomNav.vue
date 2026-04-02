@@ -1,0 +1,39 @@
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
+const tabs = [
+  { label: () => t('nav.suggest'), to: '/suggest' },
+  { label: () => t('nav.stress'), to: '/stress' },
+  { label: () => t('nav.counterbalance'), to: '/counterbalance' },
+] as const
+</script>
+
+<template>
+  <nav :aria-label="t('nav.label')" class="fixed bottom-0 left-0 right-0 flex bg-white border-t border-gray-200">
+    <router-link
+      v-for="tab in tabs"
+      :key="tab.to"
+      :to="tab.to"
+      v-slot="{ isExactActive, href, navigate }"
+      custom
+    >
+      <a
+        :href="href"
+        @click="navigate"
+        class="flex-1 flex items-center justify-center min-h-14 text-sm transition-colors"
+        :class="isExactActive ? 'text-green-700 font-600 border-t-2 border-green-700' : 'text-gray-500'"
+      >
+        {{ tab.label() }}
+      </a>
+    </router-link>
+
+    <span
+      class="flex-1 flex items-center justify-center min-h-14 text-sm opacity-40 pointer-events-none"
+      aria-disabled="true"
+    >
+      {{ t('nav.chat') }}
+    </span>
+  </nav>
+</template>

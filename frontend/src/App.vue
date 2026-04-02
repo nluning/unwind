@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { computed } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
+import BottomNav from './components/BottomNav.vue'
+
+const route = useRoute()
+const showNav = computed(() => route.meta.public !== true)
 </script>
 
 <template>
-  <RouterView />
+  <div :class="showNav ? 'pb-20' : ''">
+    <RouterView />
+  </div>
+  <BottomNav v-if="showNav" />
 </template>

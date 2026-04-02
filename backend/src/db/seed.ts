@@ -17,11 +17,11 @@ await pool.query(sql)
 console.log('Seed data inserted')
 
 // Dev seed user — password is hashed at runtime so Argon2 verification works
-const passwordHash = await hash('10Script10')
+const passwordHash = await hash('TestWachtwoord123')
 await pool.query(
   `INSERT INTO users (email, password_hash) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING`,
   ['example-user@example.com', passwordHash]
 )
-console.log('Dev seed user created (example-user@example.com / 10Script10)')
+console.log('Dev seed user created (example-user@example.com / TestWachtwoord123)')
 
 await pool.end()

@@ -75,7 +75,17 @@ docker-compose up -d
 
 This starts PostgreSQL on `localhost:5555`. The `-d` flag runs it in the background.
 
-### 2. Start the backend
+### 2. Configure the backend environment
+
+Copy the example and adjust if needed:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+The defaults match the Docker database above. If you changed ports or credentials in `docker-compose.yml`, update `.env` to match.
+
+### 3. Start the backend
 
 ```bash
 cd backend

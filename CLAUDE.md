@@ -23,11 +23,13 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 ## Project status
 
-**Stage 3 — Modes 1-3 frontend (in progress).**
-Stages 0-2 complete (API, database, auth — 52 tests green). Three mode pages
-built (Suggest, Stress, Counterbalance) with shared `useSuggestionFlow`
-composable, ActivityCard component, usage event tracking, and Dutch i18n.
-UnoCSS installed. Next: navigation, then themes/UnoCSS migration.
+**Stage 5 — AI integration (next).**
+Stages 0-2 complete (API, database, auth — 52 tests green). Stage 3 modes 1-3
+frontend complete: three mode pages (Suggest, Stress, Counterbalance) with
+shared `useSuggestionFlow` composable, ActivityCard component, BottomNav with
+active state detection, `createActivity` composable ready for Mode 4, usage
+event tracking, and Dutch i18n. UnoCSS installed. Themes/UnoCSS migration and
+loading/error states deferred to polish pass.
 
 ## Key decisions
 

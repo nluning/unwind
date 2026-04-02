@@ -13,6 +13,27 @@ export interface Activity {
   categories: string[]
 }
 
+export interface CreateActivityPayload {
+  title: string
+  description: string | null
+  suggested_duration: number
+  min_stress_level: number
+  max_stress_level: number
+  category_ids: number[]
+}
+
+// Hardcoded to match seed.sql SERIAL IDs. If categories become user-configurable,
+// replace with a GET /categories endpoint.
+export const CATEGORY_ID_MAP: Record<string, number> = {
+  Head: 1,
+  Hands: 2,
+  Heart: 3,
+}
+
+const CATEGORY_NAME_MAP: Record<number, string> = Object.fromEntries(
+  Object.entries(CATEGORY_ID_MAP).map(([name, id]) => [id, name])
+)
+
 // Module-level state — shared across all components that call useActivities()
 const activities = ref<Activity[]>([])
 const loaded = ref(false)
@@ -79,6 +100,25 @@ export function useActivities() {
     sessionAccepted.value = new Set()
   }
 
+  async function createActivity(payload: CreateActivityPayload): Promise<Activity> {
+    const raw = await api<Activity & { category_ids?: number[] }>('/activities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    // POST returns the raw row (no joined categories). Reconstruct category
+    // names from the IDs we sent so local state matches GET /activities shape.
+    const enriched: Activity = {
+      ...raw,
+      categories: payload.category_ids.map((id) => CATEGORY_NAME_MAP[id] ?? `Unknown(${id})`),
+      times_skipped: 0,
+    }
+
+    activities.value = [...activities.value, enriched]
+    return enriched
+  }
+
   const isEmpty = computed(() => loaded.value && activities.value.length === 0)
 
   return {
@@ -86,6 +126,7 @@ export function useActivities() {
     loaded,
     isEmpty,
     fetchActivities,
+    createActivity,
     filterByStress,
     filterByExcludedCategories,
     suggest,

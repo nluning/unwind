@@ -196,14 +196,16 @@ no horizontal scrolling. Test at 375px width.
 
 ## Definition of done
 
-- [ ] User can register, log in, or use device auth from the frontend
-- [ ] Mode 1: tap → get suggestion → accept/skip → next
-- [ ] Mode 2: pick stress level → filtered suggestions → accept/skip
-- [ ] Mode 3: pick category done today → counterbalanced suggestions
-- [ ] Accept/skip events recorded in usage_events table
-- [ ] Mode switching works
-- [ ] Three theme presets
-- [ ] All strings go through vue-i18n (Dutch)
-- [ ] App works on phone viewport (375px)
-- [ ] Backend + frontend tests pass
-- [ ] App is deployed on VPS
+- [x] User can register, log in, or use device auth from the frontend
+- [x] Mode 1: tap → get suggestion → accept/skip → next
+- [x] Mode 2: pick stress level → filtered suggestions → accept/skip
+- [x] Mode 3: pick category done today → counterbalanced suggestions
+- [x] Accept/skip events recorded in usage_events table
+- [x] Mode switching works (BottomNav with active state, chat tab disabled)
+- [ ] Three theme presets — deferred to polish pass
+- [x] All strings go through vue-i18n (Dutch)
+- [ ] App works on phone viewport (375px) — deferred to polish pass
+- [ ] Backend + frontend tests pass — backend 52 tests green, frontend tests deferred
+- [ ] App is deployed on VPS — deferred to Stage 6
+- [x] `createActivity` composable ready for Mode 4 (with category ID mapping)
+- [x] `dotenv/config` fixed in server entry point

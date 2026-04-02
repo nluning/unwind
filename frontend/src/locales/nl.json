@@ -43,6 +43,13 @@
     "deviceButton": "Gebruik zonder account",
     "error": "Er ging iets mis. Probeer het opnieuw."
   },
+  "nav": {
+    "label": "Hoofdnavigatie",
+    "suggest": "Suggestie",
+    "stress": "Stress",
+    "counterbalance": "Balans",
+    "chat": "Chat"
+  },
   "categories": {
     "Head": "Hoofd",
     "Hands": "Handen",
