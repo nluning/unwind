@@ -1,85 +1,75 @@
 # Unwind
 
 Activity suggestion app for neurodivergent brains that struggle to switch off.
-Suggests relaxation activities tailored to the user. See `/PLAN/` for detailed
-documentation.
+Suggests relaxation activities tailored to the user.
+
+## Architecture
+
+Monorepo: `frontend/` (Vue 3 + Vite) and `backend/` (Fastify + TypeScript).
+PostgreSQL for persistence, raw SQL via `pg`. Custom session-based auth using
+oslo crypto primitives (`@oslojs/crypto`, `@node-rs/argon2`) with device-based
+anonymous flow and email upgrade path. Refresh tokens in httpOnly cookies.
+Dutch-only UI with vue-i18n. See `PLAN/` for detailed design docs and
+`docs/adr/` for architecture decisions.
 
 ## Project status
 
-**Current stage: Stage 3 — Modes 1-3 frontend (in progress).**
-Stages 0-2 complete. Auth working (Lucia, device auth, upgrade flow, 49 tests
-green). All three mode pages built (Suggest, Stress, Counterbalance) with shared
-`useSuggestionFlow` composable, ActivityCard component, usage event tracking, and
-Dutch i18n for all activities. UnoCSS installed. Next: navigation (Step 12),
-then themes/UnoCSS migration (Step 13).
+**Stage 3 — Modes 1-3 frontend (in progress).**
+Stages 0-2 complete (API, database, auth — 52 tests green). Three mode pages
+built (Suggest, Stress, Counterbalance) with shared `useSuggestionFlow`
+composable, ActivityCard component, usage event tracking, and Dutch i18n.
+UnoCSS installed. Next: navigation, then themes/UnoCSS migration.
 
-## Plan files (read these for full context)
+## Key decisions
 
-- `PLAN/01-app-concept.md` — what the app does, the four modes, design principles
-- `PLAN/02-technical-stack.md` — every technology choice with rationale
-- `PLAN/03-learning-plan.md` — staged build plan with learning goals per stage
+See `docs/adr/` for full rationale. Summary:
 
-## Key decisions made
-
-- **Stack**: Vue 3 + Fastify (TypeScript) + PostgreSQL + Claude API
-- **Frontend**: PWA (not native), offline-first for modes 1-3
-- **Auth**: Lucia library for production, throwaway manual JWT as learning exercise
-- **Backend framework**: Fastify (not Express — Express is stagnating)
-- **Database access**: raw SQL via `pg` (no ORM, no query builder)
-- **AI**: Claude Haiku for Mode 4 chat, Sonnet for onboarding
-- **Deployment**: Docker on a VPS, deployed incrementally from Stage 0
-- **Testing**: Vitest integrated from Stage 1 onward (Noor has Vitest experience)
-- **Token storage**: httpOnly cookies for refresh tokens (not localStorage)
-
-## About Noor
-
-- Junior developer, ~1 year experience
-- Knows: JavaScript/TypeScript, Vue, PHP, Laravel, MySQL, Git, CSS/HTML, Vitest
-- Top-down learner: needs the big picture before diving into details
-- This is a learning project + portfolio piece + potential traineeship pickup
-- Traineeship company uses Vue + Laravel
-- Based in the Netherlands
-- Values privacy, considers the app's data sensitive (stress levels, behavioral
-  patterns)
-- Prefers honest, nuanced advice over cheerful hand-waving
+- Vue 3 + Fastify + PostgreSQL + Claude API
+- PWA, offline-first for modes 1-3
+- Raw SQL (no ORM) — intentional; direct control over queries
+- Claude Haiku for Mode 4 chat, Sonnet for onboarding
+- Docker on VPS, incremental deployment from Stage 0
 
 ## Working preferences
 
 - Explain architecture and *why* before *how*
 - Don't over-engineer — this is ~100 users, not enterprise scale
-- Flag when a choice has career/learning implications
 - When in doubt about scope, ask
-- Dutch-only UI for now, but i18n-ready (vue-i18n from the start)
+- Dutch-only UI, i18n-ready from the start
+- Privacy-sensitive data (stress levels, behavioral patterns) — handle accordingly
 
-## AI assistance approach
+## AI collaboration workflow
 
-Revised from experience during Stage 1. The original per-stage guidelines were
-too rigid ("write it yourself, ask AI after 30 minutes"). The updated approach
-optimizes for learning flow and retention:
+AI writes code in small, reviewable chunks (a migration, a route, a composable
+— not a whole feature). Each chunk is reviewed before moving on using three
+question types:
 
-- **Concept first, then code.** Explain the *why* and show an example before
-  Noor writes. Understanding before typing beats guessing-then-fixing.
-- **Syntax is a lookup, not a test.** SQL syntax, library-specific APIs, and
-  framework conventions are things you look up — don't gatekeep these. Design
-  decisions (which fields to accept, what status codes to return, how to
-  structure data) are where the learning lives.
-- **Always read and understand AI-written code.** The check is: can you explain
-  why it works? If not, ask before moving on.
-- **Test retention on the next occurrence.** After AI writes a pattern (e.g. a
-  filtered query), try writing the next similar one solo. That's when you know
-  if it stuck.
-- **~10 minutes of confusion, not 30.** Productive struggle (working out
-  details) is good. Genuine confusion (not knowing what you don't know) is not
-  — ask early.
-- **Per-stage notes** in the learning plan flag what's especially worth
-  understanding deeply vs. what's pure lookup.
+- **Why** — tests conceptual understanding ("Why hash the session token before
+  storing it?")
+- **What if** — tests consequence awareness ("What happens if you remove the
+  `httpOnly` flag?")
+- **Trace** — tests end-to-end reasoning ("Walk through what happens from
+  login request to cookie being set.")
 
-## Review process
+Wrong answers are signal, not failure — they identify gaps to fill before
+moving on. When a pattern repeats later, I write it independently before
+seeing the AI version, to verify retention.
 
-The plan was reviewed by four perspectives (agent team, March 2026):
-- Learning specialist (top-down fit)
-- Devil's advocate (assumptions & risks)
-- Stack critic (technology choices)
-- Career advisor (Dutch market relevance)
+See `PLAN/08-review-based-learning.md` for the full methodology and session
+logs.
 
-Key revisions from that review are already incorporated into the plan files.
+### Principles for AI
+
+- **Concept first, then code.** Explain reasoning before writing implementation.
+- **Syntax is a lookup, not a decision.** Don't gatekeep library APIs or
+  framework conventions. Focus review questions on design decisions: data
+  modeling, API contracts, state management.
+- **Surface confusion early.** If a request is ambiguous or the direction
+  seems wrong, flag it immediately rather than guessing.
+
+## Intentionally excluded
+
+- **State management library (Pinia/Vuex)** — use Vue's built-in reactivity
+  and composables. Add Pinia only if state management becomes painful.
+- **ORM or query builder** — raw SQL via `pg`. See ADR-003.
+- **Monitoring beyond Sentry + Pino** — sufficient at ~100 users.

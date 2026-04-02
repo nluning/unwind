@@ -1,8 +1,62 @@
 # Unwind
 
 Activity suggestion app for neurodivergent brains that struggle to switch off.
+Suggests relaxation activities tailored to the user through four modes: random
+suggestion, stress-filtered, counterbalance-based, and AI-guided conversation.
 
-See `PLAN/` for detailed documentation on the concept, stack choices, and build plan.
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        User's phone                         │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │              Vue 3 PWA (installed)                  │    │
+│  │                                                     │    │
+│  │  ┌──────────────┐    ┌───────────────────────────┐  │    │
+│  │  │  Vue UI      │    │  IndexedDB (local copy)   │  │    │
+│  │  │  - modes 1-4 │    │  - activity list          │  │    │
+│  │  │  - themes    │    │  - pending sync queue     │  │    │
+│  │  │  - i18n      │    │                           │  │    │
+│  │  └──────┬───────┘    └───────────┬───────────────┘  │    │
+│  │         │                        │                  │    │
+│  │         │   offline: use local   │                  │    │
+│  │         │◄───────────────────────┘                  │    │
+│  │         │                                           │    │
+│  └─────────┼───────────────────────────────────────────┘    │
+│            │ online: API calls                              │
+└────────────┼────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    VPS (Docker)                              │
+│                                                             │
+│  ┌──────────┐    ┌──────────────────┐    ┌──────────────┐   │
+│  │  Nginx   │───▶│  Fastify API     │───▶│ PostgreSQL   │  │
+│  │  (HTTPS) │    │  (TypeScript)    │    │              │  │
+│  │          │    │                  │    │ - users      │  │
+│  └──────────┘    │  - auth (oslo)  │    │ - activities │  │
+│                  │  - activity CRUD │    │ - categories │  │
+│                  │  - mode logic    │    │ - usage logs │  │
+│                  │  - AI proxy      │    └──────────────┘  │
+│                  └────────┬─────────┘                       │
+│                           │                                 │
+└───────────────────────────┼─────────────────────────────────┘
+                            │ API calls (server-side only)
+                            ▼
+                  ┌──────────────────┐
+                  │  Claude API      │
+                  │  (Anthropic)     │
+                  │                  │
+                  │  - onboarding    │
+                  │  - mode 4 chat   │
+                  └──────────────────┘
+```
+
+Modes 1-3 work entirely from local data — no server needed. Only mode 4 (AI
+chat), syncing, and auth require a connection.
+
+See `PLAN/` for design docs, `docs/adr/` for architecture decisions.
 
 ## Prerequisites
 
@@ -19,7 +73,7 @@ From the project root:
 docker-compose up -d
 ```
 
-This starts PostgreSQL on `localhost:5432`. The `-d` flag runs it in the background.
+This starts PostgreSQL on `localhost:5555`. The `-d` flag runs it in the background.
 
 ### 2. Start the backend
 
@@ -68,10 +122,11 @@ This automatically runs migrations on the test DB before the test suite starts.
 
 ```
 unwind/
-├── frontend/          # Vue 3 + Vite
-├── backend/           # Fastify + TypeScript
-├── docker-compose.yml # PostgreSQL
-└── PLAN/              # Design docs and build plan
+├── frontend/          # Vue 3 + Vite + UnoCSS
+├── backend/           # Fastify + TypeScript + raw SQL
+├── docs/adr/          # Architecture Decision Records
+├── PLAN/              # Design docs and build plan
+└── docker-compose.yml # PostgreSQL
 ```
 
 ## Stopping everything
