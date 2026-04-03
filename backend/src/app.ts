@@ -4,6 +4,7 @@
   import dbPlugin from './db/index.js'
   import activityRoutes from './routes.js'
   import authRoutes from './routes/auth.js'
+import chatRoutes from './routes/chat.js'
 
   export async function buildApp() {
     const fastify = Fastify({ logger: true })
@@ -16,6 +17,7 @@
     await fastify.register(dbPlugin)
     await fastify.register(authRoutes)
     await fastify.register(activityRoutes)
+    await fastify.register(chatRoutes)
 
     return fastify
   }
