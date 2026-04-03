@@ -124,9 +124,17 @@ npm run migrate
 npm run seed
 ```
 
-### 5. Run tests
+### 5. Run backend tests
 
-Tests run against a separate `unwind_test` database. Make sure `.env.test` exists in `backend/` with the test DB credentials, then:
+Tests run against a separate `unwind_test` database. 
+Create a test database:
+
+```bash
+docker exec -it unwind-db-1 psql -U unwind -c "CREATE DATABASE unwind_test;"
+```
+
+Make sure `.env.test` exists in `backend/` with the test DB credentials, then:
+
 
 ```bash
 cd backend

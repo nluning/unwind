@@ -23,13 +23,25 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 ## Project status
 
-**Stage 5 — AI integration (next).**
+**Stage 5 — AI integration (in progress).**
 Stages 0-2 complete (API, database, auth — 52 tests green). Stage 3 modes 1-3
 frontend complete: three mode pages (Suggest, Stress, Counterbalance) with
 shared `useSuggestionFlow` composable, ActivityCard component, BottomNav with
 active state detection, `createActivity` composable ready for Mode 4, usage
 event tracking, and Dutch i18n. UnoCSS installed. Themes/UnoCSS migration and
-loading/error states deferred to polish pass.
+loading/error states deferred to polish pass. Frontend tests moved to separate
+branch.
+
+Stage 5 progress (Chunks 1-2 of 10 done):
+- `POST /chat` endpoint with auth, Fastify schema validation, Anthropic SDK
+  integration (Haiku), token usage logging, error handling (429/503)
+- System prompt designed: adaptive tone (stress-aware), creative activity
+  suggestions, Dutch-first with language switching, JSON activity format
+- `buildSystemPrompt()` for per-request context injection (stress level,
+  categories done today)
+- Test script (`backend/scripts/test-prompt.ts`) for manual prompt iteration
+- AI memory & personalization plan documented (`docs/plan/12-ai-memory.md`)
+- Next: SSE streaming (Chunk 3), chat composable (Chunk 4), chat UI (Chunk 5)
 
 ## Key decisions
 
