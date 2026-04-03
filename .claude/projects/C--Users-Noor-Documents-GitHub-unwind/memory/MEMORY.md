@@ -1,0 +1,1 @@
+- [Frontend testing readiness](project_frontend_testing.md) — what's installed, what's missing, recommended test order (2026-04-03)
