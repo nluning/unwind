@@ -8,6 +8,11 @@ Target users may use the app without reliable connectivity — on the couch, on 
 train, on flaky WiFi. Modes 1-3 (Suggest, Stress, Counterbalance) are filtering
 and randomization over the user's activity list. They don't need a server.
 
+Offline-first architecture is also a genuinely advanced skill that most junior
+developers never encounter. Building it from scratch — service workers, IndexedDB,
+sync queues, cache strategies — develops understanding of the browser as a
+platform, not just a rendering engine.
+
 ## Decision
 
 Offline-first architecture. Sync the user's activity list to IndexedDB on login
@@ -23,5 +28,9 @@ where simultaneous edits to the same record are effectively impossible.
 
 - Core features feel fast: no network round-trip for suggestions.
 - Adds complexity: IndexedDB API, a sync queue, and conflict resolution logic.
+  This is accepted as a learning investment — understanding cache strategies
+  (cache-first vs. network-first) and sync patterns transfers to any
+  application that deals with unreliable connectivity.
 - Only Mode 4 (AI chat) strictly requires connectivity.
-- Service worker setup needed for app shell caching (aligns with PWA decision).
+- Service worker setup needed for app shell caching (aligns with PWA decision
+  in ADR-005).

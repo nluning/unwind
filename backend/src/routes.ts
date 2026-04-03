@@ -41,22 +41,6 @@ async function activityRoutes(fastify: FastifyInstance) {
         reply.send(result.rows)
     })
 
-    // Fastify validation schemas (JSON Schema format)
-    // ------------------------------------------------
-    // These run BEFORE your route handler. If the request doesn't match,
-    // Fastify auto-responds with 400 — your handler never executes.
-    //
-    // How it works:
-    //   1. You define a schema object with `params`, `body`, or `querystring` keys
-    //   2. You pass it as { schema: mySchema } in the route options (2nd argument)
-    //   3. Fastify uses Ajv (a JSON Schema validator) to check the incoming request
-    //
-    // Key differences between POST and PUT schemas:
-    //   - POST has `required: [...]` — you can't create without all fields
-    //   - PUT has NO required fields — partial updates are allowed
-    //
-    // `as const` preserves literal types for better TypeScript inference.
-
     const idParamSchema = {
         params: {
             type: 'object',

@@ -6,7 +6,6 @@ interface User {
   email: string | null
 }
 
-// Module-level state — shared across all components that call useAuth()
 const user = ref<User | null>(null)
 let initPromise: Promise<void> | null = null
 

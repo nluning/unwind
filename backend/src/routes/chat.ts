@@ -77,13 +77,11 @@ async function chatRoutes(fastify: FastifyInstance) {
                     messages,
                 })
 
-                // Extract text from the response content blocks
                 const assistantText = response.content
                     .filter((block) => block.type === 'text')
                     .map((block) => block.text)
                     .join('')
 
-                // Log token usage for cost visibility
                 fastify.log.info(
                     {
                         user_id: request.user!.id,

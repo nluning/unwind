@@ -16,7 +16,6 @@ const CATEGORY_NAME_MAP: Record<number, string> = Object.fromEntries(
   Object.entries(CATEGORY_ID_MAP).map(([name, id]) => [id, name])
 )
 
-// Module-level state — shared across all components that call useActivities()
 const activities = ref<Activity[]>([])
 const loaded = ref(false)
 

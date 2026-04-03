@@ -1,8 +1,15 @@
 # Unwind
 
-Activity suggestion app for neurodivergent brains that struggle to switch off.
-Suggests relaxation activities tailored to the user through four modes: random
-suggestion, stress-filtered, counterbalance-based, and AI-guided conversation.
+Activity suggestion app for neurodivergent brains (autistic/ADHD, gifted) that 
+struggle to switch off. Suggests relaxation activities tailored to the user 
+through four modes: randomsuggestion, stress-filtered, counterbalance-based, 
+and AI-guided conversation.
+
+This project has a dual purpose: build a genuinely useful app **and** develop
+transferable skills (API design, auth, raw SQL, AI integration, deployment) by
+building without the scaffolding of a full-stack framework. See
+[`docs/plan/03-learning-plan.md`](docs/plan/03-learning-plan.md) for the full
+rationale and [`docs/adr/`](docs/adr/) for the architectural decisions.
 
 ## Architecture
 
