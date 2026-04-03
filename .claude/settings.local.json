@@ -1,8 +1,9 @@
 {
-  "outputStyle": "Explanatory",
   "permissions": {
     "allow": [
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(npx vitest:*)"
     ]
-  }
+  },
+  "outputStyle": "Explanatory"
 }
