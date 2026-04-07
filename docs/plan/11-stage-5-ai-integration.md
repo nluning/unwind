@@ -99,7 +99,7 @@ Rules:
 Context (injected per request):
 - User's current stress level: {stress_level}
 - Categories to avoid (already done today): {categories}
-```
+
 
 **Test the prompt** by running 5-10 conversations manually (via curl or a
 simple script). Does it stay on track? Does it ask simple questions? Does it
