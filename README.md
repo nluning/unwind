@@ -1,6 +1,6 @@
 # Unwind
 
-Activity suggestion app for neurodivergent brains (autistic/ADHD, gifted) that 
+Activity suggestion app for neurodivergent brains that 
 struggle to switch off. Suggests relaxation activities tailored to the user 
 through four modes: randomsuggestion, stress-filtered, counterbalance-based, 
 and AI-guided conversation.
