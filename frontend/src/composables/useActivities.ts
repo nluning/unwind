@@ -18,14 +18,20 @@ const CATEGORY_NAME_MAP: Record<number, string> = Object.fromEntries(
 
 const activities = ref<Activity[]>([])
 const loaded = ref(false)
+const error = ref(false)
 
 export function useActivities() {
   const sessionSuggested = ref<Set<string>>(new Set())
   const sessionAccepted = ref<Set<string>>(new Set())
 
   async function fetchActivities() {
-    activities.value = await api<Activity[]>('/activities')
-    loaded.value = true
+    error.value = false
+    try {
+      activities.value = await api<Activity[]>('/activities')
+      loaded.value = true
+    } catch {
+      error.value = true
+    }
   }
 
   function filterByStress(stressLevel: number): Activity[] {
@@ -105,6 +111,7 @@ export function useActivities() {
   return {
     activities,
     loaded,
+    error,
     isEmpty,
     fetchActivities,
     createActivity,

@@ -18,7 +18,10 @@
     "heading": "Wat zal ik doen?",
     "start": "Geef me een suggestie",
     "accepted": "Veel plezier!",
-    "loading": "Laden..."
+    "loading": "Laden...",
+    "error": "Kan activiteiten niet laden.",
+    "retry": "Probeer opnieuw",
+    "exhausted": "Geen nieuwe suggesties meer."
   },
   "counterbalance": {
     "heading": "Balanceer je dag",
@@ -49,6 +52,21 @@
     "stress": "Stress",
     "counterbalance": "Balans",
     "chat": "Chat"
+  },
+  "chat": {
+    "heading": "Praat met Unwind",
+    "placeholder": "Kies een optie...",
+    "save": "Opslaan in mijn lijst",
+    "saved": "Opgeslagen!",
+    "rateLimit": "Je hebt je limiet voor vandaag bereikt. Probeer het morgen weer.",
+    "error": "Er ging iets mis. Probeer het opnieuw.",
+    "loading": "Aan het nadenken..."
+  },
+  "onboarding": {
+    "heading": "Laten we je lijst personaliseren",
+    "skip": "Sla over",
+    "generating": "Activiteiten aan het genereren...",
+    "done": "Klaar! {count} activiteiten toegevoegd."
   },
   "categories": {
     "Head": "Hoofd",

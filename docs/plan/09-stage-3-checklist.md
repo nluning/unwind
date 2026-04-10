@@ -168,8 +168,7 @@ UnoCSS is installed and configured (uno.config.ts). This step should also:
 - Loading spinner/skeleton while fetching
 - Error message when the API is unreachable
 - "Geen activiteiten gevonden" when filters match nothing
-- "Je bent helemaal bijgewerkt!" (or similar) when all activities are
-  exhausted
+- "Alle activiteiten overgeslagen - opnieuw beginnen?" (or similar) when all activities are exhausted. + option to start again. 
 
 ### Step 15: Mobile-first styling
 
