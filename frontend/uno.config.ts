@@ -12,11 +12,17 @@ export default defineConfig({
   theme: {
     colors: {
       primary: {
-        DEFAULT: '#2c6e49',
-        light: '#e8f5e9',
+        DEFAULT: 'var(--c-primary)',
+        light: 'var(--c-primary-light)',
       },
-      muted: '#888',
-      error: '#c0392b',
+      surface: 'var(--c-surface)',
+      card: 'var(--c-card)',
+      dim: 'var(--c-text-dim)',
+      muted: 'var(--c-text-muted)',
+      chip: 'var(--c-chip-bg)',
+      outline: 'var(--c-border)',
+      error: 'var(--c-error)',
+      accepted: 'var(--c-accepted)',
     },
   },
 })

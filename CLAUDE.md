@@ -28,9 +28,15 @@ Stages 0-2 complete (API, database, auth — 52 tests green). Stage 3 modes 1-3
 frontend complete: three mode pages (Suggest, Stress, Counterbalance) with
 shared `useSuggestionFlow` composable, ActivityCard component, BottomNav with
 active state detection, `createActivity` composable ready for Mode 4, usage
-event tracking, and Dutch i18n. UnoCSS installed. Themes/UnoCSS migration and
-loading/error states deferred to polish pass. Frontend tests moved to separate
-branch.
+event tracking, and Dutch i18n. UnoCSS migration complete: all scoped CSS
+replaced with utility classes referencing CSS custom property theme tokens.
+Six theme variants (calm, warm, playful × dark/light) with `useTheme`
+composable and `ThemeSelector` component, stored in localStorage. Dark mode
+is the default (less intense for overstimulated users). CSS custom property
+tokens include `--c-card` for dark-mode card separation. Loading spinners, error
+states with retry, and exhausted states added to all mode pages. `LinkButton`
+shared component extracted. Frontend tests moved to separate branch.
+Mobile-first styling (Step 15) still deferred.
 
 Stage 5 progress (Chunks 1-2 of 10 done):
 - `POST /chat` endpoint with auth, Fastify schema validation, Anthropic SDK

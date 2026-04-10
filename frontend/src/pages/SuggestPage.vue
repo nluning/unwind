@@ -1,18 +1,18 @@
 <template>
-  <main class="suggest-page">
+  <main class="flex flex-col items-center px-4 py-8 gap-6">
     <h1>{{ $t('suggest.heading') }}</h1>
 
-    <div v-if="!loaded && !error" class="status">
+    <div v-if="!loaded && !error" class="text-muted text-sm flex flex-col items-center gap-2">
       <span class="spinner" />
       {{ $t('suggest.loading') }}
     </div>
 
-    <div v-else-if="error" class="status error-message">
+    <div v-else-if="error" class="text-error text-sm flex flex-col items-center gap-2">
       <p>{{ $t('suggest.error') }}</p>
-      <button class="link-button" @click="fetchActivities()">{{ $t('suggest.retry') }}</button>
+      <LinkButton @click="fetchActivities()">{{ $t('suggest.retry') }}</LinkButton>
     </div>
 
-    <p v-else-if="isEmpty" class="status">{{ $t('activity.empty') }}</p>
+    <p v-else-if="isEmpty" class="text-muted text-sm">{{ $t('activity.empty') }}</p>
 
     <template v-else>
       <ActivityCard
@@ -22,11 +22,11 @@
         @skip="handleSkip"
       />
 
-      <p v-if="accepted" class="status accepted-message">
+      <p v-if="accepted" class="text-accepted text-lg font-medium">
         {{ $t('suggest.accepted') }}
       </p>
 
-      <p v-if="!current && !accepted" class="status">
+      <p v-if="!current && !accepted" class="text-muted text-sm">
         {{ $t('suggest.exhausted') }}
       </p>
     </template>
@@ -38,6 +38,7 @@ import { computed, onMounted } from 'vue'
 import { useActivities } from '../composables/useActivities.js'
 import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
+import LinkButton from '../components/LinkButton.vue'
 
 const { activities, loaded, error, isEmpty, fetchActivities } = useActivities()
 
@@ -54,55 +55,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.suggest-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  gap: 1.5rem;
-}
-
-.status {
-  color: #888;
-  font-size: 0.95rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.accepted-message {
-  color: #2c6e49;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.error-message {
-  color: #c0392b;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: #2c6e49;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: inherit;
-  padding: 0;
-}
-
-.spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid #e0e0e0;
-  border-top-color: #2c6e49;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>

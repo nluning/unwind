@@ -68,6 +68,13 @@
     "generating": "Activiteiten aan het genereren...",
     "done": "Klaar! {count} activiteiten toegevoegd."
   },
+  "theme": {
+    "calm": "Rustig",
+    "warm": "Warm",
+    "playful": "Speels",
+    "dark": "Donkere modus",
+    "light": "Lichte modus"
+  },
   "categories": {
     "Head": "Hoofd",
     "Hands": "Handen",

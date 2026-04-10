@@ -11,7 +11,7 @@ const tabs = [
 </script>
 
 <template>
-  <nav :aria-label="t('nav.label')" class="fixed bottom-0 left-0 right-0 flex bg-white border-t border-gray-200">
+  <nav :aria-label="t('nav.label')" class="fixed bottom-0 left-0 right-0 flex bg-surface border-t border-outline">
     <router-link
       v-for="tab in tabs"
       :key="tab.to"
@@ -23,7 +23,7 @@ const tabs = [
         :href="href"
         @click="navigate"
         class="flex-1 flex items-center justify-center min-h-14 text-sm transition-colors"
-        :class="isExactActive ? 'text-green-700 font-600 border-t-2 border-green-700' : 'text-gray-500'"
+        :class="isExactActive ? 'text-primary font-600 border-t-2 border-primary' : 'text-muted'"
       >
         {{ tab.label() }}
       </a>

@@ -1,50 +1,55 @@
 <template>
-  <main class="auth-page">
+  <main class="flex flex-col items-center px-4 py-8 max-w-96 mx-auto">
     <h1>{{ $t('app.title') }}</h1>
 
-    <form @submit.prevent="handleSubmit" class="auth-form">
+    <form @submit.prevent="handleSubmit" class="flex flex-col gap-4 w-full">
       <h2>{{ isRegistering ? $t('auth.register') : $t('auth.login') }}</h2>
 
-      <label>
+      <label class="flex flex-col gap-1 text-sm">
         {{ $t('auth.email') }}
         <input
           v-model="email"
           type="email"
           required
           autocomplete="email"
+          class="p-3 border border-outline rounded-lg text-base"
         />
       </label>
 
-      <label>
+      <label class="flex flex-col gap-1 text-sm">
         {{ $t('auth.password') }}
         <input
           v-model="password"
           type="password"
           required
           autocomplete="current-password"
+          class="p-3 border border-outline rounded-lg text-base"
         />
       </label>
 
-      <p v-if="error" class="error" role="alert">{{ error }}</p>
+      <p v-if="error" class="text-error text-sm" role="alert">{{ error }}</p>
 
-      <button type="submit" :disabled="loading">
+      <button
+        type="submit"
+        :disabled="loading"
+        class="p-3 bg-primary text-white border-none rounded-lg text-base cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         {{ isRegistering ? $t('auth.registerButton') : $t('auth.loginButton') }}
       </button>
 
-      <button
-        type="button"
-        class="link-button"
+      <LinkButton
+        class="text-sm"
         @click="isRegistering = !isRegistering; error = ''"
       >
         {{ isRegistering ? $t('auth.switchToLogin') : $t('auth.switchToRegister') }}
-      </button>
+      </LinkButton>
     </form>
 
-    <div class="divider"></div>
+    <div class="w-full h-px bg-outline my-6"></div>
 
     <button
       type="button"
-      class="device-button"
+      class="py-3 px-6 bg-transparent border border-muted rounded-lg text-sm cursor-pointer text-dim disabled:opacity-60 disabled:cursor-not-allowed"
       :disabled="loading"
       @click="handleDeviceAuth"
     >
@@ -59,6 +64,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '../composables/useAuth.js'
 import { ApiError } from '../api/client.js'
+import LinkButton from '../components/LinkButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -117,88 +123,3 @@ function getOrCreateDeviceId(): string {
   return id
 }
 </script>
-
-<style scoped>
-.auth-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  max-width: 24rem;
-  margin: 0 auto;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-}
-
-input {
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-}
-
-button[type="submit"] {
-  padding: 0.75rem;
-  background: #2c6e49;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-button[type="submit"]:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: #2c6e49;
-  cursor: pointer;
-  font-size: 0.875rem;
-  text-decoration: underline;
-  padding: 0;
-}
-
-.divider {
-  width: 100%;
-  height: 1px;
-  background: #ddd;
-  margin: 1.5rem 0;
-}
-
-.device-button {
-  padding: 0.75rem 1.5rem;
-  background: transparent;
-  border: 1px solid #999;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-  color: #555;
-}
-
-.device-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error {
-  color: #c0392b;
-  font-size: 0.875rem;
-  margin: 0;
-}
-</style>

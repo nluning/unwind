@@ -1,26 +1,26 @@
 <template>
-  <main class="counterbalance-page">
+  <main class="flex flex-col items-center px-4 py-8 gap-6">
     <h1>{{ $t('counterbalance.heading') }}</h1>
 
-    <div v-if="!loaded && !error" class="status">
+    <div v-if="!loaded && !error" class="text-muted text-sm flex flex-col items-center gap-2">
       <span class="spinner" />
       {{ $t('suggest.loading') }}
     </div>
 
-    <div v-else-if="error" class="status error-message">
+    <div v-else-if="error" class="text-error text-sm flex flex-col items-center gap-2">
       <p>{{ $t('suggest.error') }}</p>
-      <button class="link-button" @click="fetchActivities()">{{ $t('suggest.retry') }}</button>
+      <LinkButton @click="fetchActivities()">{{ $t('suggest.retry') }}</LinkButton>
     </div>
 
     <template v-else>
       <!-- Category picker -->
-      <div v-if="excluded.length === 0" class="category-picker">
-        <p class="prompt">{{ $t('counterbalance.prompt') }}</p>
-        <div class="category-buttons">
+      <div v-if="excluded.length === 0" class="flex flex-col items-center gap-4">
+        <p class="text-dim text-sm text-center">{{ $t('counterbalance.prompt') }}</p>
+        <div class="flex gap-3">
           <button
             v-for="category in categories"
             :key="category"
-            class="category-btn"
+            class="py-3.5 px-6 rounded-xl border-2 border-outline bg-surface text-base cursor-pointer transition-colors hover:border-primary hover:bg-primary-light"
             @click="excluded = [category]"
           >
             {{ $t(`categories.${category}`) }}
@@ -29,12 +29,12 @@
       </div>
 
       <!-- No matching activities -->
-      <p v-else-if="pool.length === 0" class="status">
+      <div v-else-if="pool.length === 0" class="text-muted text-sm flex flex-col items-center gap-2">
         {{ $t('activity.empty') }}
-        <button class="link-button" @click="excluded = []">
+        <LinkButton class="text-sm" @click="excluded = []">
           ← {{ $t('counterbalance.prompt') }}
-        </button>
-      </p>
+        </LinkButton>
+      </div>
 
       <!-- Suggestion flow -->
       <template v-else>
@@ -45,17 +45,17 @@
           @skip="handleSkip"
         />
 
-        <p v-if="accepted" class="status accepted-message">
+        <p v-if="accepted" class="text-accepted text-lg font-medium">
           {{ $t('suggest.accepted') }}
         </p>
 
-        <p v-if="!current && !accepted" class="status">
+        <p v-if="!current && !accepted" class="text-muted text-sm">
           {{ $t('suggest.exhausted') }}
         </p>
 
-        <button class="link-button" @click="excluded = []">
+        <LinkButton class="text-sm" @click="excluded = []">
           ← {{ $t('counterbalance.prompt') }}
-        </button>
+        </LinkButton>
       </template>
     </template>
   </main>
@@ -66,6 +66,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useActivities, CATEGORY_ID_MAP } from '../composables/useActivities.js'
 import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
+import LinkButton from '../components/LinkButton.vue'
 
 const categories = Object.keys(CATEGORY_ID_MAP)
 
@@ -88,88 +89,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.counterbalance-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  gap: 1.5rem;
-}
-
-.prompt {
-  color: #555;
-  font-size: 0.95rem;
-  text-align: center;
-}
-
-.category-picker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.category-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.category-btn {
-  padding: 0.875rem 1.5rem;
-  border-radius: 0.75rem;
-  border: 2px solid #ccc;
-  background: white;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-
-.category-btn:hover {
-  border-color: #2c6e49;
-  background: #e8f5e9;
-}
-
-.status {
-  color: #888;
-  font-size: 0.95rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.accepted-message {
-  color: #2c6e49;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.error-message {
-  color: #c0392b;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: #2c6e49;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: 0.875rem;
-  padding: 0;
-}
-
-.spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid #e0e0e0;
-  border-top-color: #2c6e49;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>

@@ -9,7 +9,124 @@ body {
   min-height: 100vh;
   line-height: 1.6;
   font-size: 15px;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--c-text);
+  background-color: var(--c-surface);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+/* ── Theme definitions ─────────────────────────── */
+/* Two axes: color scheme (calm/warm/playful) × mode (dark/light) */
+/* Default: calm dark */
+
+/* ─ Calm Dark (default) ─ */
+:root {
+  --c-primary: #5a9e74;
+  --c-primary-light: #1e3a2a;
+  --c-surface: #161618;
+  --c-card: #1e1e22;
+  --c-text: #d8d8dc;
+  --c-text-dim: #a0a0a8;
+  --c-text-muted: #6a6a74;
+  --c-border: #2a2a32;
+  --c-chip-bg: #222228;
+  --c-error: #e06050;
+  --c-accepted: #5a9e74;
+}
+
+/* ─ Warm Dark ─ */
+[data-theme="warm"] {
+  --c-primary: #c48a6a;
+  --c-primary-light: #2e2219;
+  --c-surface: #1a1714;
+  --c-card: #242018;
+  --c-text: #d8d0c8;
+  --c-text-dim: #a89888;
+  --c-text-muted: #7a6e62;
+  --c-border: #362e24;
+  --c-chip-bg: #28221a;
+  --c-error: #e06050;
+  --c-accepted: #8aaf5c;
+}
+
+/* ─ Playful Dark ─ */
+[data-theme="playful"] {
+  --c-primary: #7b8adf;
+  --c-primary-light: #222040;
+  --c-surface: #16161e;
+  --c-card: #1e1e28;
+  --c-text: #d4d4e0;
+  --c-text-dim: #9898b0;
+  --c-text-muted: #686880;
+  --c-border: #2a2a3a;
+  --c-chip-bg: #202028;
+  --c-error: #e06050;
+  --c-accepted: #5aab8f;
+}
+
+/* ─ Calm Light ─ */
+[data-mode="light"] {
+  --c-primary: #2c6e49;
+  --c-primary-light: #e8f5e9;
+  --c-surface: #ffffff;
+  --c-card: #ffffff;
+  --c-text: #333333;
+  --c-text-dim: #555555;
+  --c-text-muted: #888888;
+  --c-border: #cccccc;
+  --c-chip-bg: #f0f0f0;
+  --c-error: #c0392b;
+  --c-accepted: #2c6e49;
+}
+
+/* ─ Warm Light ─ */
+[data-theme="warm"][data-mode="light"] {
+  --c-primary: #8b5c3e;
+  --c-primary-light: #faf0e6;
+  --c-surface: #fffbf5;
+  --c-card: #ffffff;
+  --c-text: #3b2f2f;
+  --c-text-dim: #5c4a3a;
+  --c-text-muted: #9c8b7a;
+  --c-border: #d9c9b8;
+  --c-chip-bg: #f5ece3;
+  --c-error: #c0392b;
+  --c-accepted: #6b8f3c;
+}
+
+/* ─ Playful Light ─ */
+[data-theme="playful"][data-mode="light"] {
+  --c-primary: #5b6abf;
+  --c-primary-light: #eef0fb;
+  --c-surface: #f8f7ff;
+  --c-card: #ffffff;
+  --c-text: #2d2d3f;
+  --c-text-dim: #4a4a66;
+  --c-text-muted: #7e7e9a;
+  --c-border: #c8c8e0;
+  --c-chip-bg: #eeedf5;
+  --c-error: #c0392b;
+  --c-accepted: #4a8b6f;
+}
+
+/* ── Shared animation ──────────────────────────── */
+
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--c-border);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

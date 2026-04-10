@@ -201,8 +201,9 @@ no horizontal scrolling. Test at 375px width.
 - [x] Mode 3: pick category done today → counterbalanced suggestions
 - [x] Accept/skip events recorded in usage_events table
 - [x] Mode switching works (BottomNav with active state, chat tab disabled)
-- [ ] Three theme presets — deferred to polish pass
+- [x] Six theme variants (calm, warm, playful × dark/light) with UnoCSS migration
 - [x] All strings go through vue-i18n (Dutch)
+- [x] Loading, error, and empty/exhausted states for all mode pages
 - [ ] App works on phone viewport (375px) — deferred to polish pass
 - [ ] Backend + frontend tests pass — backend 52 tests green, frontend tests deferred
 - [ ] App is deployed on VPS — deferred to Stage 6

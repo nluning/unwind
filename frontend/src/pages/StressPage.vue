@@ -1,41 +1,39 @@
 <template>
-  <main class="stress-page">
+  <main class="flex flex-col items-center px-4 py-8 gap-6">
     <h1>{{ $t('stress.heading') }}</h1>
 
-    <div v-if="!loaded && !error" class="status">
+    <div v-if="!loaded && !error" class="text-muted text-sm flex flex-col items-center gap-2">
       <span class="spinner" />
       {{ $t('suggest.loading') }}
     </div>
 
-    <div v-else-if="error" class="status error-message">
+    <div v-else-if="error" class="text-error text-sm flex flex-col items-center gap-2">
       <p>{{ $t('suggest.error') }}</p>
-      <button class="link-button" @click="fetchActivities()">{{ $t('suggest.retry') }}</button>
+      <LinkButton @click="fetchActivities()">{{ $t('suggest.retry') }}</LinkButton>
     </div>
 
     <template v-else>
       <!-- Stress selector -->
-      <div v-if="!stressLevel" class="stress-selector">
-        <span class="stress-label">{{ $t('stress.low') }}</span>
-        <div class="stress-buttons">
+      <div v-if="!stressLevel" class="flex items-center gap-3">
+        <span class="text-xs text-muted">{{ $t('stress.low') }}</span>
+        <div class="flex gap-2">
           <button
             v-for="level in 5"
             :key="level"
-            class="stress-btn"
+            class="w-12 h-12 rounded-full border-2 border-outline bg-surface text-lg cursor-pointer transition-colors hover:border-primary hover:bg-primary-light"
             @click="stressLevel = level"
           >
             {{ level }}
           </button>
         </div>
-        <span class="stress-label">{{ $t('stress.high') }}</span>
+        <span class="text-xs text-muted">{{ $t('stress.high') }}</span>
       </div>
 
       <!-- No matching activities -->
-      <p v-else-if="pool.length === 0" class="status">
+      <div v-else-if="pool.length === 0" class="text-muted text-sm flex flex-col items-center gap-2">
         {{ $t('stress.noMatch') }}
-        <button class="link-button" @click="stressLevel = null">
-          {{ $t('activity.skip') }}
-        </button>
-      </p>
+        <LinkButton @click="stressLevel = null">{{ $t('activity.skip') }}</LinkButton>
+      </div>
 
       <!-- Suggestion flow -->
       <template v-else>
@@ -46,11 +44,11 @@
           @skip="handleSkip"
         />
 
-        <p v-if="accepted" class="status accepted-message">
+        <p v-if="accepted" class="text-accepted text-lg font-medium">
           {{ $t('suggest.accepted') }}
         </p>
 
-        <p v-if="!current && !accepted" class="status">
+        <p v-if="!current && !accepted" class="text-muted text-sm">
           {{ $t('suggest.exhausted') }}
         </p>
       </template>
@@ -63,6 +61,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useActivities } from '../composables/useActivities.js'
 import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
+import LinkButton from '../components/LinkButton.vue'
 
 const { loaded, error, fetchActivities, filterByStress } = useActivities()
 
@@ -84,87 +83,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-.stress-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  gap: 1.5rem;
-}
-
-.stress-selector {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.stress-label {
-  font-size: 0.8rem;
-  color: #888;
-}
-
-.stress-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.stress-btn {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  border: 2px solid #ccc;
-  background: white;
-  font-size: 1.125rem;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.stress-btn:hover {
-  border-color: #2c6e49;
-  background: #e8f5e9;
-}
-
-.status {
-  color: #888;
-  font-size: 0.95rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.accepted-message {
-  color: #2c6e49;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.error-message {
-  color: #c0392b;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: #2c6e49;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: inherit;
-  padding: 0;
-}
-
-.spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid #e0e0e0;
-  border-top-color: #2c6e49;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>
