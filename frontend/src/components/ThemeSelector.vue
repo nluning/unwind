@@ -31,8 +31,8 @@ import { useTheme, type ColorScheme } from '../composables/useTheme.js'
 const { colorScheme, mode, setColorScheme, toggleMode } = useTheme()
 
 const schemes: { name: ColorScheme; swatch: string }[] = [
-  { name: 'calm', swatch: '#2c6e49' },
-  { name: 'warm', swatch: '#8b5c3e' },
-  { name: 'playful', swatch: '#5b6abf' },
+  { name: 'calm', swatch: '#4ecca3' },
+  { name: 'warm', swatch: '#e07050' },
+  { name: 'playful', swatch: '#3b8eff' },
 ]
 </script>

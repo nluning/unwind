@@ -7,6 +7,7 @@ const tabs = [
   { label: () => t('nav.suggest'), to: '/suggest' },
   { label: () => t('nav.stress'), to: '/stress' },
   { label: () => t('nav.counterbalance'), to: '/counterbalance' },
+  { label: () => t('nav.chat'), to: '/chat' },
 ] as const
 </script>
 
@@ -28,12 +29,5 @@ const tabs = [
         {{ tab.label() }}
       </a>
     </router-link>
-
-    <span
-      class="flex-1 flex items-center justify-center min-h-14 text-sm opacity-40 pointer-events-none"
-      aria-disabled="true"
-    >
-      {{ t('nav.chat') }}
-    </span>
   </nav>
 </template>

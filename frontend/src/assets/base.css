@@ -28,90 +28,90 @@ input {
 
 /* ─ Calm Dark (default) ─ */
 :root {
-  --c-primary: #5a9e74;
-  --c-primary-light: #1e3a2a;
-  --c-surface: #161618;
-  --c-card: #1e1e22;
+  --c-primary: #4ecca3;
+  --c-primary-light: #1a2e28;
+  --c-surface: #131316;
+  --c-card: #222530;
   --c-text: #d8d8dc;
-  --c-text-dim: #a0a0a8;
+  --c-text-dim: #a4a4b0;
   --c-text-muted: #6a6a74;
-  --c-border: #2a2a32;
-  --c-chip-bg: #222228;
+  --c-border: #303040;
+  --c-chip-bg: #2a2e38;
   --c-error: #e06050;
-  --c-accepted: #5a9e74;
+  --c-accepted: #4ecca3;
 }
 
 /* ─ Warm Dark ─ */
 [data-theme="warm"] {
-  --c-primary: #c48a6a;
-  --c-primary-light: #2e2219;
-  --c-surface: #1a1714;
-  --c-card: #242018;
+  --c-primary: #e07050;
+  --c-primary-light: #2e1c18;
+  --c-surface: #151210;
+  --c-card: #2a2218;
   --c-text: #d8d0c8;
-  --c-text-dim: #a89888;
+  --c-text-dim: #b0a090;
   --c-text-muted: #7a6e62;
-  --c-border: #362e24;
-  --c-chip-bg: #28221a;
+  --c-border: #3a3228;
+  --c-chip-bg: #322a20;
   --c-error: #e06050;
   --c-accepted: #8aaf5c;
 }
 
 /* ─ Playful Dark ─ */
 [data-theme="playful"] {
-  --c-primary: #7b8adf;
-  --c-primary-light: #222040;
-  --c-surface: #16161e;
-  --c-card: #1e1e28;
+  --c-primary: #3b8eff;
+  --c-primary-light: #1a2040;
+  --c-surface: #121218;
+  --c-card: #222234;
   --c-text: #d4d4e0;
-  --c-text-dim: #9898b0;
+  --c-text-dim: #a0a0b8;
   --c-text-muted: #686880;
-  --c-border: #2a2a3a;
-  --c-chip-bg: #202028;
+  --c-border: #303048;
+  --c-chip-bg: #2a2a3e;
   --c-error: #e06050;
   --c-accepted: #5aab8f;
 }
 
 /* ─ Calm Light ─ */
 [data-mode="light"] {
-  --c-primary: #2c6e49;
-  --c-primary-light: #e8f5e9;
-  --c-surface: #ffffff;
+  --c-primary: #1a8a5c;
+  --c-primary-light: #e2f5ec;
+  --c-surface: #f4f7f5;
   --c-card: #ffffff;
-  --c-text: #333333;
-  --c-text-dim: #555555;
-  --c-text-muted: #888888;
-  --c-border: #cccccc;
-  --c-chip-bg: #f0f0f0;
+  --c-text: #1a2a22;
+  --c-text-dim: #4a5a52;
+  --c-text-muted: #7a8a82;
+  --c-border: #c8d4cc;
+  --c-chip-bg: #e8eeea;
   --c-error: #c0392b;
-  --c-accepted: #2c6e49;
+  --c-accepted: #1a8a5c;
 }
 
 /* ─ Warm Light ─ */
 [data-theme="warm"][data-mode="light"] {
-  --c-primary: #8b5c3e;
-  --c-primary-light: #faf0e6;
-  --c-surface: #fffbf5;
+  --c-primary: #b85030;
+  --c-primary-light: #faeae4;
+  --c-surface: #faf4ee;
   --c-card: #ffffff;
-  --c-text: #3b2f2f;
-  --c-text-dim: #5c4a3a;
-  --c-text-muted: #9c8b7a;
-  --c-border: #d9c9b8;
-  --c-chip-bg: #f5ece3;
+  --c-text: #2a2018;
+  --c-text-dim: #5c4a38;
+  --c-text-muted: #9c8b78;
+  --c-border: #d9c9b4;
+  --c-chip-bg: #f2e8dc;
   --c-error: #c0392b;
   --c-accepted: #6b8f3c;
 }
 
 /* ─ Playful Light ─ */
 [data-theme="playful"][data-mode="light"] {
-  --c-primary: #5b6abf;
-  --c-primary-light: #eef0fb;
-  --c-surface: #f8f7ff;
+  --c-primary: #4f5fe6;
+  --c-primary-light: #e4ecfd;
+  --c-surface: #edf2ff;
   --c-card: #ffffff;
-  --c-text: #2d2d3f;
-  --c-text-dim: #4a4a66;
-  --c-text-muted: #7e7e9a;
-  --c-border: #c8c8e0;
-  --c-chip-bg: #eeedf5;
+  --c-text: #1a2030;
+  --c-text-dim: #3a4868;
+  --c-text-muted: #687898;
+  --c-border: #bcc6e0;
+  --c-chip-bg: #e2e8f6;
   --c-error: #c0392b;
   --c-accepted: #4a8b6f;
 }

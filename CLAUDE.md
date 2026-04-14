@@ -38,16 +38,20 @@ states with retry, and exhausted states added to all mode pages. `LinkButton`
 shared component extracted. Frontend tests moved to separate branch.
 Mobile-first styling (Step 15) still deferred.
 
-Stage 5 progress (Chunks 1-2 of 10 done):
-- `POST /chat` endpoint with auth, Fastify schema validation, Anthropic SDK
-  integration (Haiku), token usage logging, error handling (429/503)
-- System prompt designed: adaptive tone (stress-aware), creative activity
-  suggestions, Dutch-first with language switching, JSON activity format
+Stage 5 progress (Chunks 1-6 of 10 done):
+- Chunks 1-2: `POST /chat` + `/chat/stream` endpoints with auth, Fastify
+  schema validation, Anthropic SDK (Haiku), SSE streaming, token usage logging,
+  error handling (429/503), manual CORS headers for SSE
+- System prompt: adaptive tone (stress-aware), Dutch-first with language
+  switching, JSON activity format, soft/hard conversation limits (20 messages)
 - `buildSystemPrompt()` for per-request context injection (stress level,
-  categories done today)
-- Test script (`backend/scripts/test-prompt.ts`) for manual prompt iteration
-- AI memory & personalization plan documented (`docs/plan/12-ai-memory.md`)
-- Next: SSE streaming (Chunk 3), chat composable (Chunk 4), chat UI (Chunk 5)
+  categories done today, message count warnings)
+- Chunks 3-5: `useChat` composable (streaming via EventSource), ChatPage.vue
+  with message list, input, "Nieuw gesprek" reset, auto-scroll, route +
+  BottomNav wiring
+- Chunk 6: `parseActivity.ts` — JSON extraction (fenced + bare strategies),
+  `toCreatePayload` mapping, save button in chat UI
+- Next: Chunk 7 (onboarding), Chunk 8 (AI memory), Chunk 9 (rate limiting)
 
 ## Key decisions
 
@@ -60,6 +64,13 @@ read the relevant ADR first.** Summary:
 - Raw SQL (no ORM) — intentional; direct control over queries
 - Claude Haiku for Mode 4 chat, Sonnet for onboarding
 - Docker on VPS, incremental deployment from Stage 0
+
+## Memory
+
+Store all memories in `.claude/` in this repo — **not** in the local
+`.claude/projects/.../memory/` directory. Noor works on multiple machines, so
+local memory won't persist. Read `.claude/MEMORY.md` for the index. When saving
+new memories, write files to `.claude/` and update `.claude/MEMORY.md`.
 
 ## Working preferences
 

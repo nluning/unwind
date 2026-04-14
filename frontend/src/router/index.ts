@@ -29,6 +29,11 @@ const router = createRouter({
       name: 'counterbalance',
       component: () => import('../pages/CounterbalancePage.vue'),
     },
+    {
+      path: '/chat',
+      name: 'chat',
+      component: () => import('../pages/ChatPage.vue'),
+    },
   ],
 })
 
