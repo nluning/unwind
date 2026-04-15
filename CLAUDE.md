@@ -51,7 +51,9 @@ Stage 5 progress (Chunks 1-6 of 10 done):
   BottomNav wiring
 - Chunk 6: `parseActivity.ts` — JSON extraction (fenced + bare strategies),
   `toCreatePayload` mapping, save button in chat UI
-- Next: Chunk 7 (onboarding), Chunk 8 (AI memory), Chunk 9 (rate limiting)
+- Next: Chunk 7 (memory storage layer), Chunk 8 (memory → system prompt),
+  Chunk 9 (onboarding prototype), Chunk 10 (onboarding endpoint + UI),
+  Chunk 11 (rate limiting), Chunk 12 (tests)
 
 ## Key decisions
 

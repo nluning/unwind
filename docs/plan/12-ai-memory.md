@@ -173,30 +173,39 @@ A "What Unwind knows about me" page accessible from settings:
 
 ---
 
-## Dependencies
+## Dependencies and phasing
 
-- Stage 5 (current) must be complete — the chat endpoint needs to work first
-- Activity history injection (type 1) can be added during Stage 5
-- Conversational memory (type 2) is a separate feature, likely Stage 7 (polish)
-  or its own mini-stage
+The memory system is split across two stages:
 
-## Chunk order (when implemented)
+**Stage 5 (current) — storage + injection layer only:**
+- `user_memories` migration + CRUD endpoints (no user-facing UI)
+- Activity history query + injection into system prompt
+- Onboarding seeds initial memories alongside generating activities
+- See `11-stage-5-ai-integration.md` Chunks 7-10 for the build order
+
+**Stage 7 (polish) — user-facing management + fact extraction:**
+- Post-conversation fact extraction (Option A)
+- "What Unwind knows about me" settings page
+- Memory toggle + privacy controls (view/edit/delete/pause)
+- Tests for the full memory lifecycle
+
+## Chunk order — Stage 7 portion
 
 | Chunk | What |
 |-------|------|
-| 1 | Activity history query + injection into system prompt |
-| 2 | `user_memories` migration + CRUD API endpoints |
-| 3 | Post-conversation fact extraction (Option A) |
-| 4 | "What Unwind knows" settings page |
-| 5 | Memory toggle + privacy controls |
-| 6 | Tests |
+| 1 | Post-conversation fact extraction (Option A) |
+| 2 | "What Unwind knows" settings page |
+| 3 | Memory toggle + privacy controls |
+| 4 | Tests |
 
 ---
 
 ## Open questions
 
-- Should the onboarding conversation (Step 9-11 in Stage 5) also generate
-  initial memories? It learns preferences — those could seed the memory.
+- ~~Should the onboarding conversation also generate initial memories?~~
+  **Resolved (2026-04-15):** Yes. The memory storage layer is pulled into
+  Stage 5 so onboarding can seed both activities and user memories in one pass.
+  This avoids losing preference signals and prevents rework.
 - How do we handle contradictions? ("I like outdoor activities" vs. earlier
   "I prefer staying indoors") — last-write-wins, or flag for user review?
 - Should there be a "memory quality" feedback loop? User can mark a fact as

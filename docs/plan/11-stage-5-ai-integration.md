@@ -314,21 +314,29 @@ an external SDK is a new pattern).
 
 ## Chunk order
 
-| Chunk | What                              | Dependencies | Files                           |
-|-------|-----------------------------------|:------------:|---------------------------------|
-| 1     | Claude SDK setup + basic endpoint | none         | `chat.ts` (new), `.env`        |
-| 2     | System prompt + manual testing    | 1            | `chat.ts`                       |
-| 3     | SSE streaming backend             | 2            | `chat.ts`                       |
-| 4     | Chat composable (frontend)        | 3            | `useChat.ts` (new)              |
-| 5     | Chat page + enable nav tab        | 4            | `ChatPage.vue` (new), router    |
-| 6     | Structured output parsing + save  | 4, 5         | `useChat.ts`, `ChatPage.vue`    |
-| 7     | Onboarding prototype (prompt)     | 1             | scripts / manual testing        |
-| 8     | Onboarding endpoint + UI          | 7            | `onboarding.ts` (new), frontend |
-| 9     | Rate limiting                     | 2            | middleware                      |
-| 10    | Tests                             | all          | `tests/`                        |
+| Chunk | What                              | Dependencies | Files                           | Status |
+|-------|-----------------------------------|:------------:|---------------------------------|--------|
+| 1     | Claude SDK setup + basic endpoint | none         | `chat.ts` (new), `.env`        | ✅ Done |
+| 2     | System prompt + manual testing    | 1            | `chat.ts`                       | ✅ Done |
+| 3     | SSE streaming backend             | 2            | `chat.ts`                       | ✅ Done |
+| 4     | Chat composable (frontend)        | 3            | `useChat.ts` (new)              | ✅ Done |
+| 5     | Chat page + enable nav tab        | 4            | `ChatPage.vue` (new), router    | ✅ Done |
+| 6     | Structured output parsing + save  | 4, 5         | `useChat.ts`, `ChatPage.vue`    | ✅ Done |
+| 7     | Memory storage layer              | 1            | migration, `memory.ts` (new)    |        |
+| 8     | Inject memories into system prompt| 7            | `buildSystemPrompt.ts`          |        |
+| 9     | Onboarding prototype (prompt)     | 7            | scripts / manual testing        |        |
+| 10    | Onboarding endpoint + UI          | 8, 9         | `onboarding.ts` (new), frontend |        |
+| 11    | Rate limiting                     | 2            | middleware                      |        |
+| 12    | Tests                             | all          | `tests/`                        |        |
 
-Chunks 1-6 are the main path (Mode 4). Chunk 7 (onboarding prototype) can
-start as soon as chunk 1 is done — it's independent from the streaming/UI work.
+Chunks 1-6 are the main path (Mode 4) — complete.
+
+Chunks 7-8 are the memory storage layer, pulled forward from the AI memory
+plan (see `12-ai-memory.md`). Only the backend storage + prompt injection is
+built here — the user-facing memory management page (view/edit/delete/toggle)
+stays in Stage 7 (polish). This reordering ensures the onboarding conversation
+(Chunks 9-10) can seed user memories alongside generating activities, instead
+of losing those preference signals.
 
 ---
 
@@ -338,7 +346,9 @@ start as soon as chunk 1 is done — it's independent from the streaming/UI work
 - [ ] Streaming responses via SSE — text appears word-by-word in the UI
 - [ ] Mode 4 chat page with quick-reply buttons, accessible via BottomNav
 - [ ] AI-suggested activities can be saved to the user's list via `createActivity`
-- [ ] Onboarding flow generates 10-15 personalized activities for new users
+- [ ] `user_memories` table + CRUD endpoints for backend storage
+- [ ] Memories injected into system prompt (activity history + conversational facts)
+- [ ] Onboarding flow generates 10-15 personalized activities AND seeds user memories
 - [ ] Rate limiting: max 10 Mode 4 conversations/day, max 3 onboarding attempts
 - [ ] Token usage logged per request
 - [ ] Graceful error handling: API down → friendly message, malformed JSON → skip save
