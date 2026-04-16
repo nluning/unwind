@@ -8,16 +8,29 @@ This is where the app goes from "useful tool" to "smart tool."
 
 ## Learning approach
 
-Review-based learning continues. AI integration is new territory — almost
-everything here is a new concept (Claude API, prompt engineering, streaming,
-SSE). The default is **AI writes, you review** for all new-concept chunks.
-🔧 try-first only appears where you're applying a pattern you've already
-learned (writing a Vue composable, building a Fastify route structure, writing
-tests).
+Review-based learning continues, but the question level has shifted. Fastify
+routes, auth middleware, CRUD endpoints, and raw SQL are now known patterns —
+review questions at the code-reading level are no longer productive. See
+`08-review-based-learning.md` § "How questions evolve" for the full rationale.
 
-**Understand deeply:** how system prompts shape model behavior, how token usage
-drives cost, streaming mechanics, and privacy implications of sending user data
-to an external API.
+**What's new in this stage (AI writes, review deeply):**
+- Claude API integration, prompt engineering, streaming/SSE (Chunks 1-6, done)
+- System prompt design: how context injection shapes model behavior
+- Memory architecture: consent model, data flow from onboarding → storage →
+  prompt injection, privacy implications
+- Onboarding as a design problem: conversation vs. form, what to persist
+
+**What's now a known pattern (try-first or skip review):**
+- Fastify route structure, schema validation, auth middleware
+- SQL migrations, CRUD queries, parameterized queries
+- Vue composables, page components, i18n wiring
+- Transaction handling (learned in Chunk 7)
+
+**Review questions should focus on:**
+- Design decisions and their trade-offs (why opt-in vs. opt-out?)
+- Cross-component data flow (how does a fact get from chat → database → prompt?)
+- Privacy and consent reasoning (what data crosses what boundaries?)
+- System-level consequences (what breaks if X fails halfway through?)
 
 **Lookup:** Anthropic SDK API, streaming event types, SSE format.
 
@@ -212,7 +225,17 @@ If the conversation approach doesn't produce good results, fall back to a
 structured form + AI enrichment (user picks preferences via UI, backend sends
 them to Claude as a single prompt to generate the list).
 
-**Decision point:** conversation or form? Document the choice and why.
+**Decision (2026-04-16): form, not conversation.** The review panel showed
+that 5/7 personas consider typing a dealbreaker when depleted, and both Fatima
+and Daan would abandon onboarding over 60 seconds. A tappable form (4 screens,
+no typing) collects structured preferences, then one API call generates
+activities + memories. See `onboardingPrompt.ts` for the prompt. Tested with
+3 profiles — JSON consistently parseable, 10-15 activities, 3-5 memories,
+personalization meaningful across profiles.
+
+**Model decision (2026-04-16): Haiku, not Sonnet.** Keeping costs small for
+~100 users. Haiku produced clean structured JSON in all test runs. Can upgrade
+to Sonnet later if output quality needs improvement.
 
 ### Step 10: Onboarding backend endpoint
 
@@ -220,11 +243,11 @@ them to Claude as a single prompt to generate the list).
 new pattern. The route skeleton is familiar, but the parsing + bulk insert
 logic is new.
 
-- `POST /onboarding/generate` — takes the conversation history (or form data)
-  and returns a list of activities
-- Use `claude-sonnet-4-6` for onboarding (better at structured generation)
-- Parse the JSON array response, validate each activity, insert into the
-  database via batch `INSERT`
+- `POST /onboarding/generate` — takes form data (setting, social, interests)
+- Use `claude-haiku-4-5-20251001` (Haiku — sufficient for structured generation)
+- Parse the JSON response, validate activities + memories, batch insert into
+  the database
+- Also seeds `user_memories` via the batch endpoint logic
 - Return the created activities to the frontend
 
 ### Step 11: Onboarding frontend flow
@@ -322,37 +345,30 @@ an external SDK is a new pattern).
 | 4     | Chat composable (frontend)        | 3            | `useChat.ts` (new)              | ✅ Done |
 | 5     | Chat page + enable nav tab        | 4            | `ChatPage.vue` (new), router    | ✅ Done |
 | 6     | Structured output parsing + save  | 4, 5         | `useChat.ts`, `ChatPage.vue`    | ✅ Done |
-| 7     | Memory storage layer              | 1            | migration, `memory.ts` (new)    |        |
-| 8     | Inject memories into system prompt| 7            | `buildSystemPrompt.ts`          |        |
-| 9     | Onboarding prototype (prompt)     | 7            | scripts / manual testing        |        |
-| 10    | Onboarding endpoint + UI          | 8, 9         | `onboarding.ts` (new), frontend |        |
-| 11    | Rate limiting                     | 2            | middleware                      |        |
-| 12    | Tests                             | all          | `tests/`                        |        |
+| 7     | Memory storage layer              | 1            | migration, `memory.ts` (new)    | ✅ Done |
+| 8     | Inject memories into system prompt| 7            | `buildSystemPrompt.ts`          | ✅ Done |
+| 9     | Onboarding prototype (prompt)     | 7            | scripts / manual testing        | ✅ Done |
+| 10    | Onboarding endpoint + UI          | 8, 9         | `onboarding.ts` (new), frontend | ✅ Done |
+| 11    | Rate limiting                     | 2            | middleware                      | ✅ Done |
+| 12    | Tests                             | all          | `tests/`                        | ✅ Done |
 
-Chunks 1-6 are the main path (Mode 4) — complete.
-
-Chunks 7-8 are the memory storage layer, pulled forward from the AI memory
-plan (see `12-ai-memory.md`). Only the backend storage + prompt injection is
-built here — the user-facing memory management page (view/edit/delete/toggle)
-stays in Stage 7 (polish). This reordering ensures the onboarding conversation
-(Chunks 9-10) can seed user memories alongside generating activities, instead
-of losing those preference signals.
+All 12 chunks complete (2026-04-16).
 
 ---
 
 ## Definition of done
 
-- [ ] `POST /chat` proxies to Claude API with a system prompt
-- [ ] Streaming responses via SSE — text appears word-by-word in the UI
-- [ ] Mode 4 chat page with quick-reply buttons, accessible via BottomNav
-- [ ] AI-suggested activities can be saved to the user's list via `createActivity`
-- [ ] `user_memories` table + CRUD endpoints for backend storage
-- [ ] Memories injected into system prompt (activity history + conversational facts)
-- [ ] Onboarding flow generates 10-15 personalized activities AND seeds user memories
-- [ ] Rate limiting: max 10 Mode 4 conversations/day, max 3 onboarding attempts
-- [ ] Token usage logged per request
-- [ ] Graceful error handling: API down → friendly message, malformed JSON → skip save
-- [ ] All strings through vue-i18n (Dutch)
-- [ ] Integration tests for chat endpoint (mocked API) and parsing logic
+- [x] `POST /chat` proxies to Claude API with a system prompt
+- [x] Streaming responses via SSE — text appears word-by-word in the UI
+- [x] Mode 4 chat page accessible via BottomNav (text input, not quick-reply buttons — quick-replies deferred to Stage 7)
+- [x] AI-suggested activities can be saved to the user's list via `createActivity`
+- [x] `user_memories` table + CRUD + batch endpoints for backend storage
+- [x] Memories injected into system prompt (activity history + user memories)
+- [x] Onboarding flow generates 10-15 personalized activities AND seeds user memories
+- [x] Rate limiting: 70 chat requests/day (≈7 conversations), 3 onboarding attempts total
+- [x] Token usage logged per request
+- [x] Graceful error handling: API down → friendly message, malformed JSON → skip save
+- [x] All strings through vue-i18n (Dutch)
+- [x] Tests for memory CRUD, rate limiting, and onboarding response parsing
 - [ ] You can explain: how streaming works (SSE), how system prompts shape behavior,
       how token usage drives cost, what data is sent to the external API

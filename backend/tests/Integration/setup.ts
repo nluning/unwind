@@ -14,7 +14,8 @@
 
   export async function truncateAll(app: FastifyInstance) {
     await app.pg.query(`
-      TRUNCATE activities, activity_categories, usage_events, categories, users
+      TRUNCATE activities, activity_categories, usage_events, categories,
+               user_memories, api_usage, users
       CASCADE
     `)
   }

@@ -42,12 +42,36 @@ When a pattern repeats (e.g. the second route that uses the auth middleware),
 predict what the code will look like before seeing it. This is the real test
 of whether review-based learning sticks.
 
-## When to break the pattern
+## How questions evolve with the project
 
-If you say "I could write this one myself" — do it. The review approach
-isn't a rule, it's a default. Writing code when you feel ready is always
-better than reviewing code you already understand.
+The Why / What if / Trace framework stays, but the *level* shifts as
+patterns become familiar.
 
-## Session log
+### Stages 0-2 (base layers: SQL, auth, routes)
 
-Session logs are maintained in `docs/plan/archive/session-log.md`.
+Everything is new. Questions target code-level understanding:
+- **Why** hash the token before storing it?
+- **What if** you remove `httpOnly` from the cookie?
+- **Trace** a login request from HTTP to cookie.
+
+These verify you can read and reason about the code in front of you.
+
+### Stage 5+ (AI integration, system design)
+
+Route structure, auth middleware, CRUD endpoints, SQL queries — these are
+known patterns. Asking "what does this query return?" is no longer useful.
+
+Questions shift to **system-level reasoning**:
+- **Why** — design decisions, not code mechanics. "Why default
+  `memory_enabled` to false instead of true?" (consent model, not syntax)
+- **What if** — cross-component consequences. "What if onboarding saves
+  memories one-by-one instead of in a transaction?" (atomicity, partial
+  failure, data integrity)
+- **Trace** — data flow across boundaries. "Trace how a user preference
+  from onboarding ends up in a Mode 4 system prompt." (spans: database →
+  query → prompt builder → Claude API)
+
+The pattern: as implementation becomes familiar, questions move from
+"can you read this code?" to "can you reason about the system?"
+
+

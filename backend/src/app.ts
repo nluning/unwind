@@ -5,6 +5,8 @@
   import activityRoutes from './routes.js'
   import authRoutes from './routes/auth.js'
 import chatRoutes from './routes/chat.js'
+import memoryRoutes from './routes/memory.js'
+import onboardingRoutes from './routes/onboarding.js'
 
   export async function buildApp() {
     const fastify = Fastify({ logger: true })
@@ -18,6 +20,8 @@ import chatRoutes from './routes/chat.js'
     await fastify.register(authRoutes)
     await fastify.register(activityRoutes)
     await fastify.register(chatRoutes)
+    await fastify.register(memoryRoutes)
+    await fastify.register(onboardingRoutes)
 
     return fastify
   }

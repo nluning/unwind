@@ -23,37 +23,29 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 ## Project status
 
-**Stage 5 — AI integration (in progress).**
-Stages 0-2 complete (API, database, auth — 52 tests green). Stage 3 modes 1-3
-frontend complete: three mode pages (Suggest, Stress, Counterbalance) with
-shared `useSuggestionFlow` composable, ActivityCard component, BottomNav with
-active state detection, `createActivity` composable ready for Mode 4, usage
-event tracking, and Dutch i18n. UnoCSS migration complete: all scoped CSS
-replaced with utility classes referencing CSS custom property theme tokens.
-Six theme variants (calm, warm, playful × dark/light) with `useTheme`
-composable and `ThemeSelector` component, stored in localStorage. Dark mode
-is the default (less intense for overstimulated users). CSS custom property
-tokens include `--c-card` for dark-mode card separation. Loading spinners, error
-states with retry, and exhausted states added to all mode pages. `LinkButton`
-shared component extracted. Frontend tests moved to separate branch.
-Mobile-first styling (Step 15) still deferred.
+**Stage 5 — AI integration (complete).**
+Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
+themes, loading/error states). Six theme variants (calm/warm/playful × dark/light)
+with `useTheme` composable. Dark mode default. `LinkButton` shared component.
+Mobile-first styling still deferred.
 
-Stage 5 progress (Chunks 1-6 of 10 done):
-- Chunks 1-2: `POST /chat` + `/chat/stream` endpoints with auth, Fastify
-  schema validation, Anthropic SDK (Haiku), SSE streaming, token usage logging,
-  error handling (429/503), manual CORS headers for SSE
-- System prompt: adaptive tone (stress-aware), Dutch-first with language
-  switching, JSON activity format, soft/hard conversation limits (20 messages)
-- `buildSystemPrompt()` for per-request context injection (stress level,
-  categories done today, message count warnings)
-- Chunks 3-5: `useChat` composable (streaming via EventSource), ChatPage.vue
-  with message list, input, "Nieuw gesprek" reset, auto-scroll, route +
-  BottomNav wiring
-- Chunk 6: `parseActivity.ts` — JSON extraction (fenced + bare strategies),
-  `toCreatePayload` mapping, save button in chat UI
-- Next: Chunk 7 (memory storage layer), Chunk 8 (memory → system prompt),
-  Chunk 9 (onboarding prototype), Chunk 10 (onboarding endpoint + UI),
-  Chunk 11 (rate limiting), Chunk 12 (tests)
+Stage 5 (all 12 chunks done):
+- Mode 4 chat: `POST /chat` + `/chat/stream` with auth, Anthropic SDK (Haiku),
+  SSE streaming, token usage logging, error handling (429/503)
+- `buildSystemPrompt.ts`: per-request context injection — user memories,
+  activity patterns (accept/skip history), stress level, conversation limits
+- `useChat` composable, ChatPage.vue with streaming, auto-scroll, reset
+- `parseActivity.ts`: JSON extraction, save-to-list button in chat UI
+- Memory system: `user_memories` table, CRUD + batch endpoints, `memory_enabled`
+  consent flag (default false, opt-in via onboarding)
+- Onboarding: tappable form (setting/social/interests), Claude generates 10-15
+  personalized activities + 3-5 user memories in one API call, batch-inserted
+  in a single transaction. Decision: form over conversation (review panel showed
+  typing is a dealbreaker for depleted users). Uses Haiku (sufficient quality).
+- Rate limiting: `api_usage` table, 70 chat requests/day (≈7 conversations),
+  3 onboarding attempts total. `createRateLimiter` middleware factory.
+- Tests: memory CRUD, rate limiting, onboarding response parsing
+- First user review panel run: `docs/review/reports/001-general-concept.md`
 
 ## Key decisions
 

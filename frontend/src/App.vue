@@ -5,7 +5,7 @@ import BottomNav from './components/BottomNav.vue'
 import ThemeSelector from './components/ThemeSelector.vue'
 
 const route = useRoute()
-const showNav = computed(() => route.meta.public !== true)
+const showNav = computed(() => route.meta.public !== true && route.meta.onboarding !== true)
 </script>
 
 <template>

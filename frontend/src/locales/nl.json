@@ -66,9 +66,28 @@
   },
   "onboarding": {
     "heading": "Laten we je lijst personaliseren",
+    "intro": "We stellen een paar snelle vragen zodat Unwind activiteiten kan voorstellen die bij jou passen.",
+    "consentQuestion": "Mag Unwind onthouden wat je vertelt?",
+    "consentYes": "Ja, prima",
+    "consentNo": "Liever niet",
+    "next": "Verder",
+    "settingQuestion": "Waar ontspan je het liefst?",
+    "settingIndoor": "Binnen",
+    "settingOutdoor": "Buiten",
+    "settingBoth": "Maakt niet uit",
+    "socialQuestion": "Alleen of met anderen?",
+    "socialAlone": "Alleen",
+    "socialWithOthers": "Met iemand",
+    "socialBoth": "Allebei prima",
+    "interestsQuestion": "Wat spreekt je aan?",
+    "interestsHint": "Kies er zoveel als je wilt, of geen.",
+    "generate": "Maak mijn lijst",
     "skip": "Sla over",
     "generating": "Activiteiten aan het genereren...",
-    "done": "Klaar! {count} activiteiten toegevoegd."
+    "doneHeading": "Klaar!",
+    "done": "{count} activiteiten toegevoegd op basis van je voorkeuren.",
+    "start": "Aan de slag",
+    "error": "Er ging iets mis. Probeer het opnieuw."
   },
   "theme": {
     "calm": "Rustig",
@@ -85,7 +104,7 @@
   "activities": {
     "listen-to-a-podcast-episode": {
       "title": "Luister naar een podcastaflevering",
-      "description": "Kies iets luchtigs — comedy, verhalen of een onderwerp dat je leuk vindt. Niets werkgerelateerd."
+      "description": "Kies iets luchtigs — comedy, verhalen of een onderwerp dat je leuk vindt. Niets werkgerelateerds."
     },
     "do-a-crossword-or-word-puzzle": {
       "title": "Doe een kruiswoordpuzzel of woordpuzzel",

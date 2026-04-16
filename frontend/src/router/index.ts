@@ -15,6 +15,12 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/onboarding',
+      name: 'onboarding',
+      component: () => import('../pages/OnboardingPage.vue'),
+      meta: { onboarding: true },
+    },
+    {
       path: '/suggest',
       name: 'suggest',
       component: () => import('../pages/SuggestPage.vue'),
@@ -50,6 +56,14 @@ router.beforeEach(async (to) => {
 
   if (to.name === 'login' && isLoggedIn.value) {
     return { name: 'suggest' }
+  }
+
+  // Redirect to onboarding if not completed yet
+  const onboardingDone = localStorage.getItem('unwind-onboarding-done') === 'true'
+  const isOnboardingRoute = to.meta.onboarding === true
+
+  if (isLoggedIn.value && !onboardingDone && !isOnboardingRoute && !isPublic) {
+    return { name: 'onboarding' }
   }
 })
 

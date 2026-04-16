@@ -1,51 +1,14 @@
 import type { FastifyInstance } from 'fastify'
 import Anthropic from '@anthropic-ai/sdk'
 import { requireAuth } from '../middleware/auth.js'
+import { createRateLimiter } from '../middleware/rateLimit.js'
+import { buildSystemPrompt, getUserContext, MAX_MESSAGES } from './buildSystemPrompt.js'
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `You are a creative assistant who speaks to the point and helps the user think of an activity they can do to relax and wind down. The user is most probably neurodivergent (autism, ADHD and/or gifted), so they probably have trouble slowing down once they are stressed, once they have 'empty time' on their hands, and just because their brains don't like slowing down. You will help them find some peace and joy by suggesting activities they could do without overwhelming them: the conversation is meant to be short and simple. You speak to the point. Maximum exchanges = 10.
-
-You speak the language that the user uses.
-
-In coming up with new activities, you are creative and think outside of the box. You start by asking questions to understand the user's state of mind, in order to come up with suggestions that are both new and creative, as well as fitting within the parameters that the user sets. 
-Examples include: whether the user wants high or low stimuli, if they want to retreat or rather go out, if they need calm or action instead, if they feel creative or need structure.
-
-Don't ask for identifying information (name, location, contact details).
-
-If the user does not want to answer questions, just come up with activities that are creative and outside of the box.
-
-When you suggest an activity, always include a JSON block with this format:
-\`\`\`json
-{ "title": "...", "description": "...", "category": "Head|Heart|Hands", "duration_minutes": N, "min_stress": N, "max_stress": N }
-\`\`\``
-
-const MAX_MESSAGES = 20
-
-function buildSystemPrompt(messageCount: number, stressLevel?: number, categoriesDone?: string[]): string {
-    const context: string[] = []
-
-    if (stressLevel) {
-        context.push(`User's current stress level: ${stressLevel}/5`)
-    }
-
-    if (categoriesDone && categoriesDone.length > 0) {
-        context.push(`Categories already done today: ${categoriesDone.join(', ')}`)
-    }
-
-    const remaining = MAX_MESSAGES - messageCount
-    if (remaining <= 2) {
-        context.push(`This is the last message in this conversation. Tell the user they can start a new conversation if they'd like to continue.`)
-    } else if (remaining <= 6) {
-        context.push(`This conversation has ${remaining} messages left. Wrap up by making a suggestion soon.`)
-    }
-
-    if (context.length === 0) return SYSTEM_PROMPT
-
-    return SYSTEM_PROMPT + `\n\nContext for this conversation:\n${context.join('\n')}`
-}
-
 async function chatRoutes(fastify: FastifyInstance) {
+    const chatRateLimit = createRateLimiter({ endpoint: 'chat', maxRequests: 70, window: 'day' })
+
     const postBodySchema = {
         body: {
             type: 'object',
@@ -71,14 +34,16 @@ async function chatRoutes(fastify: FastifyInstance) {
 
     fastify.post<{ Body: { messages: Array<{ role: 'user' | 'assistant'; content: string }>; stress_level?: number } }>(
         '/chat',
-        { schema: postBodySchema, preHandler: requireAuth },
+        { schema: postBodySchema, preHandler: [requireAuth, chatRateLimit] },
         async (request, reply) => {
             const { messages, stress_level } = request.body
+            const userContext = await getUserContext(fastify.pg, request.user!.id)
 
-            // TODO: query today's categories from usage_events
-            const categoriesDone: string[] = []
-
-            const systemPrompt = buildSystemPrompt(messages.length, stress_level, categoriesDone)
+            const systemPrompt = buildSystemPrompt({
+                messageCount: messages.length,
+                stressLevel: stress_level,
+                userContext,
+            })
 
             try {
                 const response = await client.messages.create({
@@ -125,14 +90,16 @@ async function chatRoutes(fastify: FastifyInstance) {
 
     fastify.post<{ Body: { messages: Array<{ role: 'user' | 'assistant'; content: string }>; stress_level?: number } }>(
         '/chat/stream',
-        { schema: postBodySchema, preHandler: requireAuth },
+        { schema: postBodySchema, preHandler: [requireAuth, chatRateLimit] },
         async (request, reply) => {
             const { messages, stress_level } = request.body
+            const userContext = await getUserContext(fastify.pg, request.user!.id)
 
-            // TODO: query today's categories from usage_events
-            const categoriesDone: string[] = []
-
-            const systemPrompt = buildSystemPrompt(messages.length, stress_level, categoriesDone)
+            const systemPrompt = buildSystemPrompt({
+                messageCount: messages.length,
+                stressLevel: stress_level,
+                userContext,
+            })
 
             // Tell the client this is an SSE stream
             // CORS headers must be set manually here because reply.raw.writeHead()
