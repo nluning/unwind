@@ -11,7 +11,8 @@ export interface AiActivity {
 }
 
 export interface ParsedMessage {
-  text: string
+  textBefore: string
+  textAfter: string
   activity: AiActivity | null
 }
 
@@ -28,7 +29,7 @@ export function parseMessage(content: string): ParsedMessage {
   if (fencedMatch?.[1]) {
     const activity = tryParseActivity(fencedMatch[1])
     if (activity) {
-      return { text: content.replace(fencedMatch[0], '').trim(), activity }
+      return splitAround(content, fencedMatch.index!, fencedMatch[0].length, activity)
     }
   }
 
@@ -39,11 +40,17 @@ export function parseMessage(content: string): ParsedMessage {
   if (bareMatch?.[0]) {
     const activity = tryParseActivity(bareMatch[0])
     if (activity) {
-      return { text: content.replace(bareMatch[0], '').trim(), activity }
+      return splitAround(content, bareMatch.index!, bareMatch[0].length, activity)
     }
   }
 
-  return { text: content, activity: null }
+  return { textBefore: content, textAfter: '', activity: null }
+}
+
+function splitAround(content: string, matchStart: number, matchLength: number, activity: AiActivity): ParsedMessage {
+  const textBefore = content.slice(0, matchStart).trim()
+  const textAfter = content.slice(matchStart + matchLength).trim()
+  return { textBefore, textAfter, activity }
 }
 
 function tryParseActivity(json: string): AiActivity | null {

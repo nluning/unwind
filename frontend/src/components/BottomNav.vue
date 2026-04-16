@@ -5,8 +5,6 @@ const { t } = useI18n()
 
 const tabs = [
   { label: () => t('nav.suggest'), to: '/suggest' },
-  { label: () => t('nav.stress'), to: '/stress' },
-  { label: () => t('nav.counterbalance'), to: '/counterbalance' },
   { label: () => t('nav.chat'), to: '/chat' },
 ] as const
 </script>

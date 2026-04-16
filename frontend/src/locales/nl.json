@@ -62,7 +62,12 @@
     "saved": "Opgeslagen!",
     "rateLimit": "Je hebt je limiet voor vandaag bereikt. Probeer het morgen weer.",
     "error": "Er ging iets mis. Probeer het opnieuw.",
-    "loading": "Aan het nadenken..."
+    "loading": "Aan het nadenken...",
+    "startersHint": "Waar kan ik mee helpen?",
+    "starter1": "Ik ben gestrest",
+    "starter2": "Ik verveel me",
+    "starter3": "Ik kan niet stoppen met werken",
+    "starter4": "Verras me"
   },
   "onboarding": {
     "heading": "Laten we je lijst personaliseren",
@@ -88,6 +93,11 @@
     "done": "{count} activiteiten toegevoegd op basis van je voorkeuren.",
     "start": "Aan de slag",
     "error": "Er ging iets mis. Probeer het opnieuw."
+  },
+  "menu": {
+    "label": "Menu",
+    "theme": "Thema",
+    "logout": "Uitloggen"
   },
   "theme": {
     "calm": "Rustig",

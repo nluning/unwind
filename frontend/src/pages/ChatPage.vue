@@ -1,7 +1,7 @@
 <template>
   <main class="flex flex-col mx-auto w-full max-w-xl" style="height: calc(100vh - 5rem)">
     <div class="px-4 pt-6 pb-2 flex items-center justify-between">
-      <h1 class="text-lg font-600">{{ $t('chat.heading') }}</h1>
+      <h1 class="text-lg font-600">{{ $t('chat.startersHint') }}</h1>
       <button
         v-if="messages.length > 0"
         class="text-xs text-muted cursor-pointer bg-transparent border border-outline rounded-full px-3 py-1 hover:text-dim hover:border-dim"
@@ -28,17 +28,13 @@
 
         <!-- Assistant message -->
         <template v-else>
-          <div class="px-4 py-3 whitespace-pre-wrap">
-            <template v-if="parsed.text">{{ parsed.text }}</template>
-            <template v-else-if="parsed.activity">
-              <span class="font-600">{{ parsed.activity.title }}</span>
-              <template v-if="parsed.activity.description"><br />{{ parsed.activity.description }}</template>
-            </template>
-            <span v-else-if="!parsed.content" class="text-muted italic">{{ $t('chat.loading') }}</span>
+          <!-- Text before activity -->
+          <div v-if="parsed.textBefore" class="px-4 py-3 chat-markdown">
+            <div v-html="renderMarkdown(parsed.textBefore)" />
           </div>
 
           <!-- Parsed activity card + save button -->
-          <div v-if="parsed.activity && !isStreaming" class="mx-3 mb-3 p-3 rounded-xl bg-primary-light border border-outline">
+          <div v-if="parsed.activity && !isStreaming" class="mx-3 my-2 p-3 rounded-xl bg-primary-light border border-outline">
             <p class="font-600 text-sm">{{ parsed.activity.title }}</p>
             <p v-if="parsed.activity.description" class="text-dim text-xs mt-1 leading-relaxed">
               {{ parsed.activity.description }}
@@ -59,6 +55,16 @@
             <p v-else class="mt-2 text-xs text-accepted text-center">
               {{ $t('chat.saved') }}
             </p>
+          </div>
+
+          <!-- Text after activity -->
+          <div v-if="parsed.textAfter" class="px-4 py-3 chat-markdown">
+            <div v-html="renderMarkdown(parsed.textAfter)" />
+          </div>
+
+          <!-- Loading state (no text, no activity yet) -->
+          <div v-if="!parsed.textBefore && !parsed.activity" class="px-4 py-3">
+            <span class="text-muted italic">{{ $t('chat.loading') }}</span>
           </div>
         </template>
       </div>
@@ -88,16 +94,38 @@
         {{ $t('chat.send') }}
       </button>
     </div>
+
+    <!-- Conversation starters -->
+    <div v-if="messages.length === 0" class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
+      <button
+        v-for="starter in starters"
+        :key="starter"
+        class="px-4 py-2.5 rounded-full bg-card border border-outline text-sm text-dim cursor-pointer hover:border-primary hover:text-primary transition-colors"
+        @click="handleStarter(starter)"
+      >
+        {{ starter }}
+      </button>
+    </div>
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useChat } from '../composables/useChat.js'
 import { useActivities } from '../composables/useActivities.js'
 import { parseMessage, toCreatePayload, type AiActivity } from '../utils/parseActivity.js'
+import { renderMarkdown } from '../utils/renderMarkdown.js'
 
+const { t } = useI18n()
 const { messages, isStreaming, error, sendMessage, resetChat } = useChat()
+
+const starters = computed(() => [
+  t('chat.starter1'),
+  t('chat.starter2'),
+  t('chat.starter3'),
+  t('chat.starter4'),
+])
 const { createActivity } = useActivities()
 
 const inputText = ref('')
@@ -109,12 +137,16 @@ const saving = ref<number | null>(null)
 const parsedMessages = computed(() =>
   messages.value.map((message) => {
     if (message.role === 'assistant') {
-      const { text, activity } = parseMessage(message.content)
-      return { ...message, text, activity }
+      const { textBefore, textAfter, activity } = parseMessage(message.content)
+      return { ...message, textBefore, textAfter, activity }
     }
-    return { ...message, text: message.content, activity: null }
+    return { ...message, textBefore: message.content, textAfter: '', activity: null }
   })
 )
+
+function handleStarter(text: string) {
+  sendMessage(text)
+}
 
 function handleSend() {
   const text = inputText.value.trim()
@@ -160,3 +192,29 @@ watch(isStreaming, (streaming) => {
   }
 })
 </script>
+
+<style scoped>
+.chat-markdown :deep(p) {
+  margin: 0;
+}
+.chat-markdown :deep(p + p) {
+  margin-top: 0.5rem;
+}
+.chat-markdown :deep(strong) {
+  font-weight: 600;
+}
+.chat-markdown :deep(ul),
+.chat-markdown :deep(ol) {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+.chat-markdown :deep(li) {
+  margin: 0.25rem 0;
+}
+.chat-markdown :deep(code) {
+  font-size: 0.85em;
+  background: var(--c-surface);
+  padding: 0.1em 0.3em;
+  border-radius: 0.25rem;
+}
+</style>
