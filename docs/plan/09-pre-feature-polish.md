@@ -62,6 +62,8 @@ The AI talks in markdown (bold, lists, etc.) but it currently shows as plain tex
 
 ## Known issues (not fixing now)
 
+- **Suggest mode shows "out of activities" after using Stress/Counterbalance.** Navigating back to Suggestie after using another mode incorrectly reports the activity pool as exhausted. Likely the suggestion flow state isn't resetting when switching modes.
+- **Theme swatch border lines.** The color swatches in ThemeSelector show two shades of grey border/ring that look unintentional. Clean up the active/inactive border styling.
 - **Onboarding flag is browser-scoped, not user-scoped.** `localStorage('unwind-onboarding-done')` persists across logouts. If a different user logs in on the same device, they skip onboarding because the previous user's flag is still set. Fix when adding proper per-user state management.
 
 ---

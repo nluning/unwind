@@ -181,6 +181,8 @@ async function onboardingRoutes(fastify: FastifyInstance) {
                             'INSERT INTO activity_categories (activity_id, category_id) VALUES ($1, $2)',
                             [inserted.id, categoryId]
                         )
+                    } else {
+                        fastify.log.warn({ category: activity.category, title: activity.title }, 'Unknown category from AI — skipping category link')
                     }
                 }
 
