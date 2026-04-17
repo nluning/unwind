@@ -1,6 +1,6 @@
 ---
 name: Unwind project status
-description: Current build stage — Stage 5 (AI integration) complete as of 2026-04-16. All 12 chunks done. Next is Stage 7 (polish).
+description: Current build stage — Stage 6 (deployment) in progress. Phase 1 (Docker) complete as of 2026-04-17. Next is VPS + HTTPS.
 type: project
 ---
 
@@ -17,10 +17,14 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Tests for memory CRUD, rate limiting, onboarding response parsing
 - First user review panel run (7 personas, report at docs/review/reports/)
 
+**Stage 6 — Deployment (in progress, 2026-04-17):**
+- Phase 0 done: env var startup validation, `DELETE /me` endpoint, privacy page, delete-account in menu
+- Phase 1 done: backend + frontend Dockerfiles (multi-stage), nginx.conf (API proxy + SSE), docker-compose.production.yml, tested locally and working
+- Phase 0.4 (bug fixes) deferred — not blocking deployment
+- Next: Phase 2 (VPS setup) + Phase 3 (nginx + HTTPS)
+
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
 - Memory consent is opt-in (default false, asked during onboarding)
 - Using Haiku for both chat and onboarding (sufficient quality, lower cost)
 - Rate limiting counts API requests, not conversations (70/day ≈ 7 conversations)
-
-**Next:** Stage 7 (polish) — user-facing memory management, post-conversation fact extraction, mobile styling, and the review panel findings (nav redesign, stress scale rethink, chat quick-replies).

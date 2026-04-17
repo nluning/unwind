@@ -23,7 +23,7 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 ## Project status
 
-**Stage 5 — AI integration (complete).**
+**Stage 6 — Deployment (in progress, Phase 1 complete).**
 Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
 themes, loading/error states). Six theme variants (calm/warm/playful × dark/light)
 with `useTheme` composable. Dark mode default. `LinkButton` shared component.
@@ -46,6 +46,15 @@ Stage 5 (all 12 chunks done):
   3 onboarding attempts total. `createRateLimiter` middleware factory.
 - Tests: memory CRUD, rate limiting, onboarding response parsing
 - First user review panel run: `docs/review/reports/001-general-concept.md`
+
+Stage 6 progress (see `docs/plan/10-deployment-plan.md`):
+- Phase 0 (pre-deployment fixes): env var validation on startup, `DELETE /me`
+  endpoint with cascade cleanup, `PrivacyPage.vue` with Dutch GDPR notice,
+  delete-account button in UserMenu. Bug fixes deferred.
+- Phase 1 (Docker): backend + frontend Dockerfiles (multi-stage), nginx.conf
+  with API proxy + SSE support, `docker-compose.production.yml` (db, backend,
+  frontend), tested locally and working. Host binding set to `0.0.0.0`.
+- Next: Phase 2 (VPS setup) + Phase 3 (nginx + HTTPS)
 
 ## Key decisions
 

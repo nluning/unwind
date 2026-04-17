@@ -1,5 +1,7 @@
 # Going live — deployment plan
 
+**Current status: Phase 1 complete — Docker builds and runs locally. Not deployed yet.**
+
 ## What this document covers
 
 Everything between "it works on my laptop" and "someone can open a URL and use
@@ -54,6 +56,35 @@ machine.
 
 ---
 
+## Safe stopping points between phases
+
+Deployment is multi-session work. "Safe to stop" has two dimensions: the infra
+is stable when you come back, *and* nobody else is exposed to a half-finished
+system.
+
+Three guilt-free walkaway points:
+
+- **After Phase 1** — nothing running, nothing exposed, no running costs.
+  The cleanest pause.
+- **After Phase 3** — live + HTTPS. The "works on the internet" milestone.
+  Don't share the URL yet (no monitoring, no fail2ban).
+- **After Phase 5** — first point where inviting real users is genuinely
+  low-risk.
+
+**Avoid stopping after Phase 2.** HTTP-only, `secure: true` cookies don't work
+in a real browser, and bots probe SSH within hours of the VPS existing.
+Phases 2 and 3 are really one unit — budget them together.
+
+Pairings to treat as atomic:
+
+- **2 + 3** — exposing a service and securing it are halves of one action.
+- **4 + 5** — monitoring + hardening together, before inviting users.
+
+Keep a `Current status:` line at the top of this file (e.g. *"Phase 3 complete,
+not yet user-safe — don't share URL"*) so future-you doesn't ship prematurely.
+
+---
+
 ## Phase 0 — Pre-deployment fixes
 
 Before anything goes on a server, fix the things that would be security issues
@@ -73,8 +104,8 @@ The app should refuse to start rather than run with an insecure default.
 degrade security. This pattern (validate env vars at startup) applies to every
 backend you'll ever build.
 
-- [ ] Add env var validation on server startup: require `FRONTEND_URL` and
-  `DATABASE_URL` when `NODE_ENV=production`
+- [x] Add env var validation on server startup: require `FRONTEND_URL`
+  when `NODE_ENV=production`
 - [ ] Remove the `?? ''` fallback in the SSE CORS header
 
 *Label: try-first.* You've written Fastify config before. Check how other
@@ -94,9 +125,9 @@ deletes are powerful — one `DELETE FROM users WHERE id = $1` wipes activities,
 memories, usage events, sessions, and API usage records. That's the payoff of
 designing your foreign keys correctly in Stage 1.
 
-- [ ] Add `DELETE /me` endpoint (auth required)
-- [ ] Invalidate the user's session after deletion
-- [ ] Return 204 No Content on success
+- [x] Add `DELETE /me` endpoint (auth required)
+- [x] Invalidate the user's session after deletion (clearCookie)
+- [x] Return 204 No Content on success
 
 *Label: try-first.* You know the route + auth middleware pattern.
 
@@ -114,9 +145,9 @@ to Anthropic, and what their rights are. This doesn't need to be legal jargon
 - How to delete your account (once the endpoint exists)
 - Contact info (your email)
 
-- [ ] Create `PrivacyPage.vue` with the notice in Dutch
-- [ ] Add route `/privacy`
-- [ ] Link to it from the user menu and login page
+- [x] Create `PrivacyPage.vue` with the notice in Dutch
+- [x] Add route `/privacy` (public, no auth required)
+- [x] Link to it from the user menu and login page
 
 *Label: try-first for the route/page, AI helps with the Dutch GDPR content.*
 
@@ -168,24 +199,24 @@ on the server.
 
 ### Steps
 
-- [ ] **1.1 Backend Dockerfile** — multi-stage build:
+- [x] **1.1 Backend Dockerfile** — multi-stage build:
   - Stage 1 (`builder`): install deps, compile TypeScript with `tsc`
   - Stage 2 (`runtime`): copy compiled JS + production `node_modules`, run with
     `node`
   - Expose port 3000
-- [ ] **1.2 Frontend Dockerfile** — multi-stage build:
+- [x] **1.2 Frontend Dockerfile** — multi-stage build:
   - Stage 1: install deps, run `vite build`
   - Stage 2: copy the `dist/` folder into an nginx image that serves static
     files
   - This means the frontend container *is* an nginx that serves your Vue app
-- [ ] **1.3 `.dockerignore`** files for both — exclude `node_modules`, `.env`,
+- [x] **1.3 `.dockerignore`** files for both — exclude `node_modules`, `.env`,
   `dist/`, `.git`
-- [ ] **1.4 `docker-compose.production.yml`** — orchestrates all three services:
+- [x] **1.4 `docker-compose.production.yml`** — orchestrates all three services:
   - `db` (PostgreSQL, with a volume for data persistence)
   - `backend` (your Fastify app, connects to `db`)
   - `frontend` (nginx serving Vue, proxies `/api` to `backend`)
   - Environment variables passed via `env_file` or `environment` block
-- [ ] **1.5 Test locally** — `docker-compose -f docker-compose.production.yml up --build`
+- [x] **1.5 Test locally** — `docker-compose -f docker-compose.production.yml up --build`
   should start the entire app. Register, use all modes, chat. If it works here,
   it'll work on the server.
 
