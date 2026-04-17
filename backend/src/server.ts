@@ -1,6 +1,11 @@
 import 'dotenv/config'
 import { buildApp } from './app.js'
 
+if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_URL) {
+  console.error('URL cannot be found')
+  process.exit(1)
+}
+
 const fastify = await buildApp()
 fastify.log.level = 'info'
 

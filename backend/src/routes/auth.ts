@@ -127,6 +127,23 @@ async function authRoutes(fastify: FastifyInstance) {
     }
   )
 
+  // --- DELETE /me ---
+
+  fastify.delete(
+    '/me',
+    { preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.user!.id
+
+      await fastify.pg.query('DELETE FROM users WHERE id = $1', [userId])
+
+      reply
+        .clearCookie('session', { path: '/' })
+        .status(204)
+        .send()
+    }
+  )
+
   // --- POST /auth/device ---
 
   const deviceSchema = {

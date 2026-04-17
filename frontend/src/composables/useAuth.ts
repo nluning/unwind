@@ -60,6 +60,12 @@ export function useAuth() {
     localStorage.removeItem('unwind-user')
   }
 
+  async function deleteAccount() {
+    await api('/me', { method: 'DELETE' })
+    user.value = null
+    localStorage.removeItem('unwind-user')
+  }
+
   return {
     user,
     isLoggedIn,
@@ -70,5 +76,6 @@ export function useAuth() {
     register,
     deviceLogin,
     logout,
+    deleteAccount,
   }
 }

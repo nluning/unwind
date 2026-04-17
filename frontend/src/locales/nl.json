@@ -97,7 +97,35 @@
   "menu": {
     "label": "Menu",
     "theme": "Thema",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "deleteAccount": "Account verwijderen",
+    "deleteConfirm": "Weet je het zeker? Dit kan niet ongedaan worden."
+  },
+  "privacy": {
+    "link": "Privacyverklaring",
+    "heading": "Privacyverklaring",
+    "back": "Terug",
+    "whatWeStoreHeading": "Wat we opslaan",
+    "whatWeStore": "Unwind slaat het volgende op om de app te laten werken:",
+    "storeAccount": "Je account (e-mailadres of een anonieme apparaat-ID)",
+    "storeActivities": "Je persoonlijke activiteitenlijst",
+    "storeUsage": "Welke suggesties je accepteert of overslaat, zodat we betere suggesties kunnen doen",
+    "storeMemories": "Persoonlijke voorkeuren (\"herinneringen\") — alleen als je daar toestemming voor geeft",
+    "aiHeading": "Wat we delen met AI",
+    "aiExplanation": "De chatfunctie en onboarding maken gebruik van Claude, een AI-model van Anthropic. Wanneer je chat stuurt Unwind het volgende naar Anthropic:",
+    "aiMessages": "Je chatberichten",
+    "aiMemories": "Je opgeslagen herinneringen (als je die hebt ingeschakeld)",
+    "aiStress": "Je stressniveau (als je dat hebt aangegeven)",
+    "aiNoTraining": "Anthropic gebruikt API-data niet om hun modellen te trainen. Je gegevens worden alleen verwerkt om een antwoord te genereren.",
+    "controlHeading": "Wat je zelf kunt doen",
+    "controlExplanation": "Je hebt controle over je gegevens:",
+    "controlMemoriesOff": "Herinneringen kun je uitzetten — dan wordt er niets persoonlijks opgeslagen of gedeeld met AI",
+    "controlDeleteMemories": "Je kunt individuele herinneringen verwijderen",
+    "controlDeleteAccount": "Je kunt je account volledig verwijderen via het menu — al je gegevens worden dan gewist",
+    "chatDataHeading": "Chatgesprekken",
+    "chatDataExplanation": "Unwind slaat je chatgesprekken niet op. Zodra je het gesprek afsluit of een nieuw gesprek begint, zijn de berichten weg. Ze worden niet bewaard op onze server.",
+    "contactHeading": "Contact",
+    "contactExplanation": "Heb je vragen over je gegevens of wil je iets laten verwijderen? Neem contact op via het e-mailadres in je accountinstellingen."
   },
   "theme": {
     "calm": "Rustig",

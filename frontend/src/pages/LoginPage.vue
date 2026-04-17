@@ -55,6 +55,13 @@
     >
       {{ $t('auth.deviceButton') }}
     </button>
+
+    <router-link
+      to="/privacy"
+      class="text-xs text-muted hover:text-primary transition-colors no-underline mt-4"
+    >
+      {{ $t('privacy.link') }}
+    </router-link>
   </main>
 </template>
 

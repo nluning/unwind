@@ -15,6 +15,12 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/privacy',
+      name: 'privacy',
+      component: () => import('../pages/PrivacyPage.vue'),
+      meta: { public: true },
+    },
+    {
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('../pages/OnboardingPage.vue'),

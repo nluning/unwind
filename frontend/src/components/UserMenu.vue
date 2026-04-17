@@ -41,6 +41,14 @@
         {{ $t('nav.counterbalance') }}
       </router-link>
 
+      <router-link
+        to="/privacy"
+        class="block px-4 py-2.5 text-sm text-dim hover:text-primary transition-colors no-underline"
+        @click="open = false"
+      >
+        {{ $t('privacy.link') }}
+      </router-link>
+
       <div class="border-t border-outline my-1" />
 
       <!-- Logout -->
@@ -49,6 +57,24 @@
         @click="handleLogout"
       >
         {{ $t('menu.logout') }}
+      </button>
+
+      <div class="border-t border-outline my-1" />
+
+      <!-- Delete account -->
+      <button
+        v-if="!confirmingDelete"
+        class="w-full text-left px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-none hover:text-error transition-colors"
+        @click="confirmingDelete = true"
+      >
+        {{ $t('menu.deleteAccount') }}
+      </button>
+      <button
+        v-else
+        class="w-full text-left px-4 py-2.5 text-sm text-error cursor-pointer bg-transparent border-none font-bold"
+        @click="handleDeleteAccount"
+      >
+        {{ $t('menu.deleteConfirm') }}
       </button>
     </div>
   </div>
@@ -60,15 +86,23 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import ThemeSelector from './ThemeSelector.vue'
 
-const { logout } = useAuth()
+const { logout, deleteAccount } = useAuth()
 const router = useRouter()
 
 const open = ref(false)
+const confirmingDelete = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
 
 async function handleLogout() {
   open.value = false
   await logout()
+  router.push('/login')
+}
+
+async function handleDeleteAccount() {
+  open.value = false
+  confirmingDelete.value = false
+  await deleteAccount()
   router.push('/login')
 }
 
