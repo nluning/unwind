@@ -82,7 +82,7 @@
         v-model="inputText"
         :placeholder="$t('chat.placeholder')"
         :disabled="isStreaming"
-        class="flex-1 px-4 py-2.5 rounded-full bg-card border border-outline text-sm outline-none disabled:opacity-40"
+        class="flex-1 px-4 py-2.5 rounded-full bg-card text-sm outline-none disabled:opacity-40"
         style="color: var(--c-text)"
         @keydown.enter="handleSend"
       />
@@ -100,7 +100,7 @@
       <button
         v-for="starter in starters"
         :key="starter"
-        class="px-4 py-2.5 rounded-full bg-card border border-outline text-sm text-dim cursor-pointer hover:border-primary hover:text-primary transition-colors"
+        class="px-4 py-2.5 rounded-full bg-card text-sm text-dim cursor-pointer hover:text-primary transition-colors"
         @click="handleStarter(starter)"
       >
         {{ starter }}

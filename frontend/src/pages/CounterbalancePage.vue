@@ -62,9 +62,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useActivities, CATEGORY_ID_MAP } from '../composables/useActivities.js'
-import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
+import {
+  useSuggestionFlow,
+  excludedCategoriesState,
+} from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
 import LinkButton from '../components/LinkButton.vue'
 
@@ -72,7 +75,7 @@ const categories = Object.keys(CATEGORY_ID_MAP)
 
 const { loaded, error, fetchActivities, filterByExcludedCategories } = useActivities()
 
-const excluded = ref<string[]>([])
+const excluded = excludedCategoriesState
 
 const pool = computed(() =>
   excluded.value.length > 0 ? filterByExcludedCategories(excluded.value) : []

@@ -57,15 +57,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useActivities } from '../composables/useActivities.js'
-import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
+import {
+  useSuggestionFlow,
+  stressLevelState,
+} from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
 import LinkButton from '../components/LinkButton.vue'
 
 const { loaded, error, fetchActivities, filterByStress } = useActivities()
 
-const stressLevel = ref<number | null>(null)
+const stressLevel = stressLevelState
 
 const pool = computed(() =>
   stressLevel.value ? filterByStress(stressLevel.value) : []

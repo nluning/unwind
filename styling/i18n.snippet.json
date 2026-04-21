@@ -1,0 +1,33 @@
+{
+  "_note": "Merge into src/locales/nl.json. Keys not already present are added; changed values are marked with // in comments inline below.",
+
+  "nav": {
+    "back": "Terug"
+  },
+
+  "stress": {
+    "// prompt": "NEW — used instead of the old 'heading' so the label 'Stress-modus' no longer sits above the question.",
+    "prompt": "Hoe gespannen voel je je nu?"
+  },
+
+  "counterbalance": {
+    "// prompt": "Reverted to original repo copy — the v1 redesign question was grammatically off.",
+    "prompt": "Wat heb je vandaag veel gedaan?"
+  },
+
+  "onboarding": {
+    "// questionOf": "NEW — parameterized so 'Vraag 1 van 3' stays translatable.",
+    "questionOf": "Vraag {n} van {total}",
+    "// heading": "Copy tightened for the welcome step.",
+    "heading": "Hi. Fijn dat je er bent.",
+    "intro": "Unwind stelt ontspannende dingen voor als je brein niet uit wil. Vier vragen, één minuut.",
+    "next": "Begin",
+    "generate": "Klaar",
+    "skip": "Overslaan"
+  },
+
+  "chat": {
+    "// startersHint": "Same text — just promoted to the page title.",
+    "startersHint": "Waar kan ik mee helpen?"
+  }
+}

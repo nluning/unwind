@@ -1,68 +1,80 @@
 <template>
-  <main class="flex flex-col items-center px-4 py-8 max-w-96 mx-auto">
-    <h1>{{ $t('app.title') }}</h1>
+  <div class="uw-screen">
+    <div class="uw-screen__wash" aria-hidden="true" />
+    <div class="uw-screen__glow" aria-hidden="true" />
 
-    <form @submit.prevent="handleSubmit" class="flex flex-col gap-4 w-full">
-      <h2>{{ isRegistering ? $t('auth.register') : $t('auth.login') }}</h2>
+    <div class="uw-frame">
+      <header class="uw-header">
+        <span class="uw-wordmark">unwind</span>
+      </header>
 
-      <label class="flex flex-col gap-1 text-sm">
-        {{ $t('auth.email') }}
-        <input
-          v-model="email"
-          type="email"
-          required
-          autocomplete="email"
-          class="p-3 border border-outline rounded-lg text-base"
-        />
-      </label>
+      <main class="flex-1 flex flex-col justify-center px-[26px] pb-12 gap-6">
+        <h1 class="font-serif text-2xl tracking-tight text-uw-ink m-0">
+          {{ isRegistering ? $t('auth.register') : $t('auth.login') }}
+        </h1>
 
-      <label class="flex flex-col gap-1 text-sm">
-        {{ $t('auth.password') }}
-        <input
-          v-model="password"
-          type="password"
-          required
-          autocomplete="current-password"
-          class="p-3 border border-outline rounded-lg text-base"
-        />
-      </label>
+        <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
+          <label class="flex flex-col gap-1.5 text-sm text-uw-ink-soft">
+            {{ $t('auth.email') }}
+            <input
+              v-model="email"
+              type="email"
+              required
+              autocomplete="email"
+              class="px-4 py-3 rounded-xl text-base outline-none bg-uw-accent border border-uw-border-soft text-uw-ink"
+            />
+          </label>
 
-      <p v-if="error" class="text-error text-sm" role="alert">{{ error }}</p>
+          <label class="flex flex-col gap-1.5 text-sm text-uw-ink-soft">
+            {{ $t('auth.password') }}
+            <input
+              v-model="password"
+              type="password"
+              required
+              autocomplete="current-password"
+              class="px-4 py-3 rounded-xl text-base outline-none bg-uw-accent border border-uw-border-soft text-uw-ink"
+            />
+          </label>
 
-      <button
-        type="submit"
-        :disabled="loading"
-        class="p-3 bg-primary text-white border-none rounded-lg text-base cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {{ isRegistering ? $t('auth.registerButton') : $t('auth.loginButton') }}
-      </button>
+          <p v-if="error" class="text-error text-sm" role="alert">{{ error }}</p>
 
-      <LinkButton
-        class="text-sm"
-        @click="isRegistering = !isRegistering; error = ''"
-      >
-        {{ isRegistering ? $t('auth.switchToLogin') : $t('auth.switchToRegister') }}
-      </LinkButton>
-    </form>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="px-5 py-3 rounded-xl text-base cursor-pointer border-none bg-uw-primary text-uw-primary-fg font-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {{ isRegistering ? $t('auth.registerButton') : $t('auth.loginButton') }}
+          </button>
 
-    <div class="w-full h-px bg-outline my-6"></div>
+          <button
+            type="button"
+            class="text-sm text-uw-ink-soft bg-transparent border-none cursor-pointer mt-1"
+            @click="toggleMode"
+          >
+            {{ isRegistering ? $t('auth.switchToLogin') : $t('auth.switchToRegister') }}
+          </button>
+        </form>
 
-    <button
-      type="button"
-      class="py-3 px-6 bg-transparent border border-muted rounded-lg text-sm cursor-pointer text-dim disabled:opacity-60 disabled:cursor-not-allowed"
-      :disabled="loading"
-      @click="handleDeviceAuth"
-    >
-      {{ $t('auth.deviceButton') }}
-    </button>
+        <div class="h-px bg-uw-border-soft" />
 
-    <router-link
-      to="/privacy"
-      class="text-xs text-muted hover:text-primary transition-colors no-underline mt-4"
-    >
-      {{ $t('privacy.link') }}
-    </router-link>
-  </main>
+        <button
+          type="button"
+          class="px-5 py-3 rounded-xl text-sm cursor-pointer bg-transparent border border-uw-border text-uw-ink-soft font-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          :disabled="loading"
+          @click="handleDeviceAuth"
+        >
+          {{ $t('auth.deviceButton') }}
+        </button>
+
+        <router-link
+          to="/privacy"
+          class="text-xs text-uw-ink-mute no-underline text-center"
+        >
+          {{ $t('privacy.link') }}
+        </router-link>
+      </main>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -71,7 +83,6 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '../composables/useAuth.js'
 import { ApiError } from '../api/client.js'
-import LinkButton from '../components/LinkButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -82,6 +93,11 @@ const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
+
+function toggleMode() {
+  isRegistering.value = !isRegistering.value
+  error.value = ''
+}
 
 async function handleSubmit() {
   error.value = ''
@@ -122,11 +138,11 @@ async function handleDeviceAuth() {
 
 function getOrCreateDeviceId(): string {
   const key = 'unwind-device-id'
-  let id = localStorage.getItem(key)
-  if (!id) {
-    id = crypto.randomUUID()
-    localStorage.setItem(key, id)
+  let deviceId = localStorage.getItem(key)
+  if (!deviceId) {
+    deviceId = crypto.randomUUID()
+    localStorage.setItem(key, deviceId)
   }
-  return id
+  return deviceId
 }
 </script>

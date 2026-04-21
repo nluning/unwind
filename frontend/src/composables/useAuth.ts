@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { api } from '../api/client.js'
+import { resetSuggestionFlowState } from './useSuggestionFlow.js'
 
 interface User {
   id: string
@@ -58,12 +59,14 @@ export function useAuth() {
     await api('/logout', { method: 'POST' })
     user.value = null
     localStorage.removeItem('unwind-user')
+    resetSuggestionFlowState()
   }
 
   async function deleteAccount() {
     await api('/me', { method: 'DELETE' })
     user.value = null
     localStorage.removeItem('unwind-user')
+    resetSuggestionFlowState()
   }
 
   return {

@@ -1,7 +1,8 @@
 <template>
   <div class="relative" ref="menuRef">
     <button
-      class="w-11 h-11 rounded-full bg-card border border-outline flex items-center justify-center cursor-pointer"
+      v-if="variant === 'legacy'"
+      class="w-11 h-11 rounded-full bg-card flex items-center justify-center cursor-pointer"
       :aria-label="$t('menu.label')"
       :aria-expanded="open"
       @click="open = !open"
@@ -13,11 +14,24 @@
       </svg>
     </button>
 
+    <button
+      v-else
+      class="uw-menu-btn"
+      :aria-label="$t('menu.label')"
+      :aria-expanded="open"
+      @click="open = !open"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <circle cx="8" cy="3" r="1.4" />
+        <circle cx="8" cy="8" r="1.4" />
+        <circle cx="8" cy="13" r="1.4" />
+      </svg>
+    </button>
+
     <div
       v-if="open"
-      class="absolute right-0 top-13 w-56 bg-card border border-outline rounded-xl shadow-lg py-2 z-20"
+      class="absolute right-0 top-13 w-56 bg-card rounded-xl shadow-lg py-2 z-20"
     >
-      <!-- Theme selector -->
       <div class="px-4 py-2">
         <p class="text-xs text-muted mb-2">{{ $t('menu.theme') }}</p>
         <ThemeSelector />
@@ -25,7 +39,6 @@
 
       <div class="border-t border-outline my-1" />
 
-      <!-- Navigation links -->
       <router-link
         :to="'/stress'"
         class="block px-4 py-2.5 text-sm text-dim hover:text-primary transition-colors no-underline"
@@ -51,7 +64,6 @@
 
       <div class="border-t border-outline my-1" />
 
-      <!-- Logout -->
       <button
         class="w-full text-left px-4 py-2.5 text-sm text-error cursor-pointer bg-transparent border-none hover:opacity-80"
         @click="handleLogout"
@@ -61,7 +73,6 @@
 
       <div class="border-t border-outline my-1" />
 
-      <!-- Delete account -->
       <button
         v-if="!confirmingDelete"
         class="w-full text-left px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-none hover:text-error transition-colors"
@@ -85,6 +96,12 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import ThemeSelector from './ThemeSelector.vue'
+
+withDefaults(defineProps<{
+  variant?: 'legacy' | 'horizon'
+}>(), {
+  variant: 'legacy',
+})
 
 const { logout, deleteAccount } = useAuth()
 const router = useRouter()
