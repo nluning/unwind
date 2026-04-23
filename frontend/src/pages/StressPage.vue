@@ -1,63 +1,117 @@
 <template>
-  <main class="flex flex-col items-center px-4 py-8 gap-6">
-    <h1>{{ $t('stress.heading') }}</h1>
+  <div class="uw-screen">
+    <div class="uw-screen__wash" aria-hidden="true" />
+    <div class="uw-screen__glow" aria-hidden="true" />
 
-    <div v-if="!loaded && !error" class="text-muted text-sm flex flex-col items-center gap-2">
-      <span class="spinner" />
-      {{ $t('suggest.loading') }}
-    </div>
-
-    <div v-else-if="error" class="text-error text-sm flex flex-col items-center gap-2">
-      <p>{{ $t('suggest.error') }}</p>
-      <LinkButton @click="fetchActivities()">{{ $t('suggest.retry') }}</LinkButton>
-    </div>
-
-    <template v-else>
-      <!-- Stress selector -->
-      <div v-if="!stressLevel" class="flex items-center gap-3">
-        <span class="text-xs text-muted">{{ $t('stress.low') }}</span>
-        <div class="flex gap-2">
-          <button
-            v-for="level in 5"
-            :key="level"
-            class="w-12 h-12 rounded-full border-2 border-outline bg-surface text-lg cursor-pointer transition-colors hover:border-primary hover:bg-primary-light"
-            @click="stressLevel = level"
+    <div class="uw-frame">
+      <header class="uw-header">
+        <button
+          class="uw-menu-btn"
+          :aria-label="$t('nav.back')"
+          @click="handleBack"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
-            {{ level }}
-          </button>
+            <path d="M10 3 L5 8 L10 13" />
+          </svg>
+        </button>
+        <span class="uw-wordmark">unwind</span>
+        <div class="w-[34px]" aria-hidden="true" />
+      </header>
+
+      <div
+        v-if="!loaded && !error"
+        class="flex-1 flex flex-col items-center justify-center gap-2"
+      >
+        <span class="spinner" />
+        <p class="text-sm text-uw-ink-mute">{{ $t('suggest.loading') }}</p>
+      </div>
+
+      <div
+        v-else-if="error"
+        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
+      >
+        <p class="text-sm text-uw-ink-mute">{{ $t('suggest.error') }}</p>
+        <LinkButton @click="fetchActivities()">
+          {{ $t('suggest.retry') }}
+        </LinkButton>
+      </div>
+
+      <template v-else-if="!stressLevel">
+        <h1 class="uw-title pt-[80px] max-w-[260px]">{{ $t('stress.prompt') }}</h1>
+
+        <div class="mt-10 px-[22px]">
+          <div class="flex justify-between items-center">
+            <button
+              v-for="level in 5"
+              :key="level"
+              class="w-12 h-12 rounded-full border border-uw-border bg-transparent text-uw-ink font-serif text-lg cursor-pointer transition-colors"
+              :class="{
+                'bg-uw-primary text-uw-primary-fg border-transparent':
+                  stressLevel === level,
+              }"
+              @click="stressLevel = level"
+            >
+              {{ level }}
+            </button>
+          </div>
+          <div class="flex justify-between mt-3 text-xs text-uw-ink-mute">
+            <span>{{ $t('stress.low') }}</span>
+            <span>{{ $t('stress.high') }}</span>
+          </div>
         </div>
-        <span class="text-xs text-muted">{{ $t('stress.high') }}</span>
+      </template>
+
+      <div
+        v-else-if="pool.length === 0"
+        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
+      >
+        <p class="text-sm text-uw-ink-mute">{{ $t('stress.noMatch') }}</p>
+        <LinkButton @click="stressLevel = null">
+          {{ $t('activity.skip') }}
+        </LinkButton>
       </div>
 
-      <!-- No matching activities -->
-      <div v-else-if="pool.length === 0" class="text-muted text-sm flex flex-col items-center gap-2">
-        {{ $t('stress.noMatch') }}
-        <LinkButton @click="stressLevel = null">{{ $t('activity.skip') }}</LinkButton>
-      </div>
-
-      <!-- Suggestion flow -->
-      <template v-else>
+      <template v-else-if="current">
+        <p class="uw-prompt">{{ $t('suggest.heading') }}</p>
         <ActivityCard
-          v-if="current"
           :activity="current"
           @accept="handleAccept"
           @skip="handleSkip"
         />
+      </template>
 
-        <p v-if="accepted" class="text-accepted text-lg font-medium">
+      <div
+        v-else-if="accepted"
+        class="flex-1 flex items-center justify-center px-6"
+      >
+        <p class="text-2xl font-serif text-uw-primary">
           {{ $t('suggest.accepted') }}
         </p>
+      </div>
 
-        <p v-if="!current && !accepted" class="text-muted text-sm">
-          {{ $t('suggest.exhausted') }}
-        </p>
-      </template>
-    </template>
-  </main>
+      <div
+        v-else
+        class="flex-1 flex items-center justify-center px-6"
+      >
+        <p class="text-sm text-uw-ink-mute">{{ $t('suggest.exhausted') }}</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useActivities } from '../composables/useActivities.js'
 import {
   useSuggestionFlow,
@@ -66,6 +120,7 @@ import {
 import ActivityCard from '../components/ActivityCard.vue'
 import LinkButton from '../components/LinkButton.vue'
 
+const router = useRouter()
 const { loaded, error, fetchActivities, filterByStress } = useActivities()
 
 const stressLevel = stressLevelState
@@ -79,6 +134,14 @@ const { current, accepted, handleAccept, handleSkip } = useSuggestionFlow({
   pool,
   extraEventData: () => ({ stress_level_before: stressLevel.value }),
 })
+
+function handleBack() {
+  if (stressLevel.value !== null) {
+    stressLevel.value = null
+  } else {
+    router.back()
+  }
+}
 
 onMounted(async () => {
   if (!loaded.value) {

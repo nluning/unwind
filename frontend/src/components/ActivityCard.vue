@@ -1,26 +1,59 @@
 <template>
-  <div class="flex flex-col gap-4 p-6 rounded-2xl bg-card shadow-md max-w-96 w-full">
-    <h2 class="text-xl">{{ $t(`activities.${slug}.title`, activity.title) }}</h2>
+  <div class="flex-1 flex flex-col gap-4">
+    <h1 class="uw-title">
+      {{ $t(`activities.${slug}.title`, activity.title) }}
+    </h1>
 
-    <p v-if="activity.description" class="text-dim text-sm leading-relaxed">
+    <p v-if="activity.description" class="uw-body">
       {{ $t(`activities.${slug}.description`, activity.description) }}
     </p>
 
-    <div class="flex flex-wrap justify-end gap-2">
-      <span class="px-3 py-1 bg-chip rounded-full text-xs text-dim">
+    <div class="uw-chips">
+      <span class="uw-chip">
         {{ $t('activity.duration', { minutes: activity.suggested_duration }) }}
       </span>
-      <span v-for="cat in activity.categories" :key="cat" class="px-3 py-1 bg-chip rounded-full text-xs text-dim">
-        {{ $t(`categories.${cat}`, cat) }}
+      <span
+        v-for="category in activity.categories"
+        :key="category"
+        class="uw-chip"
+      >
+        {{ $t(`categories.${category}`, category) }}
       </span>
     </div>
 
-    <div class="flex gap-3 mt-2">
-      <button class="flex-1 py-3.5 rounded-lg text-base cursor-pointer border-none bg-primary text-white" @click="$emit('accept')">
+    <div class="uw-actions mt-auto mb-20">
+      <button class="uw-actions__primary" @click="$emit('accept')">
+        <span class="uw-badge" aria-hidden="true">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="3 8 6.5 11.5 13 5" />
+          </svg>
+        </span>
         {{ $t('activity.accept') }}
       </button>
-      <button class="flex-1 py-3.5 rounded-lg text-base cursor-pointer bg-transparent border border-outline text-dim" @click="$emit('skip')">
+
+      <button class="uw-actions__secondary" @click="$emit('skip')">
         {{ $t('activity.skip') }}
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
+        </svg>
       </button>
     </div>
   </div>
@@ -40,6 +73,9 @@ defineEmits<{
 }>()
 
 const slug = computed(() =>
-  props.activity.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  props.activity.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 )
 </script>

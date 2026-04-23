@@ -30,7 +30,6 @@ const router = createRouter({
       path: '/suggest',
       name: 'suggest',
       component: () => import('../pages/SuggestPage.vue'),
-      meta: { immersive: true },
     },
     {
       path: '/stress',

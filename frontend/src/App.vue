@@ -5,16 +5,15 @@ import BottomNav from './components/BottomNav.vue'
 import UserMenu from './components/UserMenu.vue'
 
 const route = useRoute()
-const showNav = computed(() => route.meta.public !== true && route.meta.onboarding !== true)
-const isImmersive = computed(() => route.meta.immersive === true)
+const showChrome = computed(
+  () => route.meta.public !== true && route.meta.onboarding !== true
+)
 </script>
 
 <template>
-  <div :class="showNav && !isImmersive ? 'pb-20' : ''">
-    <div v-if="showNav && !isImmersive" class="fixed top-3 right-3 z-10">
-      <UserMenu />
-    </div>
+  <div :class="showChrome ? 'pb-20' : ''">
     <RouterView />
+    <UserMenu v-if="showChrome" />
   </div>
-  <BottomNav v-if="showNav && !isImmersive" />
+  <BottomNav v-if="showChrome" />
 </template>

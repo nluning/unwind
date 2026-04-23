@@ -1,145 +1,224 @@
 <template>
-  <main class="flex flex-col items-center px-4 py-8 max-w-md mx-auto gap-6">
-    <!-- Step 1: Welcome + consent -->
-    <template v-if="step === 1">
-      <h1 class="text-xl">{{ $t('onboarding.heading') }}</h1>
-      <p class="text-dim text-sm text-center leading-relaxed">
-        {{ $t('onboarding.intro') }}
-      </p>
+  <div class="uw-screen">
+    <div class="uw-screen__wash" aria-hidden="true" />
+    <div class="uw-screen__glow" aria-hidden="true" />
 
-      <p class="text-sm text-center leading-relaxed">
-        {{ $t('onboarding.consentQuestion') }}
-      </p>
-      <div class="flex gap-3 w-full">
-        <button
-          class="flex-1 py-3.5 rounded-xl text-base cursor-pointer border-2 transition-colors"
-          :class="memoryConsent === true
-            ? 'border-primary bg-primary text-white'
-            : 'border-outline bg-surface text-dim hover:border-primary'"
-          @click="memoryConsent = true"
-        >
-          {{ $t('onboarding.consentYes') }}
-        </button>
-        <button
-          class="flex-1 py-3.5 rounded-xl text-base cursor-pointer border-2 transition-colors"
-          :class="memoryConsent === false
-            ? 'border-primary bg-primary text-white'
-            : 'border-outline bg-surface text-dim hover:border-primary'"
-          @click="memoryConsent = false"
-        >
-          {{ $t('onboarding.consentNo') }}
-        </button>
-      </div>
-      <button
-        :disabled="memoryConsent === null"
-        class="w-full py-3.5 rounded-xl bg-primary text-white text-base cursor-pointer border-none disabled:opacity-40"
-        @click="step = 2"
+    <div class="uw-frame">
+      <!-- Progress dots — only across the 4 questions -->
+      <div
+        v-if="step >= 2 && step <= 5"
+        class="flex justify-center gap-1.5 pt-[22px]"
+        aria-hidden="true"
       >
-        {{ $t('onboarding.next') }}
-      </button>
-      <LinkButton @click="handleSkip">{{ $t('onboarding.skip') }}</LinkButton>
-    </template>
-
-    <!-- Step 2: Setting -->
-    <template v-else-if="step === 2">
-      <h2 class="text-lg">{{ $t('onboarding.settingQuestion') }}</h2>
-      <div class="flex flex-col gap-3 w-full">
-        <button
-          v-for="option in settingOptions"
-          :key="option.value"
-          class="py-3.5 px-6 rounded-xl text-base cursor-pointer border-2 transition-colors"
-          :class="setting === option.value
-            ? 'border-primary bg-primary text-white'
-            : 'border-outline bg-surface text-dim hover:border-primary'"
-          @click="setting = option.value; step = 3"
-        >
-          {{ option.label }}
-        </button>
+        <span
+          v-for="n in 4"
+          :key="n"
+          class="h-1.5 rounded-[3px] transition-all duration-300"
+          :class="n === step - 1 ? 'w-[22px] bg-uw-primary' : 'w-1.5 bg-uw-chip'"
+        />
       </div>
-      <LinkButton @click="handleSkip">{{ $t('onboarding.skip') }}</LinkButton>
-    </template>
 
-    <!-- Step 3: Social -->
-    <template v-else-if="step === 3">
-      <h2 class="text-lg">{{ $t('onboarding.socialQuestion') }}</h2>
-      <div class="flex flex-col gap-3 w-full">
-        <button
-          v-for="option in socialOptions"
-          :key="option.value"
-          class="py-3.5 px-6 rounded-xl text-base cursor-pointer border-2 transition-colors"
-          :class="social === option.value
-            ? 'border-primary bg-primary text-white'
-            : 'border-outline bg-surface text-dim hover:border-primary'"
-          @click="social = option.value; step = 4"
-        >
-          {{ option.label }}
-        </button>
-      </div>
-      <LinkButton @click="handleSkip">{{ $t('onboarding.skip') }}</LinkButton>
-    </template>
+      <!-- Step 1 — welcome -->
+      <template v-if="step === 1">
+        <h1 class="uw-title pt-[72px] max-w-[280px]">
+          {{ $t('onboarding.heading') }}
+        </h1>
+        <p class="uw-body">{{ $t('onboarding.intro') }}</p>
 
-    <!-- Step 4: Interests -->
-    <template v-else-if="step === 4">
-      <h2 class="text-lg">{{ $t('onboarding.interestsQuestion') }}</h2>
-      <p class="text-dim text-xs">{{ $t('onboarding.interestsHint') }}</p>
-      <div class="flex flex-wrap gap-2 justify-center">
-        <button
-          v-for="interest in interestOptions"
-          :key="interest"
-          class="py-2.5 px-5 rounded-full text-sm cursor-pointer border-2 transition-colors"
-          :class="interests.includes(interest)
-            ? 'border-primary bg-primary text-white'
-            : 'border-outline bg-surface text-dim hover:border-primary'"
-          @click="toggleInterest(interest)"
-        >
-          {{ interest }}
-        </button>
-      </div>
-      <button
-        class="w-full py-3.5 rounded-xl bg-primary text-white text-base cursor-pointer border-none"
-        @click="handleGenerate"
+        <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
+          <button class="uw-onb-link" @click="handleSkip">
+            {{ $t('onboarding.skip') }}
+          </button>
+          <button class="uw-actions__primary" @click="step = 2">
+            {{ $t('onboarding.next') }}
+            <span class="uw-badge">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </template>
+
+      <!-- Step 2 — consent -->
+      <template v-else-if="step === 2">
+        <div class="px-7 pt-14 flex flex-col gap-3">
+          <span class="font-serif text-[17px] text-uw-ink-mute">
+            {{ $t('onboarding.questionOf', { n: 1, total: 4 }) }}
+          </span>
+          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
+            {{ $t('onboarding.consentQuestion') }}
+          </h2>
+        </div>
+
+        <OnbOptionList
+          :options="consentOptions"
+          :model-value="consentChoice"
+          @update:model-value="handleConsentPicked"
+        />
+      </template>
+
+      <!-- Step 3 — setting -->
+      <template v-else-if="step === 3">
+        <div class="px-7 pt-14 flex flex-col gap-3">
+          <span class="font-serif text-[17px] text-uw-ink-mute">
+            {{ $t('onboarding.questionOf', { n: 2, total: 4 }) }}
+          </span>
+          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
+            {{ $t('onboarding.settingQuestion') }}
+          </h2>
+        </div>
+
+        <OnbOptionList
+          :options="settingOptions"
+          :model-value="setting"
+          @update:model-value="(v) => { setting = v as typeof setting; step = 4 }"
+        />
+      </template>
+
+      <!-- Step 4 — social -->
+      <template v-else-if="step === 4">
+        <div class="px-7 pt-14 flex flex-col gap-3">
+          <span class="font-serif text-[17px] text-uw-ink-mute">
+            {{ $t('onboarding.questionOf', { n: 3, total: 4 }) }}
+          </span>
+          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
+            {{ $t('onboarding.socialQuestion') }}
+          </h2>
+        </div>
+
+        <OnbOptionList
+          :options="socialOptions"
+          :model-value="social"
+          @update:model-value="(v) => { social = v as typeof social; step = 5 }"
+        />
+      </template>
+
+      <!-- Step 5 — interests -->
+      <template v-else-if="step === 5">
+        <div class="px-7 pt-14 flex flex-col gap-3">
+          <span class="font-serif text-[17px] text-uw-ink-mute">
+            {{ $t('onboarding.questionOf', { n: 4, total: 4 }) }}
+          </span>
+          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
+            {{ $t('onboarding.interestsQuestion') }}
+          </h2>
+          <span class="text-[13px] text-uw-ink-mute">
+            {{ $t('onboarding.interestsHint') }}
+          </span>
+        </div>
+
+        <div class="mt-6 px-[22px] flex flex-wrap gap-2">
+          <button
+            v-for="interest in interestOptions"
+            :key="interest"
+            class="px-3.5 py-2.5 rounded-full border border-uw-border bg-transparent text-uw-ink text-[13.5px] font-medium cursor-pointer transition-colors"
+            :class="{
+              'bg-uw-primary text-uw-primary-fg border-transparent':
+                interests.includes(interest),
+            }"
+            @click="toggleInterest(interest)"
+          >
+            {{ interest }}
+          </button>
+        </div>
+
+        <div class="mt-auto mb-12 px-[22px] flex justify-end">
+          <button class="uw-actions__primary" @click="handleGenerate">
+            {{ $t('onboarding.generate') }}
+            <span class="uw-badge">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="3 8 6.5 11.5 13 5" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </template>
+
+      <!-- Step 6 — loading -->
+      <div
+        v-else-if="step === 6"
+        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
       >
-        {{ $t('onboarding.generate') }}
-      </button>
-      <LinkButton @click="handleSkip">{{ $t('onboarding.skip') }}</LinkButton>
-    </template>
+        <span class="spinner" />
+        <p class="uw-body !pt-0 !max-w-none">
+          {{ $t('onboarding.generating') }}
+        </p>
+      </div>
 
-    <!-- Step 5: Loading -->
-    <template v-else-if="step === 5">
-      <span class="spinner" />
-      <p class="text-dim text-sm">{{ $t('onboarding.generating') }}</p>
-    </template>
+      <!-- Step 7 — done -->
+      <template v-else-if="step === 7">
+        <h2 class="uw-title pt-[72px] max-w-[280px]">
+          {{ $t('onboarding.doneHeading') }}
+        </h2>
+        <p class="uw-body">
+          {{ $t('onboarding.done', { count: generatedCount }) }}
+        </p>
 
-    <!-- Step 6: Done -->
-    <template v-else-if="step === 6">
-      <h2 class="text-lg">{{ $t('onboarding.doneHeading') }}</h2>
-      <p class="text-dim text-sm">
-        {{ $t('onboarding.done', { count: generatedCount }) }}
+        <div class="mt-auto mb-12 px-[22px] flex justify-end">
+          <button class="uw-actions__primary" @click="router.push({ name: 'suggest' })">
+            {{ $t('onboarding.start') }}
+            <span class="uw-badge">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </template>
+
+      <p
+        v-if="error"
+        class="text-center text-sm text-uw-ink-mute px-6 py-3"
+      >
+        {{ error }}
+        <button
+          v-if="step === 6"
+          class="block mx-auto mt-2 uw-onb-link underline"
+          @click="handleGenerate"
+        >
+          {{ $t('suggest.retry') }}
+        </button>
       </p>
-      <button
-        class="w-full py-3.5 rounded-xl bg-primary text-white text-base cursor-pointer border-none"
-        @click="router.push({ name: 'suggest' })"
-      >
-        {{ $t('onboarding.start') }}
-      </button>
-    </template>
-
-    <!-- Error state -->
-    <template v-if="error">
-      <p class="text-error text-sm">{{ error }}</p>
-      <LinkButton v-if="step === 5" @click="handleGenerate">
-        {{ $t('suggest.retry') }}
-      </LinkButton>
-    </template>
-  </main>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, defineComponent, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
-import LinkButton from '../components/LinkButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -147,50 +226,52 @@ const { t } = useI18n()
 const step = ref(1)
 const error = ref('')
 
-// Form state
 const memoryConsent = ref<boolean | null>(null)
+const consentChoice = ref<'yes' | 'no' | ''>('')
 const setting = ref<'indoor' | 'outdoor' | 'no_preference'>('no_preference')
 const social = ref<'alone' | 'with_others' | 'no_preference'>('no_preference')
 const interests = ref<string[]>([])
 const generatedCount = ref(0)
 
-const settingOptions = [
-  { value: 'indoor' as const, label: t('onboarding.settingIndoor') },
-  { value: 'outdoor' as const, label: t('onboarding.settingOutdoor') },
-  { value: 'no_preference' as const, label: t('onboarding.settingBoth') },
-]
+const settingOptions = computed(() => [
+  { value: 'indoor', label: t('onboarding.settingIndoor') },
+  { value: 'outdoor', label: t('onboarding.settingOutdoor') },
+  { value: 'no_preference', label: t('onboarding.settingBoth') },
+])
 
-const socialOptions = [
-  { value: 'alone' as const, label: t('onboarding.socialAlone') },
-  { value: 'with_others' as const, label: t('onboarding.socialWithOthers') },
-  { value: 'no_preference' as const, label: t('onboarding.socialBoth') },
-]
+const socialOptions = computed(() => [
+  { value: 'alone', label: t('onboarding.socialAlone') },
+  { value: 'with_others', label: t('onboarding.socialWithOthers') },
+  { value: 'no_preference', label: t('onboarding.socialBoth') },
+])
 
-// TODO: These are hardcoded Dutch strings, not i18n keys. They're sent directly
-// to Claude in the onboarding prompt, so i18n would require a mapping layer
-// (translated label → prompt-compatible value). Fine for Dutch-only; revisit if
-// the app ever supports multiple languages.
+const consentOptions = computed(() => [
+  { value: 'yes', label: t('onboarding.consentYes') },
+  { value: 'no', label: t('onboarding.consentNo') },
+])
+
+// See onboardingPrompt.ts — these Dutch strings are sent to Claude verbatim,
+// so they aren't i18n keys. If another locale is added, introduce a translation
+// layer that maps the UI label to a stable prompt value.
 const interestOptions = [
-  'Creatief',
-  'Puzzels & denken',
-  'Bewegen',
-  'Natuur',
-  'Muziek',
-  'Koken',
-  'Lezen',
-  'Niks doen',
+  'Creatief', 'Puzzels & denken', 'Bewegen', 'Natuur',
+  'Muziek', 'Koken', 'Lezen', 'Niks doen',
 ]
 
 function toggleInterest(interest: string) {
-  if (interests.value.includes(interest)) {
-    interests.value = interests.value.filter(item => item !== interest)
-  } else {
-    interests.value = [...interests.value, interest]
-  }
+  interests.value = interests.value.includes(interest)
+    ? interests.value.filter((item) => item !== interest)
+    : [...interests.value, interest]
+}
+
+function handleConsentPicked(value: string) {
+  consentChoice.value = value as 'yes' | 'no'
+  memoryConsent.value = value === 'yes'
+  step.value = 3
 }
 
 async function handleGenerate() {
-  step.value = 5
+  step.value = 6
   error.value = ''
 
   try {
@@ -208,7 +289,7 @@ async function handleGenerate() {
     )
     generatedCount.value = result.activities.length
     localStorage.setItem('unwind-onboarding-done', 'true')
-    step.value = 6
+    step.value = 7
   } catch {
     error.value = t('onboarding.error')
   }
@@ -218,4 +299,84 @@ function handleSkip() {
   localStorage.setItem('unwind-onboarding-done', 'true')
   router.push({ name: 'suggest' })
 }
+
+// Inline Fraunces-row option list — three usages (consent, setting, social).
+// Kept local to avoid a new component file for something only used here.
+const OnbOptionList = defineComponent({
+  props: {
+    options: {
+      type: Array as () => Array<{ value: string; label: string }>,
+      required: true,
+    },
+    modelValue: { type: String, required: true },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    return () =>
+      h(
+        'ul',
+        {
+          class: 'mt-auto mb-14 px-7 flex flex-col list-none',
+          role: 'list',
+        },
+        props.options.map((option, index) =>
+          h(
+            'li',
+            {
+              key: option.value,
+              class: [
+                'border-b border-uw-border-soft',
+                index === 0 && 'border-t',
+              ],
+            },
+            h(
+              'button',
+              {
+                class: [
+                  'w-full py-[18px] bg-transparent border-0 font-serif text-xl leading-tight tracking-[-0.2px] text-left cursor-pointer flex items-center justify-between transition-colors',
+                  option.value === props.modelValue
+                    ? 'text-uw-primary'
+                    : 'text-uw-ink',
+                ],
+                onClick: () => emit('update:modelValue', option.value),
+              },
+              [
+                h('span', option.label),
+                option.value === props.modelValue
+                  ? h(
+                      'svg',
+                      {
+                        width: 16,
+                        height: 16,
+                        viewBox: '0 0 16 16',
+                        fill: 'none',
+                        stroke: 'currentColor',
+                        'stroke-width': 1.8,
+                        'stroke-linecap': 'round',
+                        'stroke-linejoin': 'round',
+                      },
+                      h('polyline', { points: '3 8 6.5 11.5 13 5' })
+                    )
+                  : null,
+              ]
+            )
+          )
+        )
+      )
+  },
+})
 </script>
+
+<style scoped>
+/* Skip / retry text-only button — not unique enough for base.css. */
+.uw-onb-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--uw-ink-mute);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.uw-onb-link:hover { color: var(--uw-ink); }
+</style>

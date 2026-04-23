@@ -1,112 +1,180 @@
 <template>
-  <main class="flex flex-col mx-auto w-full max-w-xl" style="height: calc(100vh - 5rem)">
-    <div class="px-4 pt-6 pb-2 flex items-center justify-between">
-      <h1 class="text-lg font-600">{{ $t('chat.startersHint') }}</h1>
-      <button
-        v-if="messages.length > 0"
-        class="text-xs text-muted cursor-pointer bg-transparent border border-outline rounded-full px-3 py-1 hover:text-dim hover:border-dim"
-        @click="handleReset"
-      >
-        {{ $t('chat.newChat') }}
-      </button>
-    </div>
+  <div class="uw-screen">
+    <div class="uw-screen__wash" aria-hidden="true" />
+    <div class="uw-screen__glow" aria-hidden="true" />
 
-    <!-- Message list -->
-    <div ref="messageContainer" class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3">
+    <div class="uw-frame">
+      <header class="uw-header">
+        <button
+          class="uw-menu-btn"
+          :aria-label="$t('nav.back')"
+          @click="$router.back()"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M10 3 L5 8 L10 13" />
+          </svg>
+        </button>
+        <span class="uw-wordmark">unwind</span>
+        <button
+          v-if="messages.length > 0"
+          class="uw-menu-btn"
+          :aria-label="$t('chat.newChat')"
+          @click="handleReset"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M8 3 V 13 M 3 8 H 13" />
+          </svg>
+        </button>
+        <div v-else class="w-[34px]" aria-hidden="true" />
+      </header>
+
+      <h1
+        v-if="messages.length === 0"
+        class="uw-title pt-[80px] max-w-[260px]"
+      >
+        {{ $t('chat.startersHint') }}
+      </h1>
+
       <div
-        v-for="(parsed, index) in parsedMessages"
-        :key="index"
-        class="max-w-[80%] rounded-2xl text-sm leading-relaxed"
-        :class="parsed.role === 'user'
-          ? 'self-end bg-primary text-white rounded-br-sm px-4 py-3'
-          : 'self-start bg-card rounded-bl-sm'"
+        v-else
+        ref="messageContainer"
+        class="flex-1 overflow-y-auto px-[18px] pt-4 pb-3 flex flex-col gap-2.5"
       >
-        <!-- User message -->
-        <template v-if="parsed.role === 'user'">
-          <span class="whitespace-pre-wrap">{{ parsed.content }}</span>
-        </template>
-
-        <!-- Assistant message -->
-        <template v-else>
-          <!-- Text before activity -->
-          <div v-if="parsed.textBefore" class="px-4 py-3 chat-markdown">
-            <div v-html="renderMarkdown(parsed.textBefore)" />
+        <template v-for="(parsed, index) in parsedMessages" :key="index">
+          <div
+            v-if="parsed.role === 'user'"
+            class="self-end max-w-[78%] rounded-[18px] rounded-br-[6px] px-3.5 py-2.5 bg-uw-primary text-uw-primary-fg text-sm leading-snug whitespace-pre-wrap"
+          >
+            {{ parsed.content }}
           </div>
 
-          <!-- Parsed activity card + save button -->
-          <div v-if="parsed.activity && !isStreaming" class="mx-3 my-2 p-3 rounded-xl bg-primary-light border border-outline">
-            <p class="font-600 text-sm">{{ parsed.activity.title }}</p>
-            <p v-if="parsed.activity.description" class="text-dim text-xs mt-1 leading-relaxed">
-              {{ parsed.activity.description }}
-            </p>
-            <div class="flex gap-2 mt-2 text-xs text-muted">
-              <span>{{ parsed.activity.duration_minutes }} min</span>
-              <span>·</span>
-              <span>{{ parsed.activity.category }}</span>
-            </div>
-            <button
-              v-if="!savedIndices.has(index)"
-              class="w-full mt-3 py-2 rounded-lg text-xs cursor-pointer border border-primary text-primary bg-transparent hover:bg-card"
-              :disabled="saving === index"
-              @click="handleSave(index, parsed.activity)"
+          <div
+            v-else
+            class="self-start max-w-[78%] rounded-[18px] rounded-bl-[6px] bg-uw-chip text-uw-ink text-sm leading-snug"
+          >
+            <div
+              v-if="parsed.textBefore"
+              class="px-3.5 py-2.5 chat-markdown"
+              v-html="renderMarkdown(parsed.textBefore)"
+            />
+
+            <div
+              v-if="parsed.activity && !isStreaming"
+              class="mx-3 my-2 p-3 rounded-xl border border-uw-border-soft flex flex-col gap-1.5"
+              :style="{ background: 'rgba(255,255,255,0.35)' }"
             >
-              {{ saving === index ? '...' : $t('chat.save') }}
-            </button>
-            <p v-else class="mt-2 text-xs text-accepted text-center">
-              {{ $t('chat.saved') }}
-            </p>
-          </div>
+              <p class="font-serif text-base text-uw-ink leading-tight">
+                {{ parsed.activity.title }}
+              </p>
+              <div class="flex gap-2 text-xs text-uw-ink-mute">
+                <span>{{ $t('activity.duration', { minutes: parsed.activity.duration_minutes }) }}</span>
+                <span aria-hidden="true">·</span>
+                <span>{{ $t(`categories.${parsed.activity.category}`, parsed.activity.category) }}</span>
+              </div>
+              <button
+                v-if="!savedIndices.has(index)"
+                class="self-start mt-1 text-xs font-medium text-uw-primary cursor-pointer bg-transparent border-0 p-0 hover:opacity-80 disabled:opacity-40"
+                :disabled="saving === index"
+                @click="handleSave(index, parsed.activity)"
+              >
+                {{ saving === index ? '...' : $t('chat.save') }}
+              </button>
+              <p v-else class="text-xs text-uw-primary mt-1">
+                {{ $t('chat.saved') }}
+              </p>
+            </div>
 
-          <!-- Text after activity -->
-          <div v-if="parsed.textAfter" class="px-4 py-3 chat-markdown">
-            <div v-html="renderMarkdown(parsed.textAfter)" />
-          </div>
+            <div
+              v-if="parsed.textAfter"
+              class="px-3.5 py-2.5 chat-markdown"
+              v-html="renderMarkdown(parsed.textAfter)"
+            />
 
-          <!-- Loading state (no text, no activity yet) -->
-          <div v-if="!parsed.textBefore && !parsed.activity" class="px-4 py-3">
-            <span class="text-muted italic">{{ $t('chat.loading') }}</span>
+            <div
+              v-if="!parsed.textBefore && !parsed.activity"
+              class="px-3.5 py-3 uw-chat-typing"
+            >
+              <span /><span /><span />
+            </div>
           </div>
         </template>
       </div>
-    </div>
 
-    <!-- Error -->
-    <p v-if="error" class="px-4 py-2 text-error text-sm text-center">
-      {{ error }}
-    </p>
-
-    <!-- Input area -->
-    <div class="px-4 py-3 border-t border-outline flex gap-2">
-      <input
-        ref="inputElement"
-        v-model="inputText"
-        :placeholder="$t('chat.placeholder')"
-        :disabled="isStreaming"
-        class="flex-1 px-4 py-2.5 rounded-full bg-card text-sm outline-none disabled:opacity-40"
-        style="color: var(--c-text)"
-        @keydown.enter="handleSend"
-      />
-      <button
-        :disabled="!inputText.trim() || isStreaming"
-        class="px-5 py-2.5 rounded-full bg-primary text-white text-sm cursor-pointer border-none disabled:opacity-40"
-        @click="handleSend"
+      <div
+        v-if="messages.length === 0"
+        class="mt-auto mb-3 px-[22px] flex flex-col gap-2 items-start"
       >
-        {{ $t('chat.send') }}
-      </button>
-    </div>
+        <button
+          v-for="starter in starters"
+          :key="starter"
+          class="rounded-full border border-uw-border-soft bg-transparent text-uw-ink text-sm font-medium px-3.5 py-2.5 cursor-pointer transition-colors hover:bg-uw-chip"
+          @click="handleStarter(starter)"
+        >
+          {{ starter }}
+        </button>
+      </div>
 
-    <!-- Conversation starters -->
-    <div v-if="messages.length === 0" class="px-4 pb-4 flex flex-wrap gap-2 justify-center">
-      <button
-        v-for="starter in starters"
-        :key="starter"
-        class="px-4 py-2.5 rounded-full bg-card text-sm text-dim cursor-pointer hover:text-primary transition-colors"
-        @click="handleStarter(starter)"
+      <p
+        v-if="error"
+        class="text-center text-sm text-uw-ink-mute px-6 py-2"
       >
-        {{ starter }}
-      </button>
+        {{ error }}
+      </p>
+
+      <form
+        class="mb-24 mx-[14px] flex items-center gap-2 py-1.5 pl-4 pr-1.5 rounded-full bg-uw-chip border border-uw-border-soft"
+        @submit.prevent="handleSend"
+      >
+        <input
+          ref="inputElement"
+          v-model="inputText"
+          :placeholder="$t('chat.placeholder')"
+          :disabled="isStreaming"
+          class="flex-1 bg-transparent border-0 outline-none text-sm text-uw-ink placeholder:text-uw-ink-mute"
+          autocomplete="off"
+        />
+        <button
+          type="submit"
+          :disabled="!inputText.trim() || isStreaming"
+          class="w-9 h-9 rounded-full bg-uw-primary text-uw-primary-fg inline-flex items-center justify-center border-0 cursor-pointer disabled:opacity-40"
+          :aria-label="$t('chat.send')"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
+          </svg>
+        </button>
+      </form>
     </div>
-  </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -119,6 +187,7 @@ import { renderMarkdown } from '../utils/renderMarkdown.js'
 
 const { t } = useI18n()
 const { messages, isStreaming, error, sendMessage, resetChat } = useChat()
+const { createActivity } = useActivities()
 
 const starters = computed(() => [
   t('chat.starter1'),
@@ -126,7 +195,6 @@ const starters = computed(() => [
   t('chat.starter3'),
   t('chat.starter4'),
 ])
-const { createActivity } = useActivities()
 
 const inputText = ref('')
 const messageContainer = ref<HTMLElement | null>(null)
@@ -168,7 +236,7 @@ async function handleSave(index: number, activity: AiActivity) {
     await createActivity(payload)
     savedIndices.value = new Set([...savedIndices.value, index])
   } catch {
-    // If save fails, don't mark as saved — button stays visible to retry
+    // Save failed — leave button visible so user can retry.
   } finally {
     saving.value = null
   }
@@ -182,10 +250,8 @@ function scrollToBottom() {
   })
 }
 
-// Auto-scroll when messages change (including during streaming)
 watch(messages, scrollToBottom, { deep: true })
 
-// Focus input after streaming completes
 watch(isStreaming, (streaming) => {
   if (!streaming) {
     nextTick(() => inputElement.value?.focus())
@@ -194,26 +260,39 @@ watch(isStreaming, (streaming) => {
 </script>
 
 <style scoped>
-.chat-markdown :deep(p) {
-  margin: 0;
+/* Typing indicator — custom keyframe; no utility equivalent. */
+.uw-chat-typing {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
 }
-.chat-markdown :deep(p + p) {
-  margin-top: 0.5rem;
+.uw-chat-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--uw-ink-mute);
+  animation: uw-blink 1.2s infinite ease-in-out;
 }
-.chat-markdown :deep(strong) {
-  font-weight: 600;
+.uw-chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+.uw-chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes uw-blink {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
 }
+
+/* Markdown rendered via v-html — scoped :deep() reaches into generated elements. */
+.chat-markdown :deep(p) { margin: 0; }
+.chat-markdown :deep(p + p) { margin-top: 0.5rem; }
+.chat-markdown :deep(strong) { font-weight: 600; }
 .chat-markdown :deep(ul),
 .chat-markdown :deep(ol) {
   margin: 0.5rem 0;
   padding-left: 1.25rem;
 }
-.chat-markdown :deep(li) {
-  margin: 0.25rem 0;
-}
+.chat-markdown :deep(li) { margin: 0.25rem 0; }
 .chat-markdown :deep(code) {
   font-size: 0.85em;
-  background: var(--c-surface);
+  background: rgba(0, 0, 0, 0.08);
   padding: 0.1em 0.3em;
   border-radius: 0.25rem;
 }

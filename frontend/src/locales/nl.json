@@ -29,6 +29,7 @@
   },
   "stress": {
     "heading": "Hoe gestrest ben je?",
+    "prompt": "Hoe gespannen voel je je nu?",
     "level": "Niveau {n}",
     "low": "Relaxed",
     "high": "Heel gestrest",
@@ -48,6 +49,7 @@
   },
   "nav": {
     "label": "Hoofdnavigatie",
+    "back": "Terug",
     "suggest": "Suggestie",
     "stress": "Stress",
     "counterbalance": "Balans",
@@ -70,12 +72,13 @@
     "starter4": "Verras me"
   },
   "onboarding": {
-    "heading": "Laten we je lijst personaliseren",
-    "intro": "We stellen een paar snelle vragen zodat Unwind activiteiten kan voorstellen die bij jou passen.",
+    "heading": "Hi. Fijn dat je er bent.",
+    "intro": "Unwind stelt ontspannende dingen voor als je brein niet uit wil. Vier vragen, één minuut.",
+    "questionOf": "Vraag {n} van {total}",
     "consentQuestion": "Mag Unwind onthouden wat je vertelt?",
     "consentYes": "Ja, prima",
     "consentNo": "Liever niet",
-    "next": "Verder",
+    "next": "Begin",
     "settingQuestion": "Waar ontspan je het liefst?",
     "settingIndoor": "Binnen",
     "settingOutdoor": "Buiten",
@@ -86,8 +89,8 @@
     "socialBoth": "Allebei prima",
     "interestsQuestion": "Wat spreekt je aan?",
     "interestsHint": "Kies er zoveel als je wilt, of geen.",
-    "generate": "Maak mijn lijst",
-    "skip": "Sla over",
+    "generate": "Klaar",
+    "skip": "Overslaan",
     "generating": "Activiteiten aan het genereren...",
     "doneHeading": "Klaar!",
     "done": "{count} activiteiten toegevoegd op basis van je voorkeuren.",
@@ -96,6 +99,7 @@
   },
   "menu": {
     "label": "Menu",
+    "close": "Sluiten",
     "theme": "Thema",
     "logout": "Uitloggen",
     "deleteAccount": "Account verwijderen",

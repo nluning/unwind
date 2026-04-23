@@ -1,21 +1,9 @@
 <template>
-  <div class="relative" ref="menuRef">
+  <div
+    ref="menuRef"
+    class="fixed top-[18px] right-[22px] z-20"
+  >
     <button
-      v-if="variant === 'legacy'"
-      class="w-11 h-11 rounded-full bg-card flex items-center justify-center cursor-pointer"
-      :aria-label="$t('menu.label')"
-      :aria-expanded="open"
-      @click="open = !open"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <line x1="4" y1="6" x2="20" y2="6" />
-        <line x1="4" y1="12" x2="20" y2="12" />
-        <line x1="4" y1="18" x2="20" y2="18" />
-      </svg>
-    </button>
-
-    <button
-      v-else
       class="uw-menu-btn"
       :aria-label="$t('menu.label')"
       :aria-expanded="open"
@@ -30,59 +18,75 @@
 
     <div
       v-if="open"
-      class="absolute right-0 top-13 w-56 bg-card rounded-xl shadow-lg py-2 z-20"
+      role="menu"
+      class="absolute right-0 top-[calc(100%+8px)] w-56 rounded-xl py-2 overflow-hidden backdrop-blur-[8px]"
+      :style="{
+        background: 'var(--uw-card, rgba(255,255,255,0.95))',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06)',
+      }"
     >
-      <div class="px-4 py-2">
-        <p class="text-xs text-muted mb-2">{{ $t('menu.theme') }}</p>
-        <ThemeSelector />
+      <div class="py-2 px-4">
+        <p class="text-xs text-uw-ink-mute mb-2">{{ $t('menu.theme') }}</p>
+        <div class="flex items-center gap-2">
+          <button
+            v-for="preset in themes"
+            :key="preset.id"
+            class="w-[22px] h-[22px] rounded-[11px] border-2 p-0 cursor-pointer"
+            :class="colorScheme === preset.id ? 'border-uw-ink' : 'border-transparent'"
+            :style="{ background: preset.swatch }"
+            :aria-label="$t(`theme.${preset.id}`)"
+            :aria-pressed="colorScheme === preset.id"
+            @click="setColorScheme(preset.id)"
+          />
+          <div class="w-px h-[18px] bg-uw-border-soft mx-1" />
+          <button
+            class="w-[22px] h-[22px] rounded-[11px] border border-uw-border bg-transparent text-uw-ink-soft inline-flex items-center justify-center p-0 cursor-pointer"
+            :aria-label="$t(mode === 'dark' ? 'theme.light' : 'theme.dark')"
+            :aria-pressed="mode === 'dark'"
+            @click="toggleMode"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M6 1 a 7 7 0 1 0 9 9 A 6 6 0 0 1 6 1 Z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <div class="border-t border-outline my-1" />
+      <div class="h-px bg-uw-border-soft my-1" />
 
       <router-link
-        :to="'/stress'"
-        class="block px-4 py-2.5 text-sm text-dim hover:text-primary transition-colors no-underline"
+        v-for="link in navLinks"
+        :key="link.to"
+        :to="link.to"
+        class="block w-full py-2.5 px-4 text-sm text-uw-ink-soft text-left no-underline transition-colors hover:text-uw-primary"
         @click="open = false"
       >
-        {{ $t('nav.stress') }}
-      </router-link>
-      <router-link
-        :to="'/counterbalance'"
-        class="block px-4 py-2.5 text-sm text-dim hover:text-primary transition-colors no-underline"
-        @click="open = false"
-      >
-        {{ $t('nav.counterbalance') }}
+        {{ $t(link.label) }}
       </router-link>
 
-      <router-link
-        to="/privacy"
-        class="block px-4 py-2.5 text-sm text-dim hover:text-primary transition-colors no-underline"
-        @click="open = false"
-      >
-        {{ $t('privacy.link') }}
-      </router-link>
-
-      <div class="border-t border-outline my-1" />
+      <div class="h-px bg-uw-border-soft my-1" />
 
       <button
-        class="w-full text-left px-4 py-2.5 text-sm text-error cursor-pointer bg-transparent border-none hover:opacity-80"
+        class="block w-full py-2.5 px-4 text-sm text-left bg-transparent border-0 cursor-pointer transition-opacity hover:opacity-80"
+        :style="{ color: 'var(--uw-danger, #b4412a)' }"
         @click="handleLogout"
       >
         {{ $t('menu.logout') }}
       </button>
 
-      <div class="border-t border-outline my-1" />
+      <div class="h-px bg-uw-border-soft my-1" />
 
       <button
         v-if="!confirmingDelete"
-        class="w-full text-left px-4 py-2.5 text-sm text-muted cursor-pointer bg-transparent border-none hover:text-error transition-colors"
+        class="block w-full py-2.5 px-4 text-sm text-uw-ink-mute text-left bg-transparent border-0 cursor-pointer transition-colors hover:text-[var(--uw-danger,#b4412a)]"
         @click="confirmingDelete = true"
       >
         {{ $t('menu.deleteAccount') }}
       </button>
       <button
         v-else
-        class="w-full text-left px-4 py-2.5 text-sm text-error cursor-pointer bg-transparent border-none font-bold"
+        class="block w-full py-2.5 px-4 text-sm font-semibold text-left bg-transparent border-0 cursor-pointer transition-opacity hover:opacity-80"
+        :style="{ color: 'var(--uw-danger, #b4412a)' }"
         @click="handleDeleteAccount"
       >
         {{ $t('menu.deleteConfirm') }}
@@ -95,15 +99,10 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
-import ThemeSelector from './ThemeSelector.vue'
-
-withDefaults(defineProps<{
-  variant?: 'legacy' | 'horizon'
-}>(), {
-  variant: 'legacy',
-})
+import { useTheme, type ColorScheme } from '../composables/useTheme.js'
 
 const { logout, deleteAccount } = useAuth()
+const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()
 const router = useRouter()
 
 const open = ref(false)
@@ -126,6 +125,7 @@ async function handleDeleteAccount() {
 function handleClickOutside(event: MouseEvent) {
   if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
     open.value = false
+    confirmingDelete.value = false
   }
 }
 
@@ -136,4 +136,16 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+const themes: { id: ColorScheme; swatch: string }[] = [
+  { id: 'warm',    swatch: '#ae7c6d' },
+  { id: 'calm',    swatch: '#6d8c94' },
+  { id: 'playful', swatch: '#3d7a4a' },
+]
+
+const navLinks = [
+  { to: '/stress',         label: 'nav.stress' },
+  { to: '/counterbalance', label: 'nav.counterbalance' },
+  { to: '/privacy',        label: 'privacy.link' },
+]
 </script>
