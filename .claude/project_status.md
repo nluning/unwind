@@ -26,5 +26,5 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
 - Memory consent is opt-in (default false, asked during onboarding)
-- Using Haiku for both chat and onboarding (sufficient quality, lower cost)
+- Haiku for Mode 4 chat (acceptable Dutch quality in short guided format); Sonnet for onboarding (reverted from Haiku on 2026-04-23 — Haiku's Dutch output was stilted for the generated activity list). See ADR-006 addendum.
 - Rate limiting counts API requests, not conversations (70/day ≈ 7 conversations)

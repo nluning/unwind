@@ -9,7 +9,8 @@
     "seed": "tsx src/db/seed.ts",
     "migrate:test": "dotenv -e .env.test -- tsx src/db/migrate.ts",
     "seed:test": "dotenv -e .env.test -- tsx src/db/seed.ts",
-    "chat": "npx dotenv -e .env -- npx tsx scripts/test-prompt.ts"
+    "chat": "npx dotenv -e .env -- npx tsx scripts/test-prompt.ts",
+    "onboarding:test": "npx dotenv -e .env -- npx tsx scripts/test-onboarding.ts"
   },
   "author": "Noor",
   "license": "ISC",

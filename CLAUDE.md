@@ -41,7 +41,8 @@ Stage 5 (all 12 chunks done):
 - Onboarding: tappable form (setting/social/interests), Claude generates 10-15
   personalized activities + 3-5 user memories in one API call, batch-inserted
   in a single transaction. Decision: form over conversation (review panel showed
-  typing is a dealbreaker for depleted users). Uses Haiku (sufficient quality).
+  typing is a dealbreaker for depleted users). Uses Sonnet (reverted from Haiku
+  2026-04-23 — Dutch quality of generated activities was stilted; see ADR-006).
 - Rate limiting: `api_usage` table, 70 chat requests/day (≈7 conversations),
   3 onboarding attempts total. `createRateLimiter` middleware factory.
 - Tests: memory CRUD, rate limiting, onboarding response parsing
