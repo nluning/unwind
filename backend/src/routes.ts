@@ -14,27 +14,32 @@ async function activityRoutes(fastify: FastifyInstance) {
 
         // Show the user's own activities + shared base activities
         values.push(userId)
-        conditions.push(`(a.user_id = $${values.length} OR a.user_id IS NULL)`)
+        conditions.push(`(activity.user_id = $${values.length} OR activity.user_id IS NULL)`)
+
+        // Exclude base activities this user has hidden (LEFT JOIN below
+        // leaves hidden.* NULL for non-hidden rows).
+        conditions.push(`hidden.activity_id IS NULL`)
 
         if (category) {
             values.push(category)
-            conditions.push(`c.name = $${values.length}`)
+            conditions.push(`category.name = $${values.length}`)
         }
 
         if (stress_level) {
             values.push(Number(stress_level))
-            conditions.push(`a.min_stress_level <= $${values.length} AND a.max_stress_level >= $${values.length}`)
+            conditions.push(`activity.min_stress_level <= $${values.length} AND activity.max_stress_level >= $${values.length}`)
         }
 
         const where = 'WHERE ' + conditions.join(' AND ')
 
         const result = await fastify.pg.query(
-            `SELECT a.*, COALESCE(array_agg(c.name) FILTER (WHERE c.name IS NOT NULL), '{}') AS categories
-             FROM activities a
-             LEFT JOIN activity_categories ac ON a.id = ac.activity_id
-             LEFT JOIN categories c ON ac.category_id = c.id
+            `SELECT activity.*, COALESCE(array_agg(category.name) FILTER (WHERE category.name IS NOT NULL), '{}') AS categories
+             FROM activities activity
+             LEFT JOIN activity_categories activity_category ON activity.id = activity_category.activity_id
+             LEFT JOIN categories category ON activity_category.category_id = category.id
+             LEFT JOIN user_hidden_activities hidden ON hidden.activity_id = activity.id AND hidden.user_id = $1
              ${where}
-             GROUP BY a.id`,
+             GROUP BY activity.id`,
             values
         )
 
@@ -204,18 +209,42 @@ async function activityRoutes(fastify: FastifyInstance) {
         reply.status(201).send({ ok: true })
     })
 
-    fastify.delete<{Params: {id:string}}>('/activities/:id', { schema: idParamSchema, preHandler: requireAuth }, async function (request, reply) {
+    fastify.delete<{ Params: { id: string } }>('/activities/:id', { schema: idParamSchema, preHandler: requireAuth }, async function (request, reply) {
         const { id } = request.params
         const userId = request.user!.id
-        const result = await fastify.pg.query(
-            'DELETE FROM activities WHERE id = $1 AND user_id = $2 RETURNING *',
-            [id, userId]
+
+        const lookup = await fastify.pg.query<{ user_id: string | null }>(
+            'SELECT user_id FROM activities WHERE id = $1',
+            [id]
         )
-        if (result.rows.length === 0) {
-            reply.status(404).send({ error: 'Activity could not be deleted' })
+
+        if (lookup.rows.length === 0) {
+            reply.status(404).send({ error: 'Activity not found' })
             return
         }
-        reply.status(200).send(result.rows[0])
+
+        const ownerId = lookup.rows[0]!.user_id
+
+        // Base activity (shared, user_id IS NULL) → soft-hide for this user.
+        if (ownerId === null) {
+            await fastify.pg.query(
+                `INSERT INTO user_hidden_activities (user_id, activity_id)
+                 VALUES ($1, $2)
+                 ON CONFLICT DO NOTHING`,
+                [userId, id]
+            )
+            reply.status(200).send({ ok: true, action: 'hidden' })
+            return
+        }
+
+        // Belongs to someone else — don't leak that it exists.
+        if (ownerId !== userId) {
+            reply.status(404).send({ error: 'Activity not found' })
+            return
+        }
+
+        await fastify.pg.query('DELETE FROM activities WHERE id = $1', [id])
+        reply.status(200).send({ ok: true, action: 'deleted' })
     })
 };
 

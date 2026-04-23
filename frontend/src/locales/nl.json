@@ -143,6 +143,28 @@
     "Hands": "Handen",
     "Heart": "Hart"
   },
+  "activitiesList": {
+    "link": "Mijn activiteiten",
+    "heading": "Mijn activiteiten",
+    "newButton": "Nieuwe activiteit",
+    "empty": "Nog geen activiteiten. Voeg er een toe om te beginnen.",
+    "editButton": "Bewerk",
+    "deleteButton": "Verwijder",
+    "deleteConfirm": "Zeker weten?",
+    "cancelButton": "Annuleer",
+    "saveButton": "Opslaan",
+    "stressRangeLabel": "Stress {min}–{max}",
+    "form": {
+      "title": "Titel",
+      "description": "Beschrijving (optioneel)",
+      "duration": "Duur (minuten)",
+      "stressRange": "Stressniveau (min – max)",
+      "categories": "Categorieën",
+      "categoriesRequired": "Kies minstens één categorie.",
+      "stressOrder": "Minimum moet kleiner of gelijk zijn aan maximum.",
+      "saveError": "Kon niet opslaan. Probeer opnieuw."
+    }
+  },
   "activities": {
     "listen-to-a-podcast-episode": {
       "title": "Luister naar een podcastaflevering",
