@@ -146,6 +146,7 @@ const themes: { id: ColorScheme; swatch: string }[] = [
 const navLinks = [
   { to: '/stress',         label: 'nav.stress' },
   { to: '/counterbalance', label: 'nav.counterbalance' },
+  { to: '/activities',     label: 'activitiesList.link' },
   { to: '/privacy',        label: 'privacy.link' },
 ]
 </script>

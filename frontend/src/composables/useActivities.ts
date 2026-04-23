@@ -1,8 +1,8 @@
 import { ref, computed } from 'vue'
 import { api } from '../api/client.js'
-import type { Activity, CreateActivityPayload } from '../types/activity.js'
+import type { Activity, CreateActivityPayload, UpdateActivityPayload } from '../types/activity.js'
 
-export type { Activity, CreateActivityPayload }
+export type { Activity, CreateActivityPayload, UpdateActivityPayload }
 
 // Hardcoded to match seed.sql SERIAL IDs. If categories become user-configurable,
 // replace with a GET /categories endpoint.
@@ -98,12 +98,40 @@ export function useActivities() {
     // names from the IDs we sent so local state matches GET /activities shape.
     const enriched: Activity = {
       ...raw,
-      categories: payload.category_ids.map((id) => CATEGORY_NAME_MAP[id] ?? `Unknown(${id})`),
+      categories: payload.category_ids.map((categoryId) => CATEGORY_NAME_MAP[categoryId] ?? `Unknown(${categoryId})`),
       times_skipped: 0,
     }
 
     activities.value = [...activities.value, enriched]
     return enriched
+  }
+
+  async function updateActivity(activityId: string, payload: UpdateActivityPayload): Promise<Activity> {
+    const raw = await api<Activity>(`/activities/${activityId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+
+    // PUT returns the raw row without joined categories. If the caller sent
+    // new category_ids, reconstruct the names; otherwise keep whatever we had.
+    const previous = activities.value.find((existing) => existing.id === activityId)
+    const categories = payload.category_ids
+      ? payload.category_ids.map((categoryId) => CATEGORY_NAME_MAP[categoryId] ?? `Unknown(${categoryId})`)
+      : previous?.categories ?? []
+
+    const updated: Activity = { ...raw, categories }
+
+    activities.value = activities.value.map((existing) =>
+      existing.id === activityId ? updated : existing
+    )
+    return updated
+  }
+
+  async function deleteActivity(activityId: string): Promise<void> {
+    await api<{ ok: true }>(`/activities/${activityId}`, { method: 'DELETE' })
+    // Backend handled hide-vs-delete; locally both mean "remove from list."
+    activities.value = activities.value.filter((existing) => existing.id !== activityId)
   }
 
   const isEmpty = computed(() => loaded.value && activities.value.length === 0)
@@ -115,6 +143,8 @@ export function useActivities() {
     isEmpty,
     fetchActivities,
     createActivity,
+    updateActivity,
+    deleteActivity,
     filterByStress,
     filterByExcludedCategories,
     suggest,
