@@ -45,3 +45,4 @@ __screenshots__/
 
 # Claude
 .claude/settings.local.json
+.claude/worktrees/

@@ -7,6 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
+    "db:reset": "tsx src/db/reset.ts && npm run migrate && npm run seed",
     "migrate:test": "dotenv -e .env.test -- tsx src/db/migrate.ts",
     "seed:test": "dotenv -e .env.test -- tsx src/db/seed.ts",
     "chat": "npx dotenv -e .env -- npx tsx scripts/test-prompt.ts",

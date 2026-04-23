@@ -61,11 +61,19 @@
           </h2>
         </div>
 
-        <OnbOptionList
-          :options="consentOptions"
-          :model-value="consentChoice"
-          @update:model-value="handleConsentPicked"
-        />
+        <div class="mt-auto mb-14 px-7 flex gap-3">
+          <button
+            v-for="option in consentOptions"
+            :key="option.value"
+            class="flex-1 py-4 rounded-xl border-2 text-base font-medium cursor-pointer transition-colors"
+            :class="consentChoice === option.value
+              ? 'border-uw-primary bg-uw-primary text-uw-primary-fg'
+              : 'border-uw-border bg-transparent text-uw-ink hover:border-uw-ink'"
+            @click="handleConsentPicked(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
       </template>
 
       <!-- Step 3 — setting -->
@@ -79,9 +87,10 @@
           </h2>
         </div>
 
-        <OnbOptionList
+        <OnboardingOptionList
           :options="settingOptions"
           :model-value="setting"
+          class="mt-auto mb-14 mx-7"
           @update:model-value="(v) => { setting = v as typeof setting; step = 4 }"
         />
       </template>
@@ -97,9 +106,10 @@
           </h2>
         </div>
 
-        <OnbOptionList
+        <OnboardingOptionList
           :options="socialOptions"
           :model-value="social"
+          class="mt-auto mb-14 mx-7"
           @update:model-value="(v) => { social = v as typeof social; step = 5 }"
         />
       </template>
@@ -215,10 +225,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineComponent, h } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
+import OnboardingOptionList from '../components/OnboardingOptionList.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -228,8 +239,8 @@ const error = ref('')
 
 const memoryConsent = ref<boolean | null>(null)
 const consentChoice = ref<'yes' | 'no' | ''>('')
-const setting = ref<'indoor' | 'outdoor' | 'no_preference'>('no_preference')
-const social = ref<'alone' | 'with_others' | 'no_preference'>('no_preference')
+const setting = ref<'' | 'indoor' | 'outdoor' | 'no_preference'>('')
+const social = ref<'' | 'alone' | 'with_others' | 'no_preference'>('')
 const interests = ref<string[]>([])
 const generatedCount = ref(0)
 
@@ -300,71 +311,6 @@ function handleSkip() {
   router.push({ name: 'suggest' })
 }
 
-// Inline Fraunces-row option list — three usages (consent, setting, social).
-// Kept local to avoid a new component file for something only used here.
-const OnbOptionList = defineComponent({
-  props: {
-    options: {
-      type: Array as () => Array<{ value: string; label: string }>,
-      required: true,
-    },
-    modelValue: { type: String, required: true },
-  },
-  emits: ['update:modelValue'],
-  setup(props, { emit }) {
-    return () =>
-      h(
-        'ul',
-        {
-          class: 'mt-auto mb-14 px-7 flex flex-col list-none',
-          role: 'list',
-        },
-        props.options.map((option, index) =>
-          h(
-            'li',
-            {
-              key: option.value,
-              class: [
-                'border-b border-uw-border-soft',
-                index === 0 && 'border-t',
-              ],
-            },
-            h(
-              'button',
-              {
-                class: [
-                  'w-full py-[18px] bg-transparent border-0 font-serif text-xl leading-tight tracking-[-0.2px] text-left cursor-pointer flex items-center justify-between transition-colors',
-                  option.value === props.modelValue
-                    ? 'text-uw-primary'
-                    : 'text-uw-ink',
-                ],
-                onClick: () => emit('update:modelValue', option.value),
-              },
-              [
-                h('span', option.label),
-                option.value === props.modelValue
-                  ? h(
-                      'svg',
-                      {
-                        width: 16,
-                        height: 16,
-                        viewBox: '0 0 16 16',
-                        fill: 'none',
-                        stroke: 'currentColor',
-                        'stroke-width': 1.8,
-                        'stroke-linecap': 'round',
-                        'stroke-linejoin': 'round',
-                      },
-                      h('polyline', { points: '3 8 6.5 11.5 13 5' })
-                    )
-                  : null,
-              ]
-            )
-          )
-        )
-      )
-  },
-})
 </script>
 
 <style scoped>
