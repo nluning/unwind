@@ -24,13 +24,17 @@ export function createRateLimiter(options: RateLimitOptions) {
             ? 'AND created_at >= CURRENT_DATE'
             : ''
 
-        const countResult = await request.server.pg.query(
-            `SELECT COUNT(*)::int AS count FROM api_usage
-             WHERE user_id = $1 AND endpoint = $2 ${timeCondition}`,
-            [userId, endpoint]
+        const result = await request.server.pg.query(
+            `INSERT INTO api_usage (user_id, endpoint)
+             SELECT $1, $2
+             WHERE (
+               SELECT COUNT(*) FROM api_usage
+               WHERE user_id = $1 AND endpoint = $2 ${timeCondition}
+             ) < $3`,
+            [userId, endpoint, maxRequests]
         )
 
-        if (countResult.rows[0].count >= maxRequests) {
+        if (result.rowCount === 0) {
             reply.status(429).send({
                 error: endpoint === 'chat'
                     ? 'Je hebt je limiet voor vandaag bereikt. Probeer het morgen weer.'
@@ -38,11 +42,5 @@ export function createRateLimiter(options: RateLimitOptions) {
             })
             return reply
         }
-
-        // Record this usage
-        await request.server.pg.query(
-            'INSERT INTO api_usage (user_id, endpoint) VALUES ($1, $2)',
-            [userId, endpoint]
-        )
     }
 }

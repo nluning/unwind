@@ -75,8 +75,9 @@ async function onboardingRoutes(fastify: FastifyInstance) {
                 social: { type: 'string', enum: ['alone', 'with_others', 'no_preference'] },
                 interests: {
                     type: 'array',
-                    items: { type: 'string' },
+                    items: { type: 'string', maxLength: 100 },
                     minItems: 0,
+                    maxItems: 20,
                 },
                 memory_consent: { type: 'boolean' },
             },
@@ -108,23 +109,12 @@ async function onboardingRoutes(fastify: FastifyInstance) {
             // Build the prompt and call Claude
             const userMessage = buildOnboardingUserMessage({ setting, social, interests })
 
-            let response
-            try {
-                response = await client.messages.create({
-                    model: 'claude-sonnet-4-6',
-                    max_tokens: 2048,
-                    system: ONBOARDING_SYSTEM_PROMPT,
-                    messages: [{ role: 'user', content: userMessage }],
-                })
-            } catch (err: any) {
-                if (err?.status === 429) {
-                    reply.status(429).send({ error: 'AI service is busy. Try again in a moment.' })
-                    return
-                }
-                fastify.log.error(err, 'Onboarding Claude API error')
-                reply.status(503).send({ error: 'AI service is temporarily unavailable.' })
-                return
-            }
+            const response = await client.messages.create({
+                model: 'claude-sonnet-4-6',
+                max_tokens: 2048,
+                system: ONBOARDING_SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: userMessage }],
+            })
 
             const text = response.content
                 .filter((block) => block.type === 'text')
@@ -150,51 +140,63 @@ async function onboardingRoutes(fastify: FastifyInstance) {
             // Look up category IDs from the database
             const categoryMap = await getCategoryMap(fastify)
 
-            // Insert everything in a single transaction
             const dbClient = await fastify.pg.connect()
             try {
                 await dbClient.query('BEGIN')
 
-                // Insert activities + category links
-                const insertedActivities = []
-                for (const activity of result.activities) {
-                    const activityResult = await dbClient.query(
-                        `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source, user_id)
-                         VALUES ($1, $2, $3, $4, $5, 'ai', $6)
-                         RETURNING *`,
-                        [
-                            activity.title,
-                            activity.description ?? null,
-                            activity.duration_minutes,
-                            activity.min_stress,
-                            activity.max_stress,
-                            userId,
-                        ]
-                    )
+                const activityValues = result.activities
+                    .map((_, i) => {
+                        const base = i * 6
+                        return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, 'ai', $${base + 6})`
+                    })
+                    .join(', ')
+                const activityParams = result.activities.flatMap((activity) => [
+                    activity.title,
+                    activity.description ?? null,
+                    activity.duration_minutes,
+                    activity.min_stress,
+                    activity.max_stress,
+                    userId,
+                ])
+                const insertedActivitiesResult = await dbClient.query(
+                    `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source, user_id)
+                     VALUES ${activityValues}
+                     RETURNING *`,
+                    activityParams
+                )
+                const insertedActivities = insertedActivitiesResult.rows
 
-                    const inserted = activityResult.rows[0]
-                    insertedActivities.push(inserted)
-
-                    const categoryId = categoryMap[activity.category]
-                    if (categoryId) {
-                        await dbClient.query(
-                            'INSERT INTO activity_categories (activity_id, category_id) VALUES ($1, $2)',
-                            [inserted.id, categoryId]
+                const categoryValues: string[] = []
+                const categoryParams: (string | number)[] = []
+                for (let i = 0; i < insertedActivities.length; i++) {
+                    const sourceActivity = result.activities[i]!
+                    const categoryId = categoryMap[sourceActivity.category]
+                    if (!categoryId) {
+                        fastify.log.warn(
+                            { category: sourceActivity.category, title: sourceActivity.title },
+                            'Unknown category from AI — skipping category link'
                         )
-                    } else {
-                        fastify.log.warn({ category: activity.category, title: activity.title }, 'Unknown category from AI — skipping category link')
+                        continue
                     }
+                    const base = categoryParams.length
+                    categoryValues.push(`($${base + 1}, $${base + 2})`)
+                    categoryParams.push(insertedActivities[i]!.id, categoryId)
+                }
+                if (categoryValues.length > 0) {
+                    await dbClient.query(
+                        `INSERT INTO activity_categories (activity_id, category_id) VALUES ${categoryValues.join(', ')}`,
+                        categoryParams
+                    )
                 }
 
-                // Insert memories (only if consent was given)
                 if (memory_consent && result.memories.length > 0) {
-                    for (const fact of result.memories) {
-                        await dbClient.query(
-                            `INSERT INTO user_memories (user_id, fact, source)
-                             VALUES ($1, $2, 'onboarding')`,
-                            [userId, fact]
-                        )
-                    }
+                    const memoryValues = result.memories
+                        .map((_, i) => `($1, $${i + 2}, 'onboarding')`)
+                        .join(', ')
+                    await dbClient.query(
+                        `INSERT INTO user_memories (user_id, fact, source) VALUES ${memoryValues}`,
+                        [userId, ...result.memories]
+                    )
                 }
 
                 await dbClient.query('COMMIT')
