@@ -21,7 +21,7 @@ async function chatRoutes(fastify: FastifyInstance) {
                         required: ['role', 'content'],
                         properties: {
                             role: { type: 'string', enum: ['user', 'assistant'] },
-                            content: { type: 'string' },
+                            content: { type: 'string', maxLength: 5000 },
                         },
                     },
                     minItems: 1,
@@ -45,44 +45,34 @@ async function chatRoutes(fastify: FastifyInstance) {
                 userContext,
             })
 
-            try {
-                const response = await client.messages.create({
-                    model: 'claude-haiku-4-5-20251001',
-                    max_tokens: 512,
-                    system: systemPrompt,
-                    messages,
-                })
+            const response = await client.messages.create({
+                model: 'claude-haiku-4-5-20251001',
+                max_tokens: 512,
+                system: systemPrompt,
+                messages,
+            })
 
-                const assistantText = response.content
-                    .filter((block) => block.type === 'text')
-                    .map((block) => block.text)
-                    .join('')
+            const assistantText = response.content
+                .filter((block) => block.type === 'text')
+                .map((block) => block.text)
+                .join('')
 
-                fastify.log.info(
-                    {
-                        user_id: request.user!.id,
-                        input_tokens: response.usage.input_tokens,
-                        output_tokens: response.usage.output_tokens,
-                    },
-                    'chat token usage'
-                )
+            fastify.log.info(
+                {
+                    user_id: request.user!.id,
+                    input_tokens: response.usage.input_tokens,
+                    output_tokens: response.usage.output_tokens,
+                },
+                'chat token usage'
+            )
 
-                reply.send({
-                    message: assistantText,
-                    usage: {
-                        input_tokens: response.usage.input_tokens,
-                        output_tokens: response.usage.output_tokens,
-                    },
-                })
-            } catch (err: any) {
-                if (err?.status === 429) {
-                    reply.status(429).send({ error: 'AI service is busy. Try again in a moment.' })
-                    return
-                }
-
-                fastify.log.error(err, 'Claude API error')
-                reply.status(503).send({ error: 'AI service is temporarily unavailable.' })
-            }
+            reply.send({
+                message: assistantText,
+                usage: {
+                    input_tokens: response.usage.input_tokens,
+                    output_tokens: response.usage.output_tokens,
+                },
+            })
         }
     )
 

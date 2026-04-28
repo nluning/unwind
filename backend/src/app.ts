@@ -2,14 +2,17 @@
   import cors from '@fastify/cors'
   import cookie from '@fastify/cookie'
   import dbPlugin from './db/index.js'
-  import activityRoutes from './routes.js'
+  import activityRoutes from './routes/activities.js'
   import authRoutes from './routes/auth.js'
 import chatRoutes from './routes/chat.js'
 import memoryRoutes from './routes/memory.js'
 import onboardingRoutes from './routes/onboarding.js'
+import { registerErrorHandler } from './errorHandler.js'
 
   export async function buildApp() {
     const fastify = Fastify({ logger: true })
+
+    registerErrorHandler(fastify)
 
     await fastify.register(cors, {
       origin: process.env.FRONTEND_URL,
