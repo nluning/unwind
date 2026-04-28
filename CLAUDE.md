@@ -112,6 +112,8 @@ session logs.
   modeling, API contracts, state management.
 - **Surface confusion early.** If a request is ambiguous or the direction
   seems wrong, flag it immediately rather than guessing.
+- **Never read .env files directly.** If you need to check    
+  whether a variable is set, ask the user, or use printenv VAR_NAME to read a single value, or grep for the key name only (e.g. grep -c '^VAR=' .env).
 
 ## Intentionally excluded
 
