@@ -48,4 +48,4 @@ document.documentElement.dataset.theme = 'calm'; // or 'warm' | 'playful'
 
 - We used `CATEGORY_ID_MAP` and `filterByExcludedCategories` based on the composable signature in the repo — re-check if you've renamed them recently.
 - `/chat` endpoint payload is assumed to return `{ reply, activity? }`. Adjust if your backend differs.
-- Onboarding drops the explicit memory-consent question; `memory_consent: false` is sent by default. Add that step back if legal needs it.
+
