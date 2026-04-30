@@ -272,6 +272,20 @@ input {
 .uw-actions__primary   { gap: 10px; color: var(--uw-ink); }
 .uw-actions__secondary { gap:  8px; color: var(--uw-ink-soft); }
 
+/* Text-only button — used for skip / cancel / inline retry. */
+.uw-text-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--uw-ink-mute);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.uw-text-button:hover { color: var(--uw-ink); }
+.uw-text-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .uw-badge {
   width: 40px;
   height: 40px;

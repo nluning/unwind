@@ -1,12 +1,6 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <span class="uw-wordmark">unwind</span>
-      </header>
+  <PageShell>
+      <PageHeader />
 
       <p class="uw-prompt">{{ $t('suggest.heading') }}</p>
 
@@ -68,8 +62,7 @@
           {{ $t('suggest.exhausted') }}
         </p>
       </div>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -78,6 +71,8 @@ import { useActivities } from '../composables/useActivities.js'
 import { useSuggestionFlow } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
 import LinkButton from '../components/LinkButton.vue'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 const { activities, loaded, error, isEmpty, fetchActivities } = useActivities()
 
