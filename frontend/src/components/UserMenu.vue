@@ -9,11 +9,7 @@
       :aria-expanded="open"
       @click="open = !open"
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-        <circle cx="8" cy="3" r="1.4" />
-        <circle cx="8" cy="8" r="1.4" />
-        <circle cx="8" cy="13" r="1.4" />
-      </svg>
+      <MenuDotsIcon />
     </button>
 
     <div
@@ -45,9 +41,7 @@
             :aria-pressed="mode === 'dark'"
             @click="toggleMode"
           >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M6 1 a 7 7 0 1 0 9 9 A 6 6 0 0 1 6 1 Z" />
-            </svg>
+            <MoonIcon />
           </button>
         </div>
       </div>
@@ -100,6 +94,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import { useTheme, type ColorScheme } from '../composables/useTheme.js'
+import MenuDotsIcon from './icons/MenuDotsIcon.vue'
+import MoonIcon from './icons/MoonIcon.vue'
 
 const { logout, deleteAccount } = useAuth()
 const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()

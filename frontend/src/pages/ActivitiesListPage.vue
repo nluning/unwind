@@ -1,12 +1,6 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <span class="uw-wordmark">unwind</span>
-      </header>
+  <PageShell>
+      <PageHeader />
 
       <p class="uw-prompt">{{ $t('activitiesList.heading') }}</p>
 
@@ -137,7 +131,7 @@
         <div class="mt-auto flex items-center justify-between gap-4">
           <button
             type="button"
-            class="uw-onb-link"
+            class="uw-text-button"
             :disabled="saving"
             @click="cancelEditing"
           >
@@ -169,7 +163,7 @@
       <!-- List -->
       <template v-else>
         <div class="flex justify-end px-6 mt-2">
-          <button class="uw-onb-link" @click="startCreating">
+          <button class="uw-text-button" @click="startCreating">
             + {{ $t('activitiesList.newButton') }}
           </button>
         </div>
@@ -215,7 +209,7 @@
             <div class="flex items-center justify-end gap-4 mt-1">
               <button
                 v-if="activity.source !== 'base'"
-                class="uw-onb-link text-sm"
+                class="uw-text-button text-sm"
                 @click="startEditing(activity)"
               >
                 {{ $t('activitiesList.editButton') }}
@@ -223,7 +217,7 @@
 
               <button
                 v-if="confirmingDeleteId !== activity.id"
-                class="uw-onb-link text-sm"
+                class="uw-text-button text-sm"
                 :style="{ color: 'var(--uw-ink-mute)' }"
                 @click="confirmingDeleteId = activity.id"
               >
@@ -231,7 +225,7 @@
               </button>
               <button
                 v-else
-                class="uw-onb-link text-sm font-semibold"
+                class="uw-text-button text-sm font-semibold"
                 :style="{ color: 'var(--uw-danger, #b4412a)' }"
                 @click="handleDelete(activity.id)"
               >
@@ -241,8 +235,7 @@
           </li>
         </ul>
       </template>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -255,6 +248,8 @@ import {
   type CreateActivityPayload,
 } from '../composables/useActivities.js'
 import LinkButton from '../components/LinkButton.vue'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 const { t } = useI18n()
 
@@ -390,16 +385,4 @@ async function handleDelete(activityId: string) {
   border-color: var(--uw-primary);
 }
 
-/* Same text-only button as in OnboardingPage — not global enough to promote. */
-.uw-onb-link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--uw-ink-mute);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.uw-onb-link:hover { color: var(--uw-ink); }
-.uw-onb-link:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

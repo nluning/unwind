@@ -1,32 +1,6 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <button
-          class="uw-menu-btn"
-          :aria-label="$t('nav.back')"
-          @click="handleBack"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M10 3 L5 8 L10 13" />
-          </svg>
-        </button>
-        <span class="uw-wordmark">unwind</span>
-        <div class="w-[34px]" aria-hidden="true" />
-      </header>
+  <PageShell>
+      <PageHeader back @back="handleBack" />
 
       <div
         v-if="!loaded && !error"
@@ -60,42 +34,9 @@
               <span
                 class="w-10 h-10 rounded-full border border-uw-border inline-flex items-center justify-center flex-shrink-0 text-uw-ink transition-colors group-hover:bg-uw-primary group-hover:text-uw-primary-fg group-hover:border-transparent"
               >
-                <svg
-                  v-if="category === 'Head'"
-width="18" height="18" viewBox="0 0 20 20" fill="none"
-       stroke="currentColor" stroke-width="1.5"
-       stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="10" cy="8" r="5"/>
-    <path d="M10 13 v 4 M 7 17 h 6"/>
-                </svg>
-                <svg
-                  v-else-if="category === 'Hands'"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M6 11 V 5 a 1.2 1.2 0 0 1 2.4 0 V 9 M 8.4 9 V 3.5 a 1.2 1.2 0 0 1 2.4 0 V 9 M 10.8 9 V 4 a 1.2 1.2 0 0 1 2.4 0 V 10 M 13.2 10 V 6 a 1.2 1.2 0 0 1 2.4 0 V 12 a 5 5 0 0 1 -9.6 1 L 4.5 10 a 1 1 0 0 1 1.5 -1" />
-                </svg>
-                <svg
-                  v-else
-                  width="18"
-                  height="18"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M10 16 L 3.5 9.5 a 3.8 3.8 0 0 1 5.4 -5.4 L 10 5.2 l 1.1 -1.1 a 3.8 3.8 0 0 1 5.4 5.4 Z" />
-                </svg>
+                <HeadIcon v-if="category === 'Head'" />
+                <HandsIcon v-else-if="category === 'Hands'" />
+                <HeartIcon v-else />
               </span>
               <span>{{ $t(`categories.${category}`) }}</span>
             </button>
@@ -137,8 +78,7 @@ width="18" height="18" viewBox="0 0 20 20" fill="none"
       >
         <p class="text-sm text-uw-ink-mute">{{ $t('suggest.exhausted') }}</p>
       </div>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -151,6 +91,11 @@ import {
 } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
 import LinkButton from '../components/LinkButton.vue'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
+import HeadIcon from '../components/icons/HeadIcon.vue'
+import HandsIcon from '../components/icons/HandsIcon.vue'
+import HeartIcon from '../components/icons/HeartIcon.vue'
 
 const router = useRouter()
 const categories = Object.keys(CATEGORY_ID_MAP)

@@ -1,9 +1,5 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
+  <PageShell>
       <!-- Progress dots — only across the 4 questions -->
       <div
         v-if="step >= 2 && step <= 5"
@@ -26,25 +22,13 @@
         <p class="uw-body">{{ $t('onboarding.intro') }}</p>
 
         <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
-          <button class="uw-onb-link" @click="handleSkip">
+          <button class="uw-text-button" @click="handleSkip">
             {{ $t('onboarding.skip') }}
           </button>
           <button class="uw-actions__primary" @click="step = 2">
             {{ $t('onboarding.next') }}
             <span class="uw-badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
-              </svg>
+              <ForwardIcon />
             </span>
           </button>
         </div>
@@ -147,19 +131,7 @@
           <button class="uw-actions__primary" @click="handleGenerate">
             {{ $t('onboarding.generate') }}
             <span class="uw-badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="3 8 6.5 11.5 13 5" />
-              </svg>
+              <CheckIcon />
             </span>
           </button>
         </div>
@@ -189,19 +161,7 @@
           <button class="uw-actions__primary" @click="router.push({ name: 'suggest' })">
             {{ $t('onboarding.start') }}
             <span class="uw-badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
-              </svg>
+              <ForwardIcon />
             </span>
           </button>
         </div>
@@ -214,14 +174,13 @@
         {{ error }}
         <button
           v-if="step === 6"
-          class="block mx-auto mt-2 uw-onb-link underline"
+          class="block mx-auto mt-2 uw-text-button underline"
           @click="handleGenerate"
         >
           {{ $t('suggest.retry') }}
         </button>
       </p>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -230,6 +189,9 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
 import OnboardingOptionList from '../components/OnboardingOptionList.vue'
+import PageShell from '../components/PageShell.vue'
+import ForwardIcon from '../components/icons/ForwardIcon.vue'
+import CheckIcon from '../components/icons/CheckIcon.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -313,16 +275,3 @@ function handleSkip() {
 
 </script>
 
-<style scoped>
-/* Skip / retry text-only button — not unique enough for base.css. */
-.uw-onb-link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--uw-ink-mute);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.uw-onb-link:hover { color: var(--uw-ink); }
-</style>

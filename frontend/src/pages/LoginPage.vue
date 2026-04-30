@@ -1,12 +1,6 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <span class="uw-wordmark">unwind</span>
-      </header>
+  <PageShell>
+      <PageHeader />
 
       <main class="flex-1 flex flex-col justify-center px-[26px] pb-12 gap-6">
         <h1 class="font-serif text-2xl tracking-tight text-uw-ink m-0">
@@ -73,8 +67,7 @@
           {{ $t('privacy.link') }}
         </router-link>
       </main>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -83,6 +76,8 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '../composables/useAuth.js'
 import { ApiError } from '../api/client.js'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 const router = useRouter()
 const { t } = useI18n()

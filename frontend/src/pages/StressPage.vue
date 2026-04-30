@@ -1,32 +1,6 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <button
-          class="uw-menu-btn"
-          :aria-label="$t('nav.back')"
-          @click="handleBack"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M10 3 L5 8 L10 13" />
-          </svg>
-        </button>
-        <span class="uw-wordmark">unwind</span>
-        <div class="w-[34px]" aria-hidden="true" />
-      </header>
+  <PageShell>
+      <PageHeader back @back="handleBack" />
 
       <div
         v-if="!loaded && !error"
@@ -105,8 +79,7 @@
       >
         <p class="text-sm text-uw-ink-mute">{{ $t('suggest.exhausted') }}</p>
       </div>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -119,6 +92,8 @@ import {
 } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
 import LinkButton from '../components/LinkButton.vue'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
 
 const router = useRouter()
 const { loaded, error, fetchActivities, filterByStress } = useActivities()
