@@ -34,15 +34,15 @@
             :aria-pressed="colorScheme === preset.id"
             @click="setColorScheme(preset.id)"
           />
-          <div class="w-px h-[18px] bg-uw-border-soft mx-1" />
-          <button
+          <!-- <div class="w-px h-[18px] bg-uw-border-soft mx-1" /> -->
+          <!-- <button
             class="w-[22px] h-[22px] rounded-[11px] border border-uw-border bg-transparent text-uw-ink-soft inline-flex items-center justify-center p-0 cursor-pointer"
             :aria-label="$t(mode === 'dark' ? 'theme.light' : 'theme.dark')"
             :aria-pressed="mode === 'dark'"
             @click="toggleMode"
           >
             <MoonIcon />
-          </button>
+          </button> -->
         </div>
       </div>
 
