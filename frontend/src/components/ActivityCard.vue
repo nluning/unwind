@@ -24,36 +24,14 @@
     <div class="uw-actions mt-auto mb-20">
       <button class="uw-actions__primary" @click="$emit('accept')">
         <span class="uw-badge" aria-hidden="true">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="3 8 6.5 11.5 13 5" />
-          </svg>
+          <CheckIcon />
         </span>
         {{ $t('activity.accept') }}
       </button>
 
       <button class="uw-actions__secondary" @click="$emit('skip')">
         {{ $t('activity.skip') }}
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.6"
-          stroke-linecap="round"
-          aria-hidden="true"
-        >
-          <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
-        </svg>
+        <ForwardIcon />
       </button>
     </div>
   </div>
@@ -62,6 +40,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Activity } from '../types/activity.js'
+import CheckIcon from './icons/CheckIcon.vue'
+import ForwardIcon from './icons/ForwardIcon.vue'
 
 const props = defineProps<{
   activity: Activity

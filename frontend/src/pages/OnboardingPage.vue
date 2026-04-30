@@ -1,9 +1,5 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
+  <PageShell>
       <!-- Progress dots — only across the 4 questions -->
       <div
         v-if="step >= 2 && step <= 5"
@@ -26,25 +22,13 @@
         <p class="uw-body">{{ $t('onboarding.intro') }}</p>
 
         <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
-          <button class="uw-onb-link" @click="handleSkip">
+          <button class="uw-text-button" @click="handleSkip">
             {{ $t('onboarding.skip') }}
           </button>
           <button class="uw-actions__primary" @click="step = 2">
             {{ $t('onboarding.next') }}
             <span class="uw-badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
-              </svg>
+              <ForwardIcon />
             </span>
           </button>
         </div>
@@ -52,14 +36,10 @@
 
       <!-- Step 2 — consent -->
       <template v-else-if="step === 2">
-        <div class="px-7 pt-14 flex flex-col gap-3">
-          <span class="font-serif text-[17px] text-uw-ink-mute">
-            {{ $t('onboarding.questionOf', { n: 1, total: 4 }) }}
-          </span>
-          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
-            {{ $t('onboarding.consentQuestion') }}
-          </h2>
-        </div>
+        <OnboardingStepHeader
+          :question-number="1"
+          :title="$t('onboarding.consentQuestion')"
+        />
 
         <div class="mt-auto mb-14 px-7 flex gap-3">
           <button
@@ -78,14 +58,10 @@
 
       <!-- Step 3 — setting -->
       <template v-else-if="step === 3">
-        <div class="px-7 pt-14 flex flex-col gap-3">
-          <span class="font-serif text-[17px] text-uw-ink-mute">
-            {{ $t('onboarding.questionOf', { n: 2, total: 4 }) }}
-          </span>
-          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
-            {{ $t('onboarding.settingQuestion') }}
-          </h2>
-        </div>
+        <OnboardingStepHeader
+          :question-number="2"
+          :title="$t('onboarding.settingQuestion')"
+        />
 
         <OnboardingOptionList
           :options="settingOptions"
@@ -97,14 +73,10 @@
 
       <!-- Step 4 — social -->
       <template v-else-if="step === 4">
-        <div class="px-7 pt-14 flex flex-col gap-3">
-          <span class="font-serif text-[17px] text-uw-ink-mute">
-            {{ $t('onboarding.questionOf', { n: 3, total: 4 }) }}
-          </span>
-          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
-            {{ $t('onboarding.socialQuestion') }}
-          </h2>
-        </div>
+        <OnboardingStepHeader
+          :question-number="3"
+          :title="$t('onboarding.socialQuestion')"
+        />
 
         <OnboardingOptionList
           :options="socialOptions"
@@ -116,50 +88,29 @@
 
       <!-- Step 5 — interests -->
       <template v-else-if="step === 5">
-        <div class="px-7 pt-14 flex flex-col gap-3">
-          <span class="font-serif text-[17px] text-uw-ink-mute">
-            {{ $t('onboarding.questionOf', { n: 4, total: 4 }) }}
-          </span>
-          <h2 class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink">
-            {{ $t('onboarding.interestsQuestion') }}
-          </h2>
-          <span class="text-[13px] text-uw-ink-mute">
-            {{ $t('onboarding.interestsHint') }}
-          </span>
-        </div>
+        <OnboardingStepHeader
+          :question-number="4"
+          :title="$t('onboarding.interestsQuestion')"
+        >
+          <template #hint>{{ $t('onboarding.interestsHint') }}</template>
+        </OnboardingStepHeader>
 
         <div class="mt-6 px-[22px] flex flex-wrap gap-2">
-          <button
+          <ToggleButton
             v-for="interest in interestOptions"
             :key="interest"
-            class="px-3.5 py-2.5 rounded-full border border-uw-border bg-transparent text-uw-ink text-[13.5px] font-medium cursor-pointer transition-colors"
-            :class="{
-              'bg-uw-primary text-uw-primary-fg border-transparent':
-                interests.includes(interest),
-            }"
+            :selected="interests.includes(interest)"
             @click="toggleInterest(interest)"
           >
             {{ interest }}
-          </button>
+          </ToggleButton>
         </div>
 
         <div class="mt-auto mb-12 px-[22px] flex justify-end">
           <button class="uw-actions__primary" @click="handleGenerate">
             {{ $t('onboarding.generate') }}
             <span class="uw-badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="3 8 6.5 11.5 13 5" />
-              </svg>
+              <CheckIcon />
             </span>
           </button>
         </div>
@@ -189,19 +140,7 @@
           <button class="uw-actions__primary" @click="router.push({ name: 'suggest' })">
             {{ $t('onboarding.start') }}
             <span class="uw-badge">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
-              </svg>
+              <ForwardIcon />
             </span>
           </button>
         </div>
@@ -214,14 +153,13 @@
         {{ error }}
         <button
           v-if="step === 6"
-          class="block mx-auto mt-2 uw-onb-link underline"
+          class="block mx-auto mt-2 uw-text-button underline"
           @click="handleGenerate"
         >
           {{ $t('suggest.retry') }}
         </button>
       </p>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -230,6 +168,11 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
 import OnboardingOptionList from '../components/OnboardingOptionList.vue'
+import PageShell from '../components/PageShell.vue'
+import ForwardIcon from '../components/icons/ForwardIcon.vue'
+import CheckIcon from '../components/icons/CheckIcon.vue'
+import OnboardingStepHeader from '../components/OnboardingStepHeader.vue'
+import ToggleButton from '../components/ToggleButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -313,16 +256,3 @@ function handleSkip() {
 
 </script>
 
-<style scoped>
-/* Skip / retry text-only button — not unique enough for base.css. */
-.uw-onb-link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--uw-ink-mute);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.uw-onb-link:hover { color: var(--uw-ink); }
-</style>

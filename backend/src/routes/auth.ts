@@ -203,37 +203,27 @@ async function authRoutes(fastify: FastifyInstance) {
     { schema: upgradeSchema, preHandler: requireAuth },
     async (request, reply) => {
       const userId = request.user!.id
-
-      // Check if this user already has an email (already upgraded)
-      const current = await fastify.pg.query(
-        'SELECT email FROM users WHERE id = $1',
-        [userId]
-      )
-
-      if (current.rows[0].email) {
-        reply.status(409).send({ error: 'Account already has an email' })
-        return
-      }
-
-      // Check if the email is already taken by another user
-      const emailTaken = await fastify.pg.query(
-        'SELECT id FROM users WHERE email = $1',
-        [request.body.email]
-      )
-
-      if (emailTaken.rows.length > 0) {
-        reply.status(409).send({ error: 'Email already registered' })
-        return
-      }
-
       const passwordHash = await hashPassword(request.body.password)
 
-      const result = await fastify.pg.query(
-        'UPDATE users SET email = $1, password_hash = $2 WHERE id = $3 RETURNING id, email',
-        [request.body.email, passwordHash, userId]
-      )
+      try {
+        const result = await fastify.pg.query(
+          'UPDATE users SET email = $1, password_hash = $2 WHERE id = $3 AND email IS NULL RETURNING id, email',
+          [request.body.email, passwordHash, userId]
+        )
 
-      reply.status(200).send(result.rows[0])
+        if (result.rows.length === 0) {
+          reply.status(409).send({ error: 'Account already has an email' })
+          return
+        }
+
+        reply.status(200).send(result.rows[0])
+      } catch (err) {
+        if ((err as { code?: string }).code === '23505') {
+          reply.status(409).send({ error: 'Email already registered' })
+          return
+        }
+        throw err
+      }
     }
   )
 }

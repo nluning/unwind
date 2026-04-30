@@ -14,26 +14,18 @@
         @click="$emit('update:modelValue', option.value)"
       >
         <span>{{ option.label }}</span>
-        <svg
+        <CheckIcon
           v-if="option.value === modelValue"
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <polyline points="3 8 6.5 11.5 13 5" />
-        </svg>
+          :stroke-width="1.8"
+        />
       </button>
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
+import CheckIcon from './icons/CheckIcon.vue'
+
 defineProps<{
   options: Array<{ value: string; label: string }>
   modelValue: string

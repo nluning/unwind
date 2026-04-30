@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify"
-import { requireAuth } from './middleware/auth.js'
+import { requireAuth } from '../middleware/auth.js'
 
 async function activityRoutes(fastify: FastifyInstance) {
     fastify.get('/health', function (request, reply) {
