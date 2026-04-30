@@ -21,7 +21,7 @@
         </h1>
         <p class="uw-body">{{ $t('onboarding.intro') }}</p>
 
-        <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
+        <div class="mt-auto px-[22px] flex items-center justify-between">
           <button class="uw-text-button" @click="handleSkip">
             {{ $t('onboarding.skip') }}
           </button>
@@ -45,10 +45,7 @@
           <button
             v-for="option in consentOptions"
             :key="option.value"
-            class="flex-1 py-4 rounded-xl border-2 text-base font-medium cursor-pointer transition-colors"
-            :class="consentChoice === option.value
-              ? 'border-uw-primary bg-uw-primary text-uw-primary-fg'
-              : 'border-uw-border bg-transparent text-uw-ink hover:border-uw-ink'"
+            class="flex-1 py-4 rounded-full border border-uw-border-soft text-uw-ink text-sm font-medium cursor-pointer transition-colors hover:bg-uw-chip"
             @click="handleConsentPicked(option.value)"
           >
             {{ option.label }}
@@ -181,7 +178,6 @@ const step = ref(1)
 const error = ref('')
 
 const memoryConsent = ref<boolean | null>(null)
-const consentChoice = ref<'yes' | 'no' | ''>('')
 const setting = ref<'' | 'indoor' | 'outdoor' | 'no_preference'>('')
 const social = ref<'' | 'alone' | 'with_others' | 'no_preference'>('')
 const interests = ref<string[]>([])
@@ -219,7 +215,6 @@ function toggleInterest(interest: string) {
 }
 
 function handleConsentPicked(value: string) {
-  consentChoice.value = value as 'yes' | 'no'
   memoryConsent.value = value === 'yes'
   step.value = 3
 }

@@ -12,16 +12,16 @@
       <span class="uw-chip">
         {{ $t('activity.duration', { minutes: activity.suggested_duration }) }}
       </span>
-      <span
+      <!-- <span
         v-for="category in activity.categories"
         :key="category"
         class="uw-chip"
       >
         {{ $t(`categories.${category}`, category) }}
-      </span>
+      </span> -->
     </div>
 
-    <div class="uw-actions mt-auto mb-20">
+    <div class="uw-actions mt-auto">
       <button class="uw-actions__primary" @click="$emit('accept')">
         <span class="uw-badge" aria-hidden="true">
           <CheckIcon />

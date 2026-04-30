@@ -30,7 +30,7 @@
             />
           </label>
 
-          <p v-if="error" class="text-error text-sm" role="alert">{{ error }}</p>
+          <p v-if="error" class="text-uw-danger text-sm" role="alert">{{ error }}</p>
 
           <button
             type="submit"
