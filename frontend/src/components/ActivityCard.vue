@@ -1,11 +1,11 @@
 <template>
   <div class="flex-1 flex flex-col gap-4">
     <h1 class="uw-title">
-      {{ $t(`activities.${slug}.title`, activity.title) }}
+      {{ title }}
     </h1>
 
-    <p v-if="activity.description" class="uw-body">
-      {{ $t(`activities.${slug}.description`, activity.description) }}
+    <p v-if="description" class="uw-body">
+      {{ description }}
     </p>
 
     <div class="uw-chips">
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Activity } from '../types/activity.js'
+import { useActivityTranslation } from '../composables/useActivityTranslation.js'
 import CheckIcon from './icons/CheckIcon.vue'
 import ForwardIcon from './icons/ForwardIcon.vue'
 
@@ -52,10 +53,8 @@ defineEmits<{
   skip: []
 }>()
 
-const slug = computed(() =>
-  props.activity.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-)
+const { titleFor, descriptionFor } = useActivityTranslation()
+
+const title = computed(() => titleFor(props.activity))
+const description = computed(() => descriptionFor(props.activity))
 </script>
