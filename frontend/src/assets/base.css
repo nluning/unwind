@@ -272,6 +272,34 @@ input {
 .uw-actions__primary   { gap: 10px; color: var(--uw-ink); }
 .uw-actions__secondary { gap:  8px; color: var(--uw-ink-soft); }
 
+/* Text-only button — used for skip / cancel / inline retry. */
+.uw-text-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--uw-ink-mute);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.uw-text-button:hover { color: var(--uw-ink); }
+.uw-text-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Form input — used by TextField and inline paired inputs. */
+.uw-input {
+  background: var(--uw-card, rgba(255, 255, 255, 0.6));
+  border: 1px solid var(--uw-border-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: var(--uw-ink);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.uw-input:focus { border-color: var(--uw-primary); }
+
 .uw-badge {
   width: 40px;
   height: 40px;

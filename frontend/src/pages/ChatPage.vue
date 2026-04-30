@@ -1,51 +1,11 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <button
-          class="uw-menu-btn"
-          :aria-label="$t('nav.back')"
-          @click="$router.back()"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M10 3 L5 8 L10 13" />
-          </svg>
-        </button>
-        <span class="uw-wordmark">unwind</span>
-        <button
-          v-if="messages.length > 0"
-          class="uw-menu-btn"
-          :aria-label="$t('chat.newChat')"
-          @click="handleReset"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            aria-hidden="true"
-          >
-            <path d="M8 3 V 13 M 3 8 H 13" />
-          </svg>
-        </button>
-        <div v-else class="w-[34px]" aria-hidden="true" />
-      </header>
+  <PageShell>
+      <PageHeader
+        back
+        :right="messages.length > 0 ? 'reset' : 'spacer'"
+        @back="$router.back()"
+        @reset="handleReset"
+      />
 
       <h1
         v-if="messages.length === 0"
@@ -158,23 +118,10 @@
           class="w-9 h-9 rounded-full bg-uw-primary text-uw-primary-fg inline-flex items-center justify-center border-0 cursor-pointer disabled:opacity-40"
           :aria-label="$t('chat.send')"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M3 8 h 10 M 9 4 l 4 4 -4 4" />
-          </svg>
+          <ForwardIcon />
         </button>
       </form>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -184,6 +131,9 @@ import { useChat } from '../composables/useChat.js'
 import { useActivities } from '../composables/useActivities.js'
 import { parseMessage, toCreatePayload, type AiActivity } from '../utils/parseActivity.js'
 import { renderMarkdown } from '../utils/renderMarkdown.js'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
+import ForwardIcon from '../components/icons/ForwardIcon.vue'
 
 const { t } = useI18n()
 const { messages, isStreaming, error, sendMessage, resetChat } = useChat()

@@ -9,11 +9,7 @@
       :aria-expanded="open"
       @click="open = !open"
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-        <circle cx="8" cy="3" r="1.4" />
-        <circle cx="8" cy="8" r="1.4" />
-        <circle cx="8" cy="13" r="1.4" />
-      </svg>
+      <MenuDotsIcon />
     </button>
 
     <div
@@ -45,9 +41,7 @@
             :aria-pressed="mode === 'dark'"
             @click="toggleMode"
           >
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M6 1 a 7 7 0 1 0 9 9 A 6 6 0 0 1 6 1 Z" />
-            </svg>
+            <MoonIcon />
           </button>
         </div>
       </div>
@@ -76,21 +70,12 @@
 
       <div class="h-px bg-uw-border-soft my-1" />
 
-      <button
-        v-if="!confirmingDelete"
-        class="block w-full py-2.5 px-4 text-sm text-uw-ink-mute text-left bg-transparent border-0 cursor-pointer transition-colors hover:text-[var(--uw-danger,#b4412a)]"
-        @click="confirmingDelete = true"
-      >
-        {{ $t('menu.deleteAccount') }}
-      </button>
-      <button
-        v-else
-        class="block w-full py-2.5 px-4 text-sm font-semibold text-left bg-transparent border-0 cursor-pointer transition-opacity hover:opacity-80"
-        :style="{ color: 'var(--uw-danger, #b4412a)' }"
-        @click="handleDeleteAccount"
-      >
-        {{ $t('menu.deleteConfirm') }}
-      </button>
+      <ConfirmDeleteButton
+        class="block w-full py-2.5 px-4 text-sm text-left bg-transparent border-0 cursor-pointer"
+        :label="$t('menu.deleteAccount')"
+        :confirm-label="$t('menu.deleteConfirm')"
+        @confirm="handleDeleteAccount"
+      />
     </div>
   </div>
 </template>
@@ -100,13 +85,15 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import { useTheme, type ColorScheme } from '../composables/useTheme.js'
+import MenuDotsIcon from './icons/MenuDotsIcon.vue'
+import MoonIcon from './icons/MoonIcon.vue'
+import ConfirmDeleteButton from './ConfirmDeleteButton.vue'
 
 const { logout, deleteAccount } = useAuth()
 const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()
 const router = useRouter()
 
 const open = ref(false)
-const confirmingDelete = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
 
 async function handleLogout() {
@@ -117,7 +104,6 @@ async function handleLogout() {
 
 async function handleDeleteAccount() {
   open.value = false
-  confirmingDelete.value = false
   await deleteAccount()
   router.push('/login')
 }
@@ -125,7 +111,6 @@ async function handleDeleteAccount() {
 function handleClickOutside(event: MouseEvent) {
   if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
     open.value = false
-    confirmingDelete.value = false
   }
 }
 

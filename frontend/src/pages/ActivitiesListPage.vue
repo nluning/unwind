@@ -1,38 +1,12 @@
 <template>
-  <div class="uw-screen">
-    <div class="uw-screen__wash" aria-hidden="true" />
-    <div class="uw-screen__glow" aria-hidden="true" />
-
-    <div class="uw-frame">
-      <header class="uw-header">
-        <span class="uw-wordmark">unwind</span>
-      </header>
+  <PageShell>
+      <PageHeader />
 
       <p class="uw-prompt">{{ $t('activitiesList.heading') }}</p>
 
-      <!-- Loading -->
-      <div
-        v-if="!loaded && !error"
-        class="flex-1 flex flex-col items-center justify-center gap-2"
-      >
-        <span class="spinner" />
-        <p class="text-sm" :style="{ color: 'var(--uw-ink-mute)' }">
-          {{ $t('suggest.loading') }}
-        </p>
-      </div>
+      <StateLoading v-if="!loaded && !error" />
 
-      <!-- Error -->
-      <div
-        v-else-if="error"
-        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
-      >
-        <p class="text-sm" :style="{ color: 'var(--uw-ink-mute)' }">
-          {{ $t('suggest.error') }}
-        </p>
-        <LinkButton @click="fetchActivities()">
-          {{ $t('suggest.retry') }}
-        </LinkButton>
-      </div>
+      <StateError v-else-if="error" @retry="fetchActivities()" />
 
       <!-- Form (create + edit share the same UI) -->
       <form
@@ -40,43 +14,27 @@
         class="flex-1 flex flex-col gap-5 px-6 pb-6"
         @submit.prevent="handleSave"
       >
-        <label class="flex flex-col gap-1.5">
-          <span class="text-xs text-uw-ink-mute">
-            {{ $t('activitiesList.form.title') }}
-          </span>
-          <input
-            v-model="form.title"
-            type="text"
-            required
-            class="uw-input"
-          />
-        </label>
+        <TextField
+          v-model="form.title"
+          :label="$t('activitiesList.form.title')"
+          required
+        />
 
-        <label class="flex flex-col gap-1.5">
-          <span class="text-xs text-uw-ink-mute">
-            {{ $t('activitiesList.form.description') }}
-          </span>
-          <textarea
-            v-model="form.description"
-            rows="3"
-            class="uw-input resize-none"
-          />
-        </label>
+        <TextField
+          v-model="form.description"
+          :label="$t('activitiesList.form.description')"
+          multiline
+        />
 
-        <label class="flex flex-col gap-1.5">
-          <span class="text-xs text-uw-ink-mute">
-            {{ $t('activitiesList.form.duration') }}
-          </span>
-          <input
-            v-model.number="form.suggested_duration"
-            type="number"
-            min="1"
-            max="240"
-            inputmode="numeric"
-            required
-            class="uw-input"
-          />
-        </label>
+        <TextField
+          v-model.number="form.suggested_duration"
+          :label="$t('activitiesList.form.duration')"
+          type="number"
+          min="1"
+          max="240"
+          inputmode="numeric"
+          required
+        />
 
         <div class="flex flex-col gap-1.5">
           <span class="text-xs text-uw-ink-mute">
@@ -110,19 +68,15 @@
             {{ $t('activitiesList.form.categories') }}
           </span>
           <div class="flex flex-wrap gap-2">
-            <button
+            <ToggleButton
               v-for="(categoryId, categoryName) in CATEGORY_ID_MAP"
               :key="categoryId"
-              type="button"
-              class="px-3.5 py-2 rounded-full border border-uw-border bg-transparent text-uw-ink text-sm cursor-pointer transition-colors"
-              :class="{
-                'bg-uw-primary text-uw-primary-fg border-transparent':
-                  form.category_ids.includes(categoryId),
-              }"
+              size="sm"
+              :selected="form.category_ids.includes(categoryId)"
               @click="toggleCategory(categoryId)"
             >
               {{ $t(`categories.${categoryName}`) }}
-            </button>
+            </ToggleButton>
           </div>
         </div>
 
@@ -137,7 +91,7 @@
         <div class="mt-auto flex items-center justify-between gap-4">
           <button
             type="button"
-            class="uw-onb-link"
+            class="uw-text-button"
             :disabled="saving"
             @click="cancelEditing"
           >
@@ -153,23 +107,19 @@
         </div>
       </form>
 
-      <!-- Empty state -->
-      <div
-        v-else-if="activities.length === 0"
-        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
-      >
-        <p class="text-sm" :style="{ color: 'var(--uw-ink-mute)' }">
-          {{ $t('activitiesList.empty') }}
-        </p>
-        <button class="uw-actions__primary" @click="startCreating">
-          {{ $t('activitiesList.newButton') }}
-        </button>
-      </div>
+      <StateMessage v-else-if="activities.length === 0">
+        {{ $t('activitiesList.empty') }}
+        <template #action>
+          <button class="uw-actions__primary" @click="startCreating">
+            {{ $t('activitiesList.newButton') }}
+          </button>
+        </template>
+      </StateMessage>
 
       <!-- List -->
       <template v-else>
         <div class="flex justify-end px-6 mt-2">
-          <button class="uw-onb-link" @click="startCreating">
+          <button class="uw-text-button" @click="startCreating">
             + {{ $t('activitiesList.newButton') }}
           </button>
         </div>
@@ -215,34 +165,23 @@
             <div class="flex items-center justify-end gap-4 mt-1">
               <button
                 v-if="activity.source !== 'base'"
-                class="uw-onb-link text-sm"
+                class="uw-text-button text-sm"
                 @click="startEditing(activity)"
               >
                 {{ $t('activitiesList.editButton') }}
               </button>
 
-              <button
-                v-if="confirmingDeleteId !== activity.id"
-                class="uw-onb-link text-sm"
-                :style="{ color: 'var(--uw-ink-mute)' }"
-                @click="confirmingDeleteId = activity.id"
-              >
-                {{ $t('activitiesList.deleteButton') }}
-              </button>
-              <button
-                v-else
-                class="uw-onb-link text-sm font-semibold"
-                :style="{ color: 'var(--uw-danger, #b4412a)' }"
-                @click="handleDelete(activity.id)"
-              >
-                {{ $t('activitiesList.deleteConfirm') }}
-              </button>
+              <ConfirmDeleteButton
+                class="uw-text-button text-sm"
+                :label="$t('activitiesList.deleteButton')"
+                :confirm-label="$t('activitiesList.deleteConfirm')"
+                @confirm="handleDelete(activity.id)"
+              />
             </div>
           </li>
         </ul>
       </template>
-    </div>
-  </div>
+  </PageShell>
 </template>
 
 <script setup lang="ts">
@@ -254,7 +193,14 @@ import {
   type Activity,
   type CreateActivityPayload,
 } from '../composables/useActivities.js'
-import LinkButton from '../components/LinkButton.vue'
+import StateLoading from '../components/StateLoading.vue'
+import StateError from '../components/StateError.vue'
+import StateMessage from '../components/StateMessage.vue'
+import PageShell from '../components/PageShell.vue'
+import PageHeader from '../components/PageHeader.vue'
+import TextField from '../components/TextField.vue'
+import ToggleButton from '../components/ToggleButton.vue'
+import ConfirmDeleteButton from '../components/ConfirmDeleteButton.vue'
 
 const { t } = useI18n()
 
@@ -271,8 +217,6 @@ const {
 const editing = ref<false | 'new' | string>(false)
 const saving = ref(false)
 const formError = ref('')
-const confirmingDeleteId = ref<string | null>(null)
-
 const emptyForm = (): CreateActivityPayload => ({
   title: '',
   description: '',
@@ -363,7 +307,6 @@ async function handleSave() {
 }
 
 async function handleDelete(activityId: string) {
-  confirmingDeleteId.value = null
   try {
     await deleteActivity(activityId)
   } catch {
@@ -373,33 +316,3 @@ async function handleDelete(activityId: string) {
 }
 </script>
 
-<style scoped>
-.uw-input {
-  background: var(--uw-card, rgba(255, 255, 255, 0.6));
-  border: 1px solid var(--uw-border-soft);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 15px;
-  color: var(--uw-ink);
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s ease;
-}
-
-.uw-input:focus {
-  border-color: var(--uw-primary);
-}
-
-/* Same text-only button as in OnboardingPage — not global enough to promote. */
-.uw-onb-link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: var(--uw-ink-mute);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-.uw-onb-link:hover { color: var(--uw-ink); }
-.uw-onb-link:disabled { opacity: 0.5; cursor: not-allowed; }
-</style>
