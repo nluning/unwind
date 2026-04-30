@@ -1,0 +1,110 @@
+how much work is it to implement a feature for   
+  sending a confirmation e-mail to a new user after they register?
+
+● Good question — let me look at the current auth setup and email infrastructure to ground the estimate, then I'll give you a   
+  real answer.
+
+  Searched for 5 patterns, read 2 files (ctrl+o to expand)     
+
+● Good question to ask before committing. Here's what I see based on the current setup.
+                         
+  ★ Insight ─────────────────────────────────────
+  - Why this is bigger than it sounds: "send a confirmation email" has at least three layers — pick + integrate an email          provider, design the verification flow (soft vs. hard, what the user sees while unverified), and handle DNS/sender-domain
+  setup so emails don't go to spam. That last one is often where projects stall, because DNS propagation is out of your control.
+  - Why your codebase is well-positioned: you already have oslo/@oslojs/crypto for secure token generation (same primitives used
+   for session tokens), raw-SQL migrations for adding the column, and rate-limiting middleware (createRateLimiter) you can reuse
+   for the resend endpoint. So the cryptography and infrastructure work is already done — the new code mostly composes existing 
+  pieces.
+  ─────────────────────────────────────────────────
+
+  What's missing today
+
+  - No email provider in dependencies (no Resend/SendGrid/SMTP/etc.)
+  - users table has no email_verified column or token fields
+  - POST /register immediately creates a session via sendAuthResponse(...) — no "waiting on verification" state exists
+  - Register flow has no "check your email" UI on the frontend
+
+  Rough breakdown
+
+  Backend (~1 day)
+
+  ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┬─────────────┐   
+  │                                                   Piece                                                   │    Work     │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ Pick provider — Resend is the cheapest path here (free tier easily covers 100 users, minimal API)         │ 0           │   
+  │                                                                                                           │ (decision)  │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ Migration: email_verified BOOLEAN, email_verification_token_hash TEXT, email_verification_expires_at      │ 30min       │   
+  │ TIMESTAMPTZ on users                                                                                      │             │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ Email-sending utility (Resend SDK call, plain HTML/text template in Dutch)                                │ 1-2h        │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ GET /verify-email?token=... route — hash compare, expiry check, set verified, clear token                 │ 1-2h        │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ Modify POST /register — generate token, send email, decide session policy                                 │ 30min       │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ POST /resend-verification route + rate-limit (use existing createRateLimiter)                             │ 1h          │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ Tests: token validation, expiry, double-use, integration with register flow                               │ 2h          │   
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────┼─────────────┤   
+  │ Env var validation: RESEND_API_KEY, APP_BASE_URL (for the verification link)                              │ 30min       │   
+  └───────────────────────────────────────────────────────────────────────────────────────────────────────────┴─────────────┘   
+
+  Frontend (~half day)
+
+  ┌────────────────────────────────────────────────────────────────┬───────┐
+  │                             Piece                              │ Work  │
+  ├────────────────────────────────────────────────────────────────┼───────┤
+  │ "Check your email" view shown after register                   │ 1h    │
+  ├────────────────────────────────────────────────────────────────┼───────┤
+  │ /verify-email/:token route: call backend, show success/failure │ 1h    │
+  ├────────────────────────────────────────────────────────────────┼───────┤
+  │ "Resend email" button + cooldown UI                            │ 1h    │
+  ├────────────────────────────────────────────────────────────────┼───────┤
+  │ Dutch translation keys for the new messaging                   │ 30min │
+  └────────────────────────────────────────────────────────────────┴───────┘
+
+  Decisions that change scope significantly
+
+  The biggest scope-shifter is what does the user experience while unverified? Two paths:
+  - Soft (recommended for Unwind): register → user is logged in immediately → small banner says "Verify your email to keep your 
+  account safe" → app fully usable. Verification is informational. Easy to ship; lower friction for a relaxation tool.
+  - Hard: register → no session → "Check your email" page → user clicks link → only then logged in. Adds a state machine on the 
+  frontend, but more secure (prevents typo'd email addresses from squatting on accounts they can't recover).
+
+  Soft saves you ~half a day. For a 100-user wellness app, soft is probably the right call.
+
+  Hidden cost: sender domain (~half a day work + 1-2 days DNS waiting)
+
+  To send from noreply@unwind.app (or your real domain), you need to:
+  - Buy a domain (if you haven't yet — relevant for Stage 6 deployment too)
+  - Add DKIM + SPF DNS records that Resend gives you
+  - Wait for DNS propagation
+  - Have Resend verify the domain
+
+  You can defer this for development by using Resend's onboarding@resend.dev test sender, but production needs a real verified  
+  domain. If you're deploying soon and don't have the domain yet, this is going to come up anyway — the email feature could     
+  share that work.
+
+  Total estimate
+
+  Soft flow, Resend provider, real domain not yet acquired: 2-3 days of focused work, plus DNS waiting time. With AI-assisted   
+  workflow and the review-based pacing in your CLAUDE.md (small chunks reviewed before moving on), figure 4-5 calendar days.    
+
+  Soft flow, dev sender for now, defer domain: 1.5 days of focused work, ~3 calendar days. Buys you a working flow you can demo,
+   deferring production-readiness.
+
+  If you want to go further later: once email infrastructure exists, password reset is a 1-day add-on (same primitives — token, 
+  email, verify endpoint, frontend route). Often worth doing both at the same time since you've already paid the integration    
+  cost.
+
+  What I'd suggest considering before committing
+
+  - Worth writing an ADR for this — there are real decisions (provider, soft vs. hard, what counts as "verified" — the email    
+  click only? plus a confirmation step?) that your future self will want documented. Fits the pattern in docs/adr/.
+  - Stage 6 (deployment) is in flight. If you're getting a domain anyway for the prod deploy, line up the email DNS work to     
+  happen at the same time so you only pay the DNS-waiting tax once.
+  - This is a feature you can defer past launch. None of the current users are at risk without it. Once you have a real user    
+  base, password recovery via email becomes more valuable, and that's the natural moment to add the whole email infrastructure. 
+
+  Want me to spin up an ADR draft for it, or leave it on the backlog for now?
