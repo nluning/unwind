@@ -33,6 +33,13 @@ If no translation is found, vue-i18n falls back to the raw English title. This
 handles user-created and AI-generated activities gracefully — they have no
 translation key and display as-is.
 
+**Refinement (2026-04-30):** the lookup is gated on `activity.source === 'base'`.
+User- and AI-generated activities skip the i18n call entirely and render their
+stored title/description directly. The `source` column already exists in the DB
+schema (`base | user | ai`) and is exposed on the API and the frontend
+`Activity` type, so no schema or API changes were needed. Rationale below
+under "Update".
+
 Category names (`Head`, `Hands`, `Heart`) are translated via direct key lookup
 under `categories.<name>` in the same locale file.
 
@@ -70,10 +77,16 @@ Adding a new base activity requires updating both files. Nothing enforces this.
 Forgetting the translation means Dutch users see one random English card among
 Dutch ones.
 
-### 3. Silent failures
+### 3. Silent failures (resolved 2026-04-30 by source-gating)
 
-vue-i18n does not log a warning when it falls back. Missing translations are
-invisible to developers unless they manually check every activity in the UI.
+vue-i18n *does* log a warning when it falls back ("translation not found").
+Originally that warning fired for every user/AI activity, drowning the signal
+we actually wanted (a base activity missing from `nl.json`). With the
+source-gated lookup, only base activities trigger a translation attempt, so
+the warning now means what it should mean: a base activity exists in
+`seed.sql` but not in `nl.json`. This converts the warning from console noise
+into a useful developer signal — partially closing CI validation gap B until
+that script is built.
 
 ### 4. Slug edge cases
 
@@ -81,24 +94,48 @@ The slugify regex (`/[^a-z0-9]+/g`) converts apostrophes to dashes:
 `haven't` becomes `haven-t`, `you're` becomes `you-re`. This is correct and
 consistent, but non-obvious. The nl.json keys must match this exact output.
 
+## Update 2026-04-30: source-gated lookup
+
+When the AI-generated and user-created activity flows landed (Stage 5), the
+fallback path started firing on every render of those activities. vue-i18n
+emits a "translation not found" warning on fallback, which polluted the
+console and made it impossible to spot a genuine missing base translation.
+
+The original ADR treated the fallback as a feature ("missing translation =
+English text, not a crash"), conflating runtime safety with developer signal.
+Two fixes were considered:
+
+- **Silence the warnings globally** via `missingWarn: false` / `fallbackWarn:
+  false` in the vue-i18n config. One line, but it discards the signal we
+  *want* — a base activity drifting out of sync with `nl.json`.
+- **Gate the lookup on `source === 'base'`** (chosen). User/AI activities
+  skip the i18n call entirely and render their stored content directly. Base
+  activities still go through `t(key, fallback)`, so the warning still fires
+  for genuinely missing base translations.
+
+The second option encodes the intent in the rendering code rather than in
+config: a future reader of `ActivityCard.vue` can see *why* user/AI activities
+bypass i18n. It also keeps the ADR's stated goal (no DB or API changes) — the
+`source` field was already in the schema and on the API response from day one,
+so the fix was scoped to the two components that render activity content
+(`ActivityCard.vue` and `ActivitiesListPage.vue`).
+
 ## Improvement plan (not scheduled — pick up when relevant)
 
 These are ordered by priority. Each one is independent.
 
-### A. Extract slug function to a shared utility
+### A. Extract slug function to a shared utility — done 2026-04-30
 
-**When:** next time ActivityCard or slug logic is touched.
+`frontend/src/utils/slugify.ts` exports `slugify(title)`. The translation
+logic (slug + i18n + source-gating) lives in
+`frontend/src/composables/useActivityTranslation.ts` as a composable
+exposing `titleFor(activity)` / `descriptionFor(activity)`. Both
+`ActivityCard.vue` and `ActivitiesListPage.vue` consume the composable.
 
-Move the inline computed in `ActivityCard.vue` to a reusable function:
-
-```typescript
-// frontend/src/utils/slugify.ts
-export function slugifyTitle(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-}
-```
-
-Add a unit test that covers the apostrophe cases.
+A unit test covering the apostrophe edge cases (`haven't` → `haven-t`,
+`you're` → `you-re`) is still outstanding — frontend has no `*.spec.ts`
+files yet, so adding the first test sets up Vitest patterns and was
+deferred to keep this change focused.
 
 ### B. Add a CI validation script
 
@@ -136,9 +173,15 @@ Estimated effort: ~half a day.
 ## Consequences
 
 - All 27 base activities have Dutch translations in `nl.json`, keyed by slug.
-- User-created and AI-generated activities display in their original language.
-- Adding a new base activity requires a manual update to `nl.json`.
+- User-created and AI-generated activities display in their original language
+  (typically Dutch — onboarding generates Dutch content via Sonnet, and users
+  type in whatever language they prefer). The i18n lookup is skipped for these.
+- Adding a new base activity requires a manual update to `nl.json`. A missing
+  base translation now produces a single, meaningful "translation not found"
+  warning in the console instead of being lost in the noise.
 - The slug function is the implicit contract between `seed.sql` and `nl.json`.
-  Changes to either file must respect this contract.
+  Changes to either file must respect this contract. Slug derivation lives in
+  `frontend/src/utils/slugify.ts` and the source-gated translation lookup in
+  `frontend/src/composables/useActivityTranslation.ts`.
 - Future improvements (B, C, D) can be adopted incrementally without breaking
   the current setup.

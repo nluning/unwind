@@ -132,7 +132,7 @@
           >
             <div class="flex items-start justify-between gap-3">
               <h3 class="font-serif text-lg text-uw-ink leading-snug">
-                {{ $t(`activities.${slugFor(activity)}.title`, activity.title) }}
+                {{ titleFor(activity) }}
               </h3>
             </div>
 
@@ -140,7 +140,7 @@
               v-if="activity.description"
               class="text-sm text-uw-ink-soft"
             >
-              {{ $t(`activities.${slugFor(activity)}.description`, activity.description) }}
+              {{ descriptionFor(activity) }}
             </p>
 
             <div class="uw-chips">
@@ -193,6 +193,7 @@ import {
   type Activity,
   type CreateActivityPayload,
 } from '../composables/useActivities.js'
+import { useActivityTranslation } from '../composables/useActivityTranslation.js'
 import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
 import StateMessage from '../components/StateMessage.vue'
@@ -203,6 +204,7 @@ import ToggleButton from '../components/ToggleButton.vue'
 import ConfirmDeleteButton from '../components/ConfirmDeleteButton.vue'
 
 const { t } = useI18n()
+const { titleFor, descriptionFor } = useActivityTranslation()
 
 const {
   activities,
@@ -233,13 +235,6 @@ onMounted(async () => {
     await fetchActivities()
   }
 })
-
-function slugFor(activity: Activity): string {
-  return activity.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-}
 
 function resetForm(values: CreateActivityPayload = emptyForm()) {
   Object.assign(form, values)
