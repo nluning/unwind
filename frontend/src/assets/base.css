@@ -22,6 +22,11 @@ input {
   font: inherit;
 }
 
+button {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 /* =========================================================================
    Horizon tokens — new design system (Home redesign).
    Namespaced `--uw-*`. Light palettes only — dark deferred.
