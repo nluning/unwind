@@ -2,23 +2,9 @@
   <PageShell>
       <PageHeader back @back="handleBack" />
 
-      <div
-        v-if="!loaded && !error"
-        class="flex-1 flex flex-col items-center justify-center gap-2"
-      >
-        <span class="spinner" />
-        <p class="text-sm text-uw-ink-mute">{{ $t('suggest.loading') }}</p>
-      </div>
+      <StateLoading v-if="!loaded && !error" />
 
-      <div
-        v-else-if="error"
-        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
-      >
-        <p class="text-sm text-uw-ink-mute">{{ $t('suggest.error') }}</p>
-        <LinkButton @click="fetchActivities()">
-          {{ $t('suggest.retry') }}
-        </LinkButton>
-      </div>
+      <StateError v-else-if="error" @retry="fetchActivities()" />
 
       <template v-else-if="!stressLevel">
         <h1 class="uw-title pt-[80px] max-w-[260px]">{{ $t('stress.prompt') }}</h1>
@@ -45,15 +31,14 @@
         </div>
       </template>
 
-      <div
-        v-else-if="pool.length === 0"
-        class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
-      >
-        <p class="text-sm text-uw-ink-mute">{{ $t('stress.noMatch') }}</p>
-        <LinkButton @click="stressLevel = null">
-          {{ $t('activity.skip') }}
-        </LinkButton>
-      </div>
+      <StateMessage v-else-if="pool.length === 0">
+        {{ $t('stress.noMatch') }}
+        <template #action>
+          <TextButton @click="stressLevel = null">
+            {{ $t('activity.skip') }}
+          </TextButton>
+        </template>
+      </StateMessage>
 
       <template v-else-if="current">
         <p class="uw-prompt">{{ $t('suggest.heading') }}</p>
@@ -64,21 +49,13 @@
         />
       </template>
 
-      <div
-        v-else-if="accepted"
-        class="flex-1 flex items-center justify-center px-6"
-      >
-        <p class="text-2xl font-serif text-uw-primary">
-          {{ $t('suggest.accepted') }}
-        </p>
-      </div>
+      <StateMessage v-else-if="accepted" variant="accent">
+        {{ $t('suggest.accepted') }}
+      </StateMessage>
 
-      <div
-        v-else
-        class="flex-1 flex items-center justify-center px-6"
-      >
-        <p class="text-sm text-uw-ink-mute">{{ $t('suggest.exhausted') }}</p>
-      </div>
+      <StateMessage v-else>
+        {{ $t('suggest.exhausted') }}
+      </StateMessage>
   </PageShell>
 </template>
 
@@ -91,7 +68,10 @@ import {
   stressLevelState,
 } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
-import LinkButton from '../components/LinkButton.vue'
+import TextButton from '../components/TextButton.vue'
+import StateLoading from '../components/StateLoading.vue'
+import StateError from '../components/StateError.vue'
+import StateMessage from '../components/StateMessage.vue'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
 
