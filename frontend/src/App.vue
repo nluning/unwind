@@ -11,7 +11,7 @@ const showChrome = computed(
 </script>
 
 <template>
-  <div :class="showChrome ? 'pb-20' : ''">
+  <div>
     <RouterView />
     <UserMenu v-if="showChrome" />
   </div>

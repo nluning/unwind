@@ -15,9 +15,9 @@
     "categories": "Categorieën"
   },
   "suggest": {
-    "heading": "Wat zal ik doen?",
+    "heading": "",
     "start": "Geef me een suggestie",
-    "accepted": "Veel plezier!",
+    "accepted": "Tot zo.",
     "loading": "Laden...",
     "error": "Kan activiteiten niet laden.",
     "retry": "Probeer opnieuw",
