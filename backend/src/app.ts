@@ -17,6 +17,7 @@ import { registerErrorHandler } from './errorHandler.js'
     await fastify.register(cors, {
       origin: process.env.FRONTEND_URL,
       credentials: true,
+      methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     })
     await fastify.register(cookie)
     await fastify.register(dbPlugin)
