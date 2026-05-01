@@ -10,7 +10,7 @@ import onboardingRoutes from './routes/onboarding.js'
 import { registerErrorHandler } from './errorHandler.js'
 
   export async function buildApp() {
-    const fastify = Fastify({ logger: true })
+    const fastify = Fastify({ logger: true, trustProxy: true, })
 
     registerErrorHandler(fastify)
 
