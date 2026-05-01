@@ -461,6 +461,12 @@ vulnerabilities. Basic hardening stops the automated noise.
 
 ## Phase 6 — CI/CD with GitHub Actions
 
+//   This bug existing means your CI doesn't run tsc --noEmit. Worth thinking about for after deploy: a precommit hook or GitHub Actions step that
+   runs tsc --noEmit (and vitest) on every push prevents this exact class of "the build fails on the server" surprise. It's a Phase 6 concern  
+  (CI/CD), but the question to ask now is: do you want type-checking to happen at build time (where it's late and disruptive) or at commit/push
+   time (where it's early and cheap)? //
+
+
 ### Why this phase matters
 
 At this point you've deployed manually: build images, push to server, restart
