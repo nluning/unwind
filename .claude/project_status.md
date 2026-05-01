@@ -1,6 +1,6 @@
 ---
 name: Unwind project status
-description: Current build stage — Stage 6 (deployment) in progress. Phase 1 (Docker) complete as of 2026-04-17. Next is VPS + HTTPS.
+description: Current build stage — Stage 6 (deployment) in progress. Phase 2 (VPS + DNS) complete as of 2026-05-01. App live at http://unwind.nu but not safe to use until HTTPS (Phase 3).
 type: project
 ---
 
@@ -17,11 +17,12 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Tests for memory CRUD, rate limiting, onboarding response parsing
 - First user review panel run (7 personas, report at docs/review/reports/)
 
-**Stage 6 — Deployment (in progress, 2026-04-17):**
-- Phase 0 done: env var startup validation, `DELETE /me` endpoint, privacy page, delete-account in menu
-- Phase 1 done: backend + frontend Dockerfiles (multi-stage), nginx.conf (API proxy + SSE), docker-compose.production.yml, tested locally and working
-- Phase 0.4 (bug fixes) deferred — not blocking deployment
-- Next: Phase 2 (VPS setup) + Phase 3 (nginx + HTTPS)
+**Stage 6 — Deployment (in progress, 2026-05-01):**
+- Phase 0 done: env var startup validation, `DELETE /me` endpoint, privacy page, delete-account in menu. One leftover: `?? ''` fallback in chat.ts:97 still there (non-blocking; validateEnv already crashes prod if FRONTEND_URL is missing).
+- Phase 1 done: backend + frontend Dockerfiles (multi-stage), nginx.conf (API proxy + SSE), docker-compose.production.yml, tested locally and working.
+- Phase 2 done (2026-05-01): VPS at Hetzner CX23 (Falkenstein, Ubuntu 24.04). SSH hardened (no root login, no password auth, drop-in at `/etc/ssh/sshd_config.d/99-hardening.conf`). Docker installed via official apt repo. Repo cloned to `~/unwind` via deploy key (`~/.ssh/github_deploy`). Production `.env` lives next to the compose file with secrets. App is up via `docker compose -f docker-compose.production.yml`. Domain `unwind.nu` (TransIP) has A + AAAA records pointing to Hetzner. Build hit one tsc error in config.ts (`as const` array narrowing on `required.push(...PRODUCTION_ONLY)`) — fixed and pushed.
+- Phase 0.4 (bug fixes) still deferred.
+- Next: Phase 3 (nginx + HTTPS) — required because `secure: true` cookies silently drop on HTTP, so login/anonymous flow doesn't work end-to-end yet. Plan calls Phase 2+3 atomic — don't share URL until Phase 3.
 
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
