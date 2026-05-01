@@ -101,7 +101,7 @@
       </p>
 
       <form
-        class="mb-24 mx-[14px] flex items-center gap-2 py-1.5 pl-4 pr-1.5 rounded-full bg-uw-chip border border-uw-border-soft"
+        class="mx-[14px] flex items-center gap-2 py-1.5 pl-4 pr-1.5 rounded-full bg-uw-chip border border-uw-border-soft"
         @submit.prevent="handleSend"
       >
         <input

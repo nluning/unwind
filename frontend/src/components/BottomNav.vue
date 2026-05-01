@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed bottom-0 left-0 right-0 z-10"
+    class="uw-nav-bar fixed bottom-0 left-0 right-0 z-10"
     :style="{ paddingBottom: 'env(safe-area-inset-bottom)' }"
   >
     <nav class="uw-nav max-w-md mx-auto" :aria-label="t('nav.label')">

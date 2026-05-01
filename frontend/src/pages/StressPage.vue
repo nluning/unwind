@@ -14,7 +14,7 @@
             <button
               v-for="level in 5"
               :key="level"
-              class="w-12 h-12 rounded-full border border-uw-border bg-transparent text-uw-ink font-serif text-lg cursor-pointer transition-colors"
+              class="w-12 h-12 rounded-full border border-uw-border bg-transparent text-uw-ink font-serif text-lg cursor-pointer transition-colors hover:bg-uw-chip"
               :class="{
                 'bg-uw-primary text-uw-primary-fg border-transparent':
                   stressLevel === level,
