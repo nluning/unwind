@@ -38,8 +38,14 @@ services:
       - backend
     ports:
       - "80:80"
-    # Port 80 is the only port exposed to the outside world.
-    # nginx handles everything: static files + API proxy.
+      - "443:443"
+    volumes:
+      - /var/www/certbot:/var/www/certbot:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    # Ports 80 and 443 exposed to the outside world.
+    # /var/www/certbot — webroot for Let's Encrypt HTTP-01 challenges
+    # /etc/letsencrypt — issued certificates from certbot on the host
+    # Both mounted read-only — nginx never needs to write to them.
 
 volumes:
   pgdata:
