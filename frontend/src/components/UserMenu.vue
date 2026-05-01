@@ -34,15 +34,17 @@
             :aria-pressed="colorScheme === preset.id"
             @click="setColorScheme(preset.id)"
           />
-          <div class="w-px h-[18px] bg-uw-border-soft mx-1" />
-          <button
-            class="w-[22px] h-[22px] rounded-[11px] border border-uw-border bg-transparent text-uw-ink-soft inline-flex items-center justify-center p-0 cursor-pointer"
-            :aria-label="$t(mode === 'dark' ? 'theme.light' : 'theme.dark')"
-            :aria-pressed="mode === 'dark'"
-            @click="toggleMode"
-          >
-            <MoonIcon />
-          </button>
+          <template v-if="enableLightMode">
+            <div class="w-px h-[18px] bg-uw-border-soft mx-1" />
+            <button
+              class="w-[22px] h-[22px] rounded-[11px] border border-uw-border bg-transparent text-uw-ink-soft inline-flex items-center justify-center p-0 cursor-pointer"
+              :aria-label="$t(mode === 'dark' ? 'theme.light' : 'theme.dark')"
+              :aria-pressed="mode === 'dark'"
+              @click="toggleMode"
+            >
+              <MoonIcon />
+            </button>
+          </template>
         </div>
       </div>
 
@@ -91,6 +93,9 @@ import ConfirmDeleteButton from './ConfirmDeleteButton.vue'
 
 const { logout, deleteAccount } = useAuth()
 const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()
+
+// Flip to true once light-mode `--uw-*` overrides exist in base.css.
+const enableLightMode = false
 const router = useRouter()
 
 const open = ref(false)
