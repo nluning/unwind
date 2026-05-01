@@ -4,12 +4,12 @@ const ALWAYS_REQUIRED = [
   'DB_USER',
   'DB_PASSWORD',
   'DB_NAME',
-] as const
+] as string[]
 
 const PRODUCTION_ONLY = [
   'FRONTEND_URL',
   'ANTHROPIC_API_KEY',
-] as const
+] as string[]
 
 export function validateEnv() {
   const required = [...ALWAYS_REQUIRED]
