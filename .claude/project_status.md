@@ -1,6 +1,6 @@
 ---
 name: Unwind project status
-description: Current build stage — Stage 6 (deployment) in progress. Phases 0-3 complete as of 2026-05-07. App live at https://unwind.nu with HTTPS. Phase 4 (monitoring) next.
+description: Current build stage — Stage 6 (deployment) in progress. Phases 0-3, 5 complete; Phase 4 mostly done (steps 1-3 verified, step 4 frontend Sentry blocked on DSN mismatch). App live at https://unwind.nu.
 type: project
 ---
 
@@ -24,8 +24,15 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Phase 3 done (2026-05-07): nginx serves HTTPS via Let's Encrypt certs, ACME challenge plumbed through `/.well-known/acme-challenge/`, `trustProxy: true` set in Fastify so cookies + rate limiting + req.ip work behind nginx. App live at https://unwind.nu.
 - Phase 5 done (2026-05-07, ahead of plan order): ufw active (22/80/443 only, default deny, v4+v6); unattended-upgrades installed AND enabled (both `20auto-upgrades` flags = "1"); fail2ban installed with default sshd jail using systemd backend (caught a botnet on first day — 1 IP banned within minutes); Docker security: backend `USER node` in Dockerfile, DB + backend ports not exposed to host (only frontend nginx publishes 80/443), frontend uses official `nginx:alpine` (master root by image design, workers non-root — accepted trade-off for static-file serving at this scope).
 - Multi-machine SSH access set up — separate keypairs per laptop; both lines live in `~/.ssh/authorized_keys`. Username + hostname are not stored here on purpose; `ls /home` from the Hetzner console recovers them. Runbook: `docs/ops/server-access.md`.
+- Phase 4 in progress (2026-05-07):
+  - Step 1 done & deployed: `/health` endpoint moved to its own route file, runs `SELECT 1` against db, returns 503 if unreachable. Compose healthchecks: `pg_isready` for db, `node -e fetch(...)` for backend (alpine has no curl). Backend `depends_on: db: condition: service_healthy` so first boot waits for db readiness.
+  - Step 2 done: Pino config now reads `LOG_LEVEL` from env (default `info`) and redacts `req.headers.cookie`, `req.headers.authorization`, `*.password` paths. Removed redundant `fastify.log.level = 'info'` from server.ts.
+  - Step 3 done & verified: `@sentry/node` + `instrument.ts` (init guarded by `SENTRY_DSN`) + `Sentry.setupFastifyErrorHandler(fastify)` after the existing error handler. `SENTRY_DSN` added to `PRODUCTION_ONLY` env validation. Backend errors confirmed flowing into Sentry (test route was added then removed).
+  - Step 4 (frontend Sentry) IN PROGRESS — code in place: `@sentry/vue` init in `main.ts` guarded by `VITE_SENTRY_DSN`, build arg wired through Dockerfile + compose. Deployed to server. Test errors are reaching Sentry's ingest endpoint (POST 200) but not appearing in the unwind-frontend project dashboard. **DSN is correct** — project ID in DSN (`4511348616396880`) matches unwind-frontend's project ID in Settings. So the DSN is *not* the problem. Open question for next session: why are 200-response events not landing in the project view? Things to check: dashboard time-range filter, full POST response body (not just status), Sentry stats per-project (was 0 accepted earlier — implies ingest is acknowledging but not attributing). Possible angles: EU-region routing oddity, project misconfig, or events being deduplicated/binned by Sentry.
+  - Sentry org context: `script-fs` (EU region — `de.sentry.io` ingest), org id `4511348432830464`, project id `4511348616396880`, full DSN saved in server `.env` as `VITE_SENTRY_DSN`.
 - Phase 0.4 (bug fixes) still deferred.
-- Next: Phase 4 (monitoring) — Sentry (backend + frontend), Pino prod config, /health DB check + Docker HEALTHCHECK. Adjacent: check /auth/login for IP-based rate limiting (app-layer brute-force gap).
+- Adjacent gap noted but not yet addressed: `/auth/login` has no IP-based rate limiting — fail2ban only watches SSH, so brute-force against the web login is currently unmitigated.
+- Next: finish Phase 4 step 4 (frontend Sentry DSN fix); then Phase 6 (CI/CD) is the only remaining deployment phase.
 
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
