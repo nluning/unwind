@@ -1,4 +1,5 @@
   import Fastify from 'fastify'
+  import * as Sentry from '@sentry/node'
   import cors from '@fastify/cors'
   import cookie from '@fastify/cookie'
   import dbPlugin from './db/index.js'
@@ -11,9 +12,16 @@ import onboardingRoutes from './routes/onboarding.js'
 import { registerErrorHandler } from './errorHandler.js'
 
   export async function buildApp() {
-    const fastify = Fastify({ logger: true, trustProxy: true, })
+    const fastify = Fastify({
+      logger: {
+        level: process.env.LOG_LEVEL || 'info',
+        redact: ['req.headers.cookie', 'req.headers.authorization', '*.password'],
+      },
+      trustProxy: true,
+    })
 
     registerErrorHandler(fastify)
+    Sentry.setupFastifyErrorHandler(fastify)
 
     await fastify.register(cors, {
       origin: process.env.FRONTEND_URL,

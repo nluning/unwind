@@ -36,6 +36,7 @@ services:
       DB_NAME: ${DB_NAME}
       FRONTEND_URL: ${FRONTEND_URL}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      SENTRY_DSN: ${SENTRY_DSN}
       NODE_ENV: production
     # No "ports:" — only the frontend (nginx) container talks to the backend.
     # Outside traffic goes through nginx, never directly to port 3000.
