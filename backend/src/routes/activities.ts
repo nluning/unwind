@@ -2,9 +2,6 @@ import { FastifyInstance } from "fastify"
 import { requireAuth } from '../middleware/auth.js'
 
 async function activityRoutes(fastify: FastifyInstance) {
-    fastify.get('/health', function (request, reply) {
-    reply.send({ status: 'ok' })
-})
     fastify.get<{ Querystring: { category?: string; stress_level?: string } }>('/activities', { preHandler: requireAuth }, async function (request, reply) {
         const { category, stress_level } = request.query
         const userId = request.user!.id

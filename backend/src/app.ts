@@ -5,6 +5,7 @@
   import activityRoutes from './routes/activities.js'
   import authRoutes from './routes/auth.js'
 import chatRoutes from './routes/chat.js'
+import healthRoutes from './routes/health.js'
 import memoryRoutes from './routes/memory.js'
 import onboardingRoutes from './routes/onboarding.js'
 import { registerErrorHandler } from './errorHandler.js'
@@ -21,6 +22,7 @@ import { registerErrorHandler } from './errorHandler.js'
     })
     await fastify.register(cookie)
     await fastify.register(dbPlugin)
+    await fastify.register(healthRoutes)
     await fastify.register(authRoutes)
     await fastify.register(activityRoutes)
     await fastify.register(chatRoutes)
