@@ -7,10 +7,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Vite bakes VITE_API_URL into the output at build time.
-# Pass it when building: docker build --build-arg VITE_API_URL=https://yourdomain.com/api
+# Vite bakes VITE_* vars into the output at build time.
+# Pass them when building: docker build --build-arg VITE_API_URL=...
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_SENTRY_DSN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 
 # Copy everything Vite needs to build
 COPY index.html vite.config.ts uno.config.ts tsconfig*.json ./
