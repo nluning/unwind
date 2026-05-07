@@ -9,6 +9,7 @@ const ALWAYS_REQUIRED = [
 const PRODUCTION_ONLY = [
   'FRONTEND_URL',
   'ANTHROPIC_API_KEY',
+  'SENTRY_DSN',
 ] as string[]
 
 export function validateEnv() {
