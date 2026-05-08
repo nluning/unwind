@@ -197,11 +197,11 @@ rehearsing a change before pushing), tag your local build to match what
 compose expects:
 
 ```bash
-docker build -t ghcr.io/noor-169/unwind-backend:latest ./backend
+docker build -t ghcr.io/nluning/unwind-backend:latest ./backend
 docker build \
   --build-arg VITE_API_URL=http://localhost \
   --build-arg VITE_SENTRY_DSN=$VITE_SENTRY_DSN \
-  -t ghcr.io/noor-169/unwind-frontend:latest ./frontend
+  -t ghcr.io/nluning/unwind-frontend:latest ./frontend
 docker compose -f docker-compose.production.yml up -d
 ```
 
@@ -215,7 +215,7 @@ Day-to-day local development still uses the regular dev setup
 | `Permission denied (publickey)` on the SSH step | `SSH_PRIVATE_KEY` secret doesn't match what's in `authorized_keys` on the server. Confirm the public key for the same keypair is on the server. |
 | `Host key verification failed` | `SSH_KNOWN_HOSTS` is stale — the server's host key changed (rebuild? new instance?). Re-run `ssh-keyscan` and update the secret. |
 | `Error response from daemon: pull access denied` on `docker compose pull` | GHCR package is private. Make it public (Profile → Packages → settings → Change visibility), or set up auth on the server side. |
-| `manifest unknown` on `docker compose pull` | The `:latest` tag doesn't exist yet, or the image namespace is wrong. Check `ghcr.io/noor-169/unwind-{backend,frontend}` in the Packages tab. |
+| `manifest unknown` on `docker compose pull` | The `:latest` tag doesn't exist yet, or the image namespace is wrong. Check `ghcr.io/nluning/unwind-{backend,frontend}` in the Packages tab. |
 | `npm run lint:check` fails on the CI side but passes locally | Local was running `npm run lint` (with `--fix`); CI doesn't auto-fix. Run `npm run lint:check` locally to reproduce, then commit the fix. |
 | Frontend CI test step exits 1 with "no test files found" | Missing `--passWithNoTests`. Check `vitest run` invocation in `ci.yml`. |
 | Backend `npm test` fails with `Invalid CORS origin option` in CI | `FRONTEND_URL` not set in the job env. CORS plugin rejects undefined. |
