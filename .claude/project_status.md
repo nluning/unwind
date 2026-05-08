@@ -1,6 +1,6 @@
 ---
 name: Unwind project status
-description: Current build stage — Stage 6 (deployment) in progress. Phases 0-5 complete (Phase 4 monitoring done with Sentry tunnel mitigating ad-blockers). Phase 6 (CI/CD) is the only remaining deployment phase. App live at https://unwind.nu.
+description: Stage 6 (deployment) complete. App live at https://unwind.nu with full CI/CD via GitHub Actions: push to main triggers tests, builds images to GHCR, SSHes to Hetzner VPS, runs migrations, recreates containers. Phase 0.4 bug fixes deferred.
 type: project
 ---
 
@@ -34,7 +34,17 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
   - Sentry org context: `script-fs` (EU region — `de.sentry.io` ingest), org id `4511348432830464`, project id `4511348616396880`. Full DSN in server `.env` as `VITE_SENTRY_DSN`. The org + project IDs are now hardcoded in `frontend/nginx.conf` for the tunnel — if rotated, that file needs updating too.
 - Phase 0.4 (bug fixes) still deferred.
 - Login rate limiting (closed 2026-05-08): nginx `limit_req_zone` keyed on `$binary_remote_addr`, applied at exact-match `location = /api/auth/login` with `rate=5r/m burst=10 nodelay`, returning 429. Caps brute-force at 7200/day per IP. Other auth endpoints (`/auth/register`, password reset if added later) are not rate-limited at the proxy layer yet.
-- Next: Phase 6 (CI/CD) is the only remaining deployment phase.
+- Phase 6 done (2026-05-08): full CI/CD via GitHub Actions.
+  - Branching: `development` (long-lived integration) → PR → `main` (protected, deploys). Branch protection on main requires PR + linear history + passing CI checks (`backend`, `frontend`, `secret-scan`). Free-tier rulesets only enforce on **public** repos — repo went public 2026-05-08 after a clean history audit (no committed secrets; `.env.example` was the only `.env*` ever tracked).
+  - `ci.yml`: backend (tsc + vitest against postgres:17 service container), frontend (lint:check + vue-tsc + vitest + vite build), gitleaks. Triggers on push to main/development and PRs.
+  - `deploy.yml`: builds backend + frontend images, tags `:sha-<commit>` + `:latest`, pushes to **public** GHCR packages (`ghcr.io/nluning/unwind-{backend,frontend}`). Deploy job is gated `if: github.ref == 'refs/heads/main'`. Runs on a fresh runner: provisions deploy SSH key (`SSH_PRIVATE_KEY`) and `SSH_KNOWN_HOSTS` from secrets, SSHes to server, `git pull`s the new compose file, `docker compose pull` images, runs migrations as a one-shot container (`docker compose run --rm backend node dist/db/migrate.js`), then `docker compose up -d --remove-orphans`.
+  - Compose file moved from `build:` → `image: ghcr.io/nluning/...:${IMAGE_TAG:-latest}`. Server stops being a build environment. Rollback = SSH in, `IMAGE_TAG=sha-<previous>` for `pull` + `up -d`.
+  - Secrets in GitHub repo: `SSH_PRIVATE_KEY` (deploy keypair, passphrase-less ed25519, separate from laptop keys), `SSH_HOST=unwind.nu`, `SSH_USER`, `SSH_KNOWN_HOSTS` (collected via `ssh-keyscan -t ed25519,rsa,ecdsa unwind.nu`), `VITE_SENTRY_DSN`. The deploy keypair's public key is in server `~/.ssh/authorized_keys` with the comment `github-actions-deploy`.
+  - `frontend/package.json`: added `lint:check` script (oxlint + eslint, no `--fix`) for CI use.
+  - `.vscode/settings.json` committed: format-on-save with Prettier, fix-on-save with ESLint + oxlint, scoped to frontend/. VSCodium uses Open VSX — all required extensions are available there.
+  - **Debugging artifact worth remembering**: first deploy hit `denied` on `docker compose pull`. Cause was a stale `noor-169` namespace hardcoded in compose + docs from before Noor's GitHub handle change to `nluning`. Build workflow used dynamic `${{ github.repository_owner }}` (correct, `nluning`), so images existed at the new namespace; compose file looked at the old one. GHCR's failure mode for an unknown namespace is `denied`, not `not found`. Fix: replaced `noor-169` → `nluning` everywhere. Also masking quirk in the log: `***-169` is GHA pattern-masking a secret value (`SSH_USER=noor`) wherever the substring appears.
+- Phase 0.4 (bug fixes) still deferred.
+- Next: Stage 6 deployment is complete. Open follow-up: GHCR retention policy for old SHA tags (no automation yet).
 
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
