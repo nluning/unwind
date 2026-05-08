@@ -76,7 +76,7 @@ export function useChat() {
           }
         }
       }
-    } catch (err) {
+    } catch {
       error.value = 'Er ging iets mis. Probeer het opnieuw.'
     } finally {
       isStreaming.value = false
