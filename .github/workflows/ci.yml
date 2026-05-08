@@ -1,0 +1,108 @@
+name: ci
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+
+    # GHA spins this up alongside the job. Reachable on localhost:5432.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: unwind
+          POSTGRES_PASSWORD: unwind
+          POSTGRES_DB: unwind_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
+
+    # Mirrors the .env.test shape the local pretest hook expects.
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: unwind
+      DB_PASSWORD: unwind
+      DB_NAME: unwind_test
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Run migrations against test DB
+        run: npx tsx src/db/migrate.ts
+
+      - name: Tests
+        run: npx vitest run
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (oxlint + eslint, no auto-fix)
+        run: npm run lint:check
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Tests
+        run: npx vitest run
+
+      - name: Build
+        run: npm run build-only
+
+  gitleaks:
+    name: secret-scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks compares against history; needs full clone
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
