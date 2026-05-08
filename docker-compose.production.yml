@@ -17,7 +17,7 @@ services:
     # on this Docker network, not from the outside world.
 
   backend:
-    image: ghcr.io/noor-169/unwind-backend:${IMAGE_TAG:-latest}
+    image: ghcr.io/nluning/unwind-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       db:
@@ -42,7 +42,7 @@ services:
     # Outside traffic goes through nginx, never directly to port 3000.
 
   frontend:
-    image: ghcr.io/noor-169/unwind-frontend:${IMAGE_TAG:-latest}
+    image: ghcr.io/nluning/unwind-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       - backend
