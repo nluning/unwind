@@ -23,6 +23,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     Sentry.init({
         app,
         dsn: import.meta.env.VITE_SENTRY_DSN,
+        tunnel: '/sentry-tunnel',
         environment: import.meta.env.MODE,
         tracesSampleRate: 0.1,
     })
