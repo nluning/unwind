@@ -23,7 +23,7 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 ## Project status
 
-**Stage 6 — Deployment (in progress, Phase 1 complete).**
+**Stage 6 — Deployment (in progress, Phases 0-5 complete; Phase 6 CI/CD remaining).** App live at https://unwind.nu.
 Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
 themes, loading/error states). Six theme variants (calm/warm/playful × dark/light)
 with `useTheme` composable. Dark mode default. `LinkButton` shared component.
@@ -48,14 +48,29 @@ Stage 5 (all 12 chunks done):
 - Tests: memory CRUD, rate limiting, onboarding response parsing
 - First user review panel run: `docs/review/reports/001-general-concept.md`
 
-Stage 6 progress (see `docs/plan/10-deployment-plan.md`):
-- Phase 0 (pre-deployment fixes): env var validation on startup, `DELETE /me`
-  endpoint with cascade cleanup, `PrivacyPage.vue` with Dutch GDPR notice,
-  delete-account button in UserMenu. Bug fixes deferred.
-- Phase 1 (Docker): backend + frontend Dockerfiles (multi-stage), nginx.conf
-  with API proxy + SSE support, `docker-compose.production.yml` (db, backend,
-  frontend), tested locally and working. Host binding set to `0.0.0.0`.
-- Next: Phase 2 (VPS setup) + Phase 3 (nginx + HTTPS)
+Stage 6 progress (see `docs/plan/10-deployment-plan.md` for the plan and
+`.claude/project_status.md` memory for the live state):
+- Phase 0 done: env var validation on startup, `DELETE /me` with cascade
+  cleanup, `PrivacyPage.vue` with Dutch GDPR notice, delete-account button.
+  Phase 0.4 bug fixes deferred.
+- Phase 1 done: Dockerfiles (multi-stage), nginx.conf with API proxy + SSE,
+  `docker-compose.production.yml`. Backend bound to `0.0.0.0`.
+- Phase 2 done: Hetzner Cloud VPS, SSH key-only auth, repo via deploy key,
+  production secrets in gitignored `.env`.
+- Phase 3 done: Let's Encrypt + certbot, nginx HTTPS termination for
+  unwind.nu, ACME challenge plumbed through `/.well-known/acme-challenge/`,
+  `trustProxy: true` in Fastify so cookies + rate limiting + req.ip work
+  behind nginx.
+- Phase 4 done: `/health` does `SELECT 1` (also Docker HEALTHCHECK), Pino
+  redacts cookie/auth/password paths, `@sentry/node` on backend,
+  `@sentry/vue` on frontend via a tunnel through nginx (`/sentry-tunnel` →
+  ingest) that bypasses browser ad blockers which otherwise silently drop
+  requests to `*.sentry.io`.
+- Phase 5 done: ufw (22/80/443 only), unattended-upgrades, fail2ban (sshd
+  jail). Backend container runs as non-root; db + backend ports not
+  published to host. Login endpoint rate-limited at nginx (5r/m, burst 10
+  per IP) to mitigate brute-force.
+- Next: Phase 6 (CI/CD) — only remaining deployment phase.
 
 ## Key decisions
 
