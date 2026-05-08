@@ -2,9 +2,7 @@ name: deploy
 
 on:
   push:
-    # `development` is here temporarily so we can iterate on this workflow
-    # without merging to main. Remove it before the final main-merge in step 8.
-    branches: [main, development]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
