@@ -39,6 +39,9 @@ jobs:
       DB_PASSWORD: unwind
       DB_NAME: unwind_test
       NODE_ENV: test
+      # @fastify/cors throws "Invalid CORS origin option" if `origin` is undefined.
+      # Tests use app.inject() with no Origin header, so any valid string works.
+      FRONTEND_URL: http://localhost:5173
 
     steps:
       - uses: actions/checkout@v4
