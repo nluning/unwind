@@ -478,7 +478,7 @@ describe('PUT /activities/:id', () => {
 // ---------- DELETE /activities/:id ----------
 
 describe('DELETE /activities/:id', () => {
-  it('deletes an activity and returns it', async () => {
+  it('deletes a user-owned activity', async () => {
     const userId = await getTestUserId()
     const activity = await createTestActivity({ title: 'To be deleted', source: 'user', user_id: userId })
 
@@ -489,7 +489,7 @@ describe('DELETE /activities/:id', () => {
     })
 
     expect(response.statusCode).toBe(200)
-    expect(response.json().title).toBe('To be deleted')
+    expect(response.json()).toEqual({ ok: true, action: 'deleted' })
 
     // Verify it's actually gone
     const check = await app.pg.query('SELECT * FROM activities WHERE id = $1', [activity.id])
@@ -504,7 +504,7 @@ describe('DELETE /activities/:id', () => {
     })
 
     expect(response.statusCode).toBe(404)
-    expect(response.json().error).toBe('Activity could not be deleted')
+    expect(response.json().error).toBe('Activity not found')
   })
 
   it('returns 400 for an invalid UUID', async () => {

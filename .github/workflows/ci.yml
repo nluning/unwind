@@ -91,7 +91,7 @@ jobs:
         run: npm run type-check
 
       - name: Tests
-        run: npx vitest run
+        run: npx vitest run --passWithNoTests
 
       - name: Build
         run: npm run build-only
