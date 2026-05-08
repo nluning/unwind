@@ -33,7 +33,7 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
   - Testing gotcha: `throw new Error()` typed in DevTools console doesn't fire `window.onerror` (Chrome suppresses console-thrown errors). Use `setTimeout(() => { throw new Error('test') }, 0)` to verify Sentry capture.
   - Sentry org context: `script-fs` (EU region — `de.sentry.io` ingest), org id `4511348432830464`, project id `4511348616396880`. Full DSN in server `.env` as `VITE_SENTRY_DSN`. The org + project IDs are now hardcoded in `frontend/nginx.conf` for the tunnel — if rotated, that file needs updating too.
 - Phase 0.4 (bug fixes) still deferred.
-- Adjacent gap: `/auth/login` has no IP-based rate limiting — fail2ban only watches SSH, so brute-force against the web login is currently unmitigated.
+- Login rate limiting (closed 2026-05-08): nginx `limit_req_zone` keyed on `$binary_remote_addr`, applied at exact-match `location = /api/auth/login` with `rate=5r/m burst=10 nodelay`, returning 429. Caps brute-force at 7200/day per IP. Other auth endpoints (`/auth/register`, password reset if added later) are not rate-limited at the proxy layer yet.
 - Next: Phase 6 (CI/CD) is the only remaining deployment phase.
 
 **Key decisions made in Stage 5:**
