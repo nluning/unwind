@@ -47,10 +47,11 @@ export async function validateSession(pg: Pool, token: string) {
   const id = hashSessionToken(token)
 
   const result = await pg.query(
-    `SELECT s.id, s.user_id, s.expires_at, u.email
-     FROM sessions s
-     JOIN users u ON s.user_id = u.id
-     WHERE s.id = $1`,
+    `SELECT sessions.id, sessions.user_id, sessions.expires_at,
+            users.email, users.onboarding_completed_at
+     FROM sessions
+     JOIN users ON sessions.user_id = users.id
+     WHERE sessions.id = $1`,
     [id]
   )
 
@@ -72,7 +73,11 @@ export async function validateSession(pg: Pool, token: string) {
 
   return {
     session: { id: row.id, expiresAt: row.expires_at },
-    user: { id: row.user_id, email: row.email },
+    user: {
+      id: row.user_id,
+      email: row.email,
+      onboarding_completed_at: row.onboarding_completed_at,
+    },
   }
 }
 
