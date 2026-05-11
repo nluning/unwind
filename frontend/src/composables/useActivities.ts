@@ -20,6 +20,12 @@ const activities = ref<Activity[]>([])
 const loaded = ref(false)
 const error = ref(false)
 
+export function resetActivitiesState() {
+  activities.value = []
+  loaded.value = false
+  error.value = false
+}
+
 export function useActivities() {
   const sessionSuggested = ref<Set<string>>(new Set())
   const sessionAccepted = ref<Set<string>>(new Set())

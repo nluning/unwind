@@ -56,7 +56,7 @@ const router = createRouter({
 
 // Navigation guard — wait for auth check, then redirect if needed
 router.beforeEach(async (to) => {
-  const { isLoggedIn, initialize } = useAuth()
+  const { isLoggedIn, needsOnboarding, initialize } = useAuth()
   await initialize()
 
   const isPublic = to.meta.public === true
@@ -69,11 +69,9 @@ router.beforeEach(async (to) => {
     return { name: 'suggest' }
   }
 
-  // Redirect to onboarding if not completed yet
-  const onboardingDone = localStorage.getItem('unwind-onboarding-done') === 'true'
   const isOnboardingRoute = to.meta.onboarding === true
 
-  if (isLoggedIn.value && !onboardingDone && !isOnboardingRoute && !isPublic) {
+  if (isLoggedIn.value && needsOnboarding.value && !isOnboardingRoute && !isPublic) {
     return { name: 'onboarding' }
   }
 })

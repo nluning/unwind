@@ -164,6 +164,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
+import { useAuth } from '../composables/useAuth.js'
 import OnboardingOptionList from '../components/OnboardingOptionList.vue'
 import PageShell from '../components/PageShell.vue'
 import ForwardIcon from '../components/icons/ForwardIcon.vue'
@@ -172,6 +173,7 @@ import OnboardingStepHeader from '../components/OnboardingStepHeader.vue'
 import ToggleButton from '../components/ToggleButton.vue'
 
 const router = useRouter()
+const { fetchMe } = useAuth()
 const { t } = useI18n()
 
 const step = ref(1)
@@ -237,16 +239,23 @@ async function handleGenerate() {
       }
     )
     generatedCount.value = result.activities.length
-    localStorage.setItem('unwind-onboarding-done', 'true')
+    // Refresh /me so the router's needsOnboarding gate flips before the
+    // user navigates away from this page.
+    await fetchMe()
     step.value = 7
   } catch {
     error.value = t('onboarding.error')
   }
 }
 
-function handleSkip() {
-  localStorage.setItem('unwind-onboarding-done', 'true')
-  router.push({ name: 'suggest' })
+async function handleSkip() {
+  try {
+    await api('/onboarding/skip', { method: 'POST' })
+    await fetchMe()
+    router.push({ name: 'suggest' })
+  } catch {
+    error.value = t('onboarding.error')
+  }
 }
 
 </script>
