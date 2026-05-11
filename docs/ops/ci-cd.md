@@ -26,12 +26,17 @@ git push to main
                                           unwind.nu live
 ```
 
-Two workflows in `.github/workflows/`:
+Three workflows in `.github/workflows/`:
 
 - **`ci.yml`** — runs on every push and PR to `main` or `development`.
   Three parallel jobs: `backend` (tsc + vitest, against a Postgres service
   container), `frontend` (lint + vue-tsc + vitest + vite build), and
   `secret-scan` (gitleaks). All three are merge-blocking on PRs to `main`.
+
+- **`enforce-merge-source.yml`** — runs on PRs targeting `main` only.
+  One job (`check-source`) that fails unless the PR's source branch is
+  `development`. Merge-blocking. See `docs/ops/branching.md` for the
+  policy rationale.
 
 - **`deploy.yml`** — runs on push to `main` or via the manual
   "Run workflow" button. Two jobs:
