@@ -64,7 +64,27 @@ export function parseOnboardingResponse(text: string): OnboardingResult | null {
 }
 
 async function onboardingRoutes(fastify: FastifyInstance) {
-    const onboardingRateLimit = createRateLimiter({ endpoint: 'onboarding', maxRequests: 3, window: 'total' })
+    const onboardingRateLimit = createRateLimiter({ endpoint: 'onboarding', maxRequests: 3, window: 'week' })
+
+    // POST /onboarding/skip — user opts out of the intake flow. Stamps
+    // onboarding_completed_at so the router stops redirecting them. Same
+    // IS NULL guard as the generate path: never overwrites an existing
+    // timestamp (so a user who has already onboarded can't accidentally
+    // reset their record by hitting this endpoint).
+    fastify.post(
+        '/onboarding/skip',
+        { preHandler: requireAuth },
+        async (request, reply) => {
+            const userId = request.user!.id
+            await fastify.pg.query(
+                `UPDATE users
+                 SET onboarding_completed_at = now()
+                 WHERE id = $1 AND onboarding_completed_at IS NULL`,
+                [userId]
+            )
+            reply.status(204).send()
+        }
+    )
 
     const bodySchema = {
         body: {
@@ -145,8 +165,8 @@ async function onboardingRoutes(fastify: FastifyInstance) {
                 await dbClient.query('BEGIN')
 
                 const activityValues = result.activities
-                    .map((_, i) => {
-                        const base = i * 6
+                    .map((_activity, index) => {
+                        const base = index * 6
                         return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, 'ai', $${base + 6})`
                     })
                     .join(', ')
@@ -168,8 +188,8 @@ async function onboardingRoutes(fastify: FastifyInstance) {
 
                 const categoryValues: string[] = []
                 const categoryParams: (string | number)[] = []
-                for (let i = 0; i < insertedActivities.length; i++) {
-                    const sourceActivity = result.activities[i]!
+                for (let index = 0; index < insertedActivities.length; index++) {
+                    const sourceActivity = result.activities[index]!
                     const categoryId = categoryMap[sourceActivity.category]
                     if (!categoryId) {
                         fastify.log.warn(
@@ -180,7 +200,7 @@ async function onboardingRoutes(fastify: FastifyInstance) {
                     }
                     const base = categoryParams.length
                     categoryValues.push(`($${base + 1}, $${base + 2})`)
-                    categoryParams.push(insertedActivities[i]!.id, categoryId)
+                    categoryParams.push(insertedActivities[index]!.id, categoryId)
                 }
                 if (categoryValues.length > 0) {
                     await dbClient.query(
@@ -191,13 +211,20 @@ async function onboardingRoutes(fastify: FastifyInstance) {
 
                 if (memory_consent && result.memories.length > 0) {
                     const memoryValues = result.memories
-                        .map((_, i) => `($1, $${i + 2}, 'onboarding')`)
+                        .map((_memory, index) => `($1, $${index + 2}, 'onboarding')`)
                         .join(', ')
                     await dbClient.query(
                         `INSERT INTO user_memories (user_id, fact, source) VALUES ${memoryValues}`,
                         [userId, ...result.memories]
                     )
                 }
+
+                await dbClient.query(
+                    `UPDATE users
+                     SET onboarding_completed_at = now()
+                     WHERE id = $1 AND onboarding_completed_at IS NULL`,
+                    [userId]
+                )
 
                 await dbClient.query('COMMIT')
 

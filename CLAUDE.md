@@ -23,7 +23,7 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 ## Project status
 
-**Stage 6 — Deployment (in progress, Phases 0-5 complete; Phase 6 CI/CD remaining).** App live at https://unwind.nu.
+**Stage 6 — Deployment (complete).** App live at https://unwind.nu with full CI/CD via GitHub Actions: push to `main` triggers tests → builds + pushes images to GHCR → SSH-deploys to the Hetzner VPS (compose pull, migrate, up -d). Branching: `development` → PR → protected `main`.
 Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
 themes, loading/error states). Six theme variants (calm/warm/playful × dark/light)
 with `useTheme` composable. Dark mode default. `LinkButton` shared component.
@@ -70,7 +70,27 @@ Stage 6 progress (see `docs/plan/10-deployment-plan.md` for the plan and
   jail). Backend container runs as non-root; db + backend ports not
   published to host. Login endpoint rate-limited at nginx (5r/m, burst 10
   per IP) to mitigate brute-force.
-- Next: Phase 6 (CI/CD) — only remaining deployment phase.
+- Phase 6 done (2026-05-08): full CI/CD via GitHub Actions.
+  - Repo went public 2026-05-08 (free-tier rulesets only enforce on public
+    repos). Branch protection on `main`: PR required, linear history,
+    `backend`/`frontend`/`secret-scan` checks must pass.
+  - `ci.yml`: backend (tsc + vitest against postgres:17 service container),
+    frontend (lint:check + vue-tsc + vitest + vite build), gitleaks.
+    Runs on push to main/development and PRs.
+  - `deploy.yml`: builds backend + frontend, tags `:sha-<commit>` + `:latest`,
+    pushes to public GHCR (`ghcr.io/nluning/unwind-{backend,frontend}`).
+    Deploy job (gated to `main`) provisions the deploy SSH key from secrets,
+    SSHes to the server, pulls compose + images, runs migrations as a
+    one-shot container, then `docker compose up -d`. Compose moved from
+    `build:` → `image:` with `${IMAGE_TAG:-latest}` so rollback is just a
+    different tag.
+  - Secrets in GitHub: `SSH_PRIVATE_KEY` (dedicated deploy keypair, separate
+    from laptop keys), `SSH_HOST`, `SSH_USER`, `SSH_KNOWN_HOSTS`,
+    `VITE_SENTRY_DSN`. See `docs/ops/ci-cd.md` for the full runbook
+    including rollback and key rotation.
+  - Branching: see `docs/ops/branching.md`.
+- Phase 0.4 (bug fixes) still deferred. Open Stage 6 follow-up: GHCR
+  retention policy for old SHA tags (manual cleanup for now).
 
 ## Key decisions
 

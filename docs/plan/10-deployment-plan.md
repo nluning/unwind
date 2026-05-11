@@ -1,6 +1,6 @@
 # Going live — deployment plan
 
-**Current status: Phase 1 complete — Docker builds and runs locally. Not deployed yet.**
+**Current status: Phases 0–6 complete. App live at https://unwind.nu with full CI/CD. Phase 0.4 (known bug fixes) still deferred. Phase 7 (post-deployment observation) ongoing.**
 
 ## What this document covers
 
@@ -486,16 +486,23 @@ automate with confidence.
 
 ### Steps
 
-- [ ] **6.1 Test workflow**
-  - On every push: install deps, run backend tests
-  - This alone catches broken code before it reaches the server
-- [ ] **6.2 Build + deploy workflow**
-  - On push to `main`: build Docker images, push to registry, SSH into server,
-    pull new images, restart containers
-  - Use GitHub secrets for the SSH key and server address
-- [ ] **6.3 Verify the full cycle**
-  - Make a small change, push to main, watch the action run, see the change
-    live on the server
+- [x] **6.1 Test workflow** (`.github/workflows/ci.yml`)
+  - Three parallel jobs: backend (tsc + vitest with a postgres:17 service
+    container), frontend (lint:check + vue-tsc + vitest + vite build),
+    gitleaks (secret scan). Runs on push to main/development + PRs.
+- [x] **6.2 Build + deploy workflow** (`.github/workflows/deploy.yml`)
+  - `build-and-push` builds backend + frontend, tags `:sha-<commit>` +
+    `:latest`, pushes to public GHCR.
+  - `deploy` (gated `if: github.ref == 'refs/heads/main'`) provisions
+    deploy SSH key + known_hosts on the runner, SSHes in, runs the
+    deploy script (compose pull, migrate, up -d).
+- [x] **6.3 Verify the full cycle** (closed 2026-05-08)
+  - First merge to main hit `denied` on `docker compose pull` because the
+    compose file hardcoded the old GitHub handle (`noor-169`) while the
+    workflow used the dynamic `${{ github.repository_owner }}` (correctly
+    `nluning` after rename). Fixed and re-deployed clean.
+
+See `docs/ops/branching.md` and `docs/ops/ci-cd.md` for the runbooks.
 
 *Label: collaborative. AI writes the workflow file, you read every line and
 trace the flow. Then make a change and watch it deploy.*

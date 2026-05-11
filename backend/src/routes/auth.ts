@@ -5,7 +5,7 @@ import { requireAuth } from '../middleware/auth.js'
 async function sendAuthResponse(
   fastify: FastifyInstance,
   reply: FastifyReply,
-  user: { id: string; email: string | null },
+  user: { id: string; email: string | null; onboarding_completed_at: Date | null },
   status: number
 ) {
   const token = generateSessionToken()
@@ -14,7 +14,11 @@ async function sendAuthResponse(
   reply
     .setCookie('session', token, cookieOptions(fastify))
     .status(status)
-    .send({ id: user.id, email: user.email })
+    .send({
+      id: user.id,
+      email: user.email,
+      onboarding_completed_at: user.onboarding_completed_at,
+    })
 }
 
 async function authRoutes(fastify: FastifyInstance) {
@@ -51,7 +55,8 @@ async function authRoutes(fastify: FastifyInstance) {
       const passwordHash = await hashPassword(password)
 
       const result = await fastify.pg.query(
-        'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
+        `INSERT INTO users (email, password_hash) VALUES ($1, $2)
+         RETURNING id, email, onboarding_completed_at`,
         [email, passwordHash]
       )
 
@@ -80,7 +85,7 @@ async function authRoutes(fastify: FastifyInstance) {
       const { email, password } = request.body
 
       const result = await fastify.pg.query(
-        'SELECT id, email, password_hash FROM users WHERE email = $1',
+        'SELECT id, email, password_hash, onboarding_completed_at FROM users WHERE email = $1',
         [email]
       )
 
@@ -164,18 +169,19 @@ async function authRoutes(fastify: FastifyInstance) {
 
       // Check if this device already has a user
       const existing = await fastify.pg.query(
-        'SELECT id, email FROM users WHERE device_id = $1',
+        'SELECT id, email, onboarding_completed_at FROM users WHERE device_id = $1',
         [device_id]
       )
 
-      let user: { id: string; email: string | null }
+      let user: { id: string; email: string | null; onboarding_completed_at: Date | null }
 
       if (existing.rows.length > 0) {
         user = existing.rows[0]
       } else {
         // Create an anonymous user (no email, no password)
         const result = await fastify.pg.query(
-          'INSERT INTO users (device_id) VALUES ($1) RETURNING id, email',
+          `INSERT INTO users (device_id) VALUES ($1)
+           RETURNING id, email, onboarding_completed_at`,
           [device_id]
         )
         user = result.rows[0]
