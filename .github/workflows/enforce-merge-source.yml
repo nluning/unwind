@@ -1,0 +1,16 @@
+name: enforce-merge-source
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-source:
+    name: check-source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require development as source
+        if: github.head_ref != 'development'
+        run: |
+          echo "PRs into main must come from 'development' (got '${{ github.head_ref }}')."
+          exit 1
