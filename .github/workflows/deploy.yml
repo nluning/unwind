@@ -97,7 +97,7 @@ jobs:
           echo "==> Pulling new images from GHCR"
           docker compose -f docker-compose.production.yml pull
           echo "==> Running migrations"
-          docker compose -f docker-compose.production.yml run --rm backend node dist/db/migrate.js
+          docker compose -f docker-compose.production.yml run -T --rm backend node dist/db/migrate.js </dev/null
           echo "==> Restarting containers"
           docker compose -f docker-compose.production.yml up -d --remove-orphans
           echo "==> Pruning dangling images"
