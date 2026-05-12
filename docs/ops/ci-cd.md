@@ -83,7 +83,8 @@ intervening on the server.
 workflow**. Builds and deploys identically to a push.
 
 The button only appears for workflows that exist on the **default branch**
-(`main`). If it's missing, the workflow file isn't on `main` yet.
+(currently `development` — changed from `main` on 2026-05-12). If it's
+missing, the workflow file isn't on the default branch yet.
 
 ## Rollback
 
@@ -224,9 +225,10 @@ Day-to-day local development still uses the regular dev setup
 | `npm run lint:check` fails on the CI side but passes locally | Local was running `npm run lint` (with `--fix`); CI doesn't auto-fix. Run `npm run lint:check` locally to reproduce, then commit the fix. |
 | Frontend CI test step exits 1 with "no test files found" | Missing `--passWithNoTests`. Check `vitest run` invocation in `ci.yml`. |
 | Backend `npm test` fails with `Invalid CORS origin option` in CI | `FRONTEND_URL` not set in the job env. CORS plugin rejects undefined. |
+| Deploy logs stop after "Container ... Created" for migration, `up -d` never runs | `docker compose run` consumed stdin from the `bash -s` heredoc. Fixed 2026-05-12 by adding `-T </dev/null` to the run command. If it regresses, check that no command in the heredoc inherits stdin. |
 | Migration step times out | DB container slow to come up under load, or a migration script is hung. SSH to server, look at `docker compose logs db backend`. |
 | Workflow runs but `deploy` job is "skipped" | Working as intended on non-`main` branches. The `if:` gate keeps dev pushes from deploying. |
-| `Run workflow` button missing in the Actions UI | Workflow file doesn't exist on the default branch. `workflow_dispatch` only surfaces from `main`. |
+| `Run workflow` button missing in the Actions UI | Workflow file doesn't exist on the default branch (`development`). `workflow_dispatch` only surfaces from the default branch. |
 
 ## Cleanup tasks (not yet automated)
 

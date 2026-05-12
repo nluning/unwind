@@ -57,6 +57,20 @@ Then open a PR `development` → `main` in the GitHub UI. CI runs again on
 the merge target. If green, merge — this triggers the deploy workflow and
 unwind.nu updates within a few minutes.
 
+**After the merge, resync `development` to `main`:**
+
+```bash
+git checkout development
+git reset --hard origin/main
+git push --force-with-lease
+```
+
+This is necessary because `main` requires linear history, so the PR is
+squash-merged — one new commit on `main` that contains all the changes.
+The original commits still exist on `development` with different SHAs,
+so git sees the branches as diverged even though the content is identical.
+Without the resync, the divergence accumulates with every promotion.
+
 ## Branch protection on `main`
 
 Configured 2026-05-08 in **Settings → Rules → Rulesets**. Free-tier
@@ -113,6 +127,7 @@ Hotfixes route through `development` like everything else (see below).
 
 | Symptom | Cause |
 |---|---|
+| `development` diverged from `main` after merge | Expected with squash merges. Resync: `git checkout development && git reset --hard origin/main && git push --force-with-lease` |
 | `git push origin main` rejected | Working as intended. Open a PR from `development` instead. |
 | PR can't be merged: "1 status check is required" | `ci` workflow hasn't run on this PR's HEAD commit yet — push a new commit to retrigger, or click "Re-run" on the check. |
 | Linear-history rule rejects the merge | A merge commit got created somewhere. Use **squash** or **rebase** in the PR UI; for local merges, prefer `git merge --ff-only` or rebase. |
