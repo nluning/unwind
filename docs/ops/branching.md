@@ -54,8 +54,16 @@ git log main..development --oneline
 ```
 
 Then open a PR `development` → `main` in the GitHub UI. CI runs again on
-the merge target. If green, merge — this triggers the deploy workflow and
-unwind.nu updates within a few minutes.
+the merge target. If green, use a **merge commit** (not squash or rebase)
+— this triggers the deploy workflow and unwind.nu updates within a few
+minutes.
+
+Merge commits are required here because `development` is a long-lived
+branch. A squash or rebase merge creates new commit SHAs on `main` that
+don't match the originals on `development`, causing the branches to
+diverge even though the content is identical. A merge commit ties the
+histories together — after the merge, `main` contains all of
+`development`'s commits by reference, so no resync is needed.
 
 ## Branch protection on `main`
 
@@ -70,7 +78,10 @@ Enabled:
 - ✅ Required approvals: **0** (solo — you can't approve your own PR; the
   PR itself is the artifact)
 - ✅ Require branches to be up to date before merging
-- ✅ Require linear history
+- ❌ ~~Require linear history~~ — removed 2026-05-12. Incompatible with
+  a long-lived `development` branch: squash/rebase merges create new SHAs
+  that diverge from `development`. Merge commits for `development → main`
+  avoid this.
 - ✅ Block force pushes
 - ✅ Restrict deletions
 
@@ -104,8 +115,9 @@ Hotfixes route through `development` like everything else (see below).
   them together" awkward.
 - **`main` is protected** so that the deploy workflow is only ever
   triggered by a deliberate PR merge, never by a stray push.
-- **Linear history on `main`** keeps the deploy log readable. Each commit
-  on `main` corresponds to one deploy.
+- **Merge commits on `main`** each represent one promotion from
+  `development` — effectively one deploy. The full commit detail lives
+  inside each merge.
 - **No `main` direct-push** means the gates (CI passing, PR review
   artifact) cannot be skipped — even by you, even in a hurry.
 
@@ -115,7 +127,7 @@ Hotfixes route through `development` like everything else (see below).
 |---|---|
 | `git push origin main` rejected | Working as intended. Open a PR from `development` instead. |
 | PR can't be merged: "1 status check is required" | `ci` workflow hasn't run on this PR's HEAD commit yet — push a new commit to retrigger, or click "Re-run" on the check. |
-| Linear-history rule rejects the merge | A merge commit got created somewhere. Use **squash** or **rebase** in the PR UI; for local merges, prefer `git merge --ff-only` or rebase. |
+| `development → main` PR merged with squash/rebase and branches diverged | Use a merge commit instead. Squash/rebase create new SHAs that diverge from `development`. |
 | Required status check missing in the dropdown | Workflow hasn't run yet. Push something to `development` to trigger one run, then come back to settings. |
 | Pushed to a feature branch but no CI ran | Expected — feature-branch pushes don't trigger CI on their own. Open a PR (even a draft) to fire CI. |
 
