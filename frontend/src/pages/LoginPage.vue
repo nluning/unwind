@@ -4,8 +4,15 @@
 
       <main class="flex-1 flex flex-col justify-center px-[26px] pb-12 gap-6">
         <h1 class="font-serif text-2xl tracking-tight text-uw-ink m-0">
-          {{ isRegistering ? $t('auth.register') : $t('auth.login') }}
+          {{ headingText }}
         </h1>
+
+        <p
+          v-if="mode === 'upgrade'"
+          class="text-sm text-uw-ink-soft m-0"
+        >
+          {{ $t('auth.upgradeIntro') }}
+        </p>
 
         <form @submit.prevent="handleSubmit" class="flex flex-col gap-4">
           <label class="flex flex-col gap-1.5 text-sm text-uw-ink-soft">
@@ -25,7 +32,7 @@
               v-model="password"
               type="password"
               required
-              autocomplete="current-password"
+              :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
               class="px-4 py-3 rounded-xl text-base outline-none bg-uw-accent border border-uw-border-soft text-uw-ink"
             />
           </label>
@@ -37,7 +44,7 @@
             :disabled="loading"
             class="px-5 py-3 rounded-xl text-base cursor-pointer border-none bg-uw-primary text-uw-primary-fg font-500 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {{ isRegistering ? $t('auth.registerButton') : $t('auth.loginButton') }}
+            {{ submitText }}
           </button>
 
           <button
@@ -45,20 +52,22 @@
             class="text-sm text-uw-ink-soft bg-transparent border-none cursor-pointer mt-1"
             @click="toggleMode"
           >
-            {{ isRegistering ? $t('auth.switchToLogin') : $t('auth.switchToRegister') }}
+            {{ toggleText }}
           </button>
         </form>
 
-        <div class="h-px bg-uw-border-soft" />
+        <template v-if="mode !== 'upgrade'">
+          <div class="h-px bg-uw-border-soft" />
 
-        <button
-          type="button"
-          class="px-5 py-3 rounded-xl text-sm cursor-pointer bg-transparent border border-uw-border text-uw-ink-soft font-500 disabled:opacity-60 disabled:cursor-not-allowed"
-          :disabled="loading"
-          @click="handleDeviceAuth"
-        >
-          {{ $t('auth.deviceButton') }}
-        </button>
+          <button
+            type="button"
+            class="px-5 py-3 rounded-xl text-sm cursor-pointer bg-transparent border border-uw-border text-uw-ink-soft font-500 disabled:opacity-60 disabled:cursor-not-allowed"
+            :disabled="loading"
+            @click="handleDeviceAuth"
+          >
+            {{ $t('auth.deviceButton') }}
+          </button>
+        </template>
 
         <router-link
           to="/privacy"
@@ -71,26 +80,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useAuth } from '../composables/useAuth.js'
+import { useAuth, getOrCreateDeviceId } from '../composables/useAuth.js'
 import { ApiError } from '../api/client.js'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
 
-const router = useRouter()
-const { t } = useI18n()
-const { login, register, deviceLogin } = useAuth()
+type Mode = 'login' | 'register' | 'upgrade'
 
-const isRegistering = ref(false)
+const router = useRouter()
+const route = useRoute()
+const { t } = useI18n()
+const { login, register, deviceLogin, upgrade } = useAuth()
+
+// Initial mode comes from the ?mode= query param. The menu's "Maak een
+// account" entry routes here with ?mode=upgrade for anonymous users.
+const mode = ref<Mode>(route.query.mode === 'upgrade' ? 'upgrade' : 'login')
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
+const headingText = computed(() => {
+  if (mode.value === 'upgrade') return t('auth.upgrade')
+  if (mode.value === 'register') return t('auth.register')
+  return t('auth.login')
+})
+
+const submitText = computed(() => {
+  if (mode.value === 'upgrade') return t('auth.upgradeButton')
+  if (mode.value === 'register') return t('auth.registerButton')
+  return t('auth.loginButton')
+})
+
+const toggleText = computed(() => {
+  // From login → register, otherwise → login. Upgrade users who already
+  // have an account toggle to the email-login form.
+  return mode.value === 'login'
+    ? t('auth.switchToRegister')
+    : t('auth.switchToLogin')
+})
+
 function toggleMode() {
-  isRegistering.value = !isRegistering.value
+  mode.value = mode.value === 'login' ? 'register' : 'login'
   error.value = ''
 }
 
@@ -99,7 +133,9 @@ async function handleSubmit() {
   loading.value = true
 
   try {
-    if (isRegistering.value) {
+    if (mode.value === 'upgrade') {
+      await upgrade(email.value, password.value)
+    } else if (mode.value === 'register') {
       await register(email.value, password.value)
     } else {
       await login(email.value, password.value)
@@ -121,23 +157,12 @@ async function handleDeviceAuth() {
   loading.value = true
 
   try {
-    const deviceId = getOrCreateDeviceId()
-    await deviceLogin(deviceId)
+    await deviceLogin(getOrCreateDeviceId())
     router.push({ name: 'suggest' })
   } catch {
     error.value = t('auth.error')
   } finally {
     loading.value = false
   }
-}
-
-function getOrCreateDeviceId(): string {
-  const key = 'unwind-device-id'
-  let deviceId = localStorage.getItem(key)
-  if (!deviceId) {
-    deviceId = crypto.randomUUID()
-    localStorage.setItem(key, deviceId)
-  }
-  return deviceId
 }
 </script>

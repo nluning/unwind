@@ -100,6 +100,7 @@ async function onboardingRoutes(fastify: FastifyInstance) {
                     maxItems: 20,
                 },
                 memory_consent: { type: 'boolean' },
+                free_text: { type: 'string', maxLength: 500 },
             },
         },
     } as const
@@ -110,13 +111,14 @@ async function onboardingRoutes(fastify: FastifyInstance) {
             social: 'alone' | 'with_others' | 'no_preference'
             interests: string[]
             memory_consent: boolean
+            free_text?: string
         }
     }>(
         '/onboarding/generate',
         { schema: bodySchema, preHandler: [requireAuth, onboardingRateLimit] },
         async (request, reply) => {
             const userId = request.user!.id
-            const { setting, social, interests, memory_consent } = request.body
+            const { setting, social, interests, memory_consent, free_text } = request.body
 
             // Enable memory if user gave consent
             if (memory_consent) {
@@ -126,8 +128,15 @@ async function onboardingRoutes(fastify: FastifyInstance) {
                 )
             }
 
-            // Build the prompt and call Claude
-            const userMessage = buildOnboardingUserMessage({ setting, social, interests })
+            // Build the prompt and call Claude. Free text is only forwarded when
+            // memory_consent is true — otherwise Claude's derived memories would
+            // be discarded downstream, so spending the tokens is pure waste.
+            const userMessage = buildOnboardingUserMessage({
+                setting,
+                social,
+                interests,
+                free_text: memory_consent ? free_text : undefined,
+            })
 
             const response = await client.messages.create({
                 model: 'claude-sonnet-4-6',
