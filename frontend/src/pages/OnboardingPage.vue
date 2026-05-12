@@ -165,6 +165,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
 import { useAuth } from '../composables/useAuth.js'
+import { resetActivitiesState } from '../composables/useActivities.js'
 import OnboardingOptionList from '../components/OnboardingOptionList.vue'
 import PageShell from '../components/PageShell.vue'
 import ForwardIcon from '../components/icons/ForwardIcon.vue'
@@ -242,6 +243,9 @@ async function handleGenerate() {
     // Refresh /me so the router's needsOnboarding gate flips before the
     // user navigates away from this page.
     await fetchMe()
+    // Invalidate the module-level activities cache so /suggest re-fetches
+    // and renders the newly-generated items instead of the stale list.
+    resetActivitiesState()
     step.value = 7
   } catch {
     error.value = t('onboarding.error')

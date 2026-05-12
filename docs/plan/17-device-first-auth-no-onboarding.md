@@ -38,6 +38,16 @@ Most of the underlying code already exists. This plan is largely a
   device-auth fallback there keeps the router clean and means every code
   path that calls `initialize()` (router, page mounts, manual refresh)
   gets the same behavior.
+- **An explicit-logout flag (`unwind-explicit-logout` in localStorage)
+  suppresses the device-auth fallback.** Surfaced during implementation:
+  without this, a logged-out email user who *reloads* the page would be
+  silently device-auth'd back in (their `device_id` is still in
+  localStorage), undoing the logout. The flag is set by `logout()`,
+  cleared by any explicit auth action (`login`, `register`, `deviceLogin`),
+  and read by `fetchMe()` to skip the device-auth fallback. A small
+  router redirect sends `user === null + explicitly-logged-out` users
+  to `/login` so they don't land on a protected page that 401s every
+  fetch.
 - **The `/login` route stays.** It's the destination for returning email
   users on a fresh browser. It's just no longer where unauthenticated
   visitors get redirected.
@@ -95,12 +105,14 @@ async function fetchMe() {
   } catch {
     // No valid session — bootstrap an anonymous device-scoped one.
     try {
-      const deviceId = getOrCreateDeviceId()
-      await deviceLogin(deviceId)
+      await deviceLogin(getOrCreateDeviceId())
     } catch {
-      // Device-auth itself failed (network down, server error).
-      // Leave user.value null; router still falls through to /login
-      // as a defensive fallback. See Phase 2.
+      // Device-auth itself failed (the server is unreachable). Leave
+      // user.value null; pages render their own error state via the
+      // existing StateError component when their fetches subsequently
+      // fail. No redirect — `/login` would also fail to reach the
+      // server, so sending the user there just shifts the failure to
+      // a screen where they can do even less.
       user.value = null
       localStorage.removeItem('unwind-user')
     }
@@ -123,56 +135,125 @@ The existing `getOrCreateDeviceId` helper currently lives in
 LoginPage (for the explicit "use without account" button, if kept) share
 one implementation.
 
-### 1.2 Remove the unauthenticated-route redirect
+### 1.2 Remove the router redirects
 
-In `frontend/src/router/index.ts`:
+In `frontend/src/router/index.ts`, drop all three redirect blocks:
 
 ```ts
 // before
-if (!isPublic && !isLoggedIn.value) {
-  return { name: 'login' }
-}
+router.beforeEach(async (to) => {
+  const { isLoggedIn, needsOnboarding, initialize } = useAuth()
+  await initialize()
 
-if (isLoggedIn.value && needsOnboarding.value && !isOnboardingRoute && !isPublic) {
-  return { name: 'onboarding' }
-}
+  const isPublic = to.meta.public === true
+
+  if (!isPublic && !isLoggedIn.value) {
+    return { name: 'login' }
+  }
+
+  if (to.name === 'login' && isLoggedIn.value) {
+    return { name: 'suggest' }
+  }
+
+  const isOnboardingRoute = to.meta.onboarding === true
+
+  if (isLoggedIn.value && needsOnboarding.value && !isOnboardingRoute && !isPublic) {
+    return { name: 'onboarding' }
+  }
+})
 ```
 
 After:
 
 ```ts
-// Auth bootstrap happens in initialize(). If we still don't have a user
-// here (device-auth itself failed), fall through to /login as a defensive
-// fallback for the rare server-error case.
-if (!isPublic && !isLoggedIn.value) {
-  return { name: 'login' }
-}
+// Auth bootstrap happens in initialize(): it either rehydrates an
+// existing session or creates an anonymous device-scoped one. After
+// it resolves, user.value is either populated (anonymous or email) or
+// null because the server is unreachable. In the unreachable case
+// pages render StateError; the router doesn't redirect.
+router.beforeEach(async (to) => {
+  const { user, initialize } = useAuth()
+  await initialize()
+
+  // An already-logged-in EMAIL user shouldn't see the login form again
+  // — they should log out first. Anonymous users (email === null) can
+  // pass through to /login because the page hosts the upgrade flow
+  // they reach via the menu's "Maak een account" entry.
+  if (to.name === 'login' && user.value?.email) {
+    return { name: 'suggest' }
+  }
+})
 ```
 
-Drop the `needsOnboarding` redirect entirely. Drop the `onboarding: true`
-meta flag (the route stays but is no longer reachable via auto-redirect —
-it's reached from a menu action; see Phase 3.2).
+Reasoning for each block:
 
-The `/login` fallback stays as a defensive measure for the case where
-`POST /auth/device` itself errors. It is not the default destination of
-a successful boot.
+- **Unauthenticated-route → `/login`** (dropped): `initialize()` now
+  always tries to produce a session (cached or fresh device). The
+  fallback to `/login` only triggered when *both* attempts failed,
+  and in that case `/login` itself can't reach the server either.
+  The redirect was shifting the failure to a screen with less context,
+  not recovering from it.
+- **Logged-in EMAIL user → `/login` → `/suggest`** (kept, narrowed):
+  if a user has already bound an email account, sending them back to
+  the login form is confusing — they should log out first. Anonymous
+  users (`email === null`) legitimately visit `/login` from the menu's
+  "Maak een account" entry to upgrade, so the redirect is now gated on
+  `user.value?.email` rather than on `isLoggedIn.value`.
+- **`needsOnboarding` → `/onboarding`** (dropped): onboarding stops
+  being a gate. The page is reached from a menu action instead
+  (Phase 3.2).
+
+Keep the `onboarding: true` meta flag on the `/onboarding` route — it's
+still read by `App.vue` (`showChrome` computed) to hide the `BottomNav`
+and `UserMenu` chrome on that page. The router guard stops reading it
+(onboarding is no longer a gate) but it still serves a chrome-hiding
+purpose. Revisit when Phase 3.2 wires the page up as a menu action and
+we can decide whether chrome should appear in that context.
 
 ### 1.3 Tests
 
-In `frontend/tests` (or `frontend/src/__tests__/`, follow whichever the
-repo already uses for composable tests):
+**Use the project's `test` skill** at `.claude/skills/test/TEST.md` — invoke
+it when starting test writing so the conventions (AAA structure, "should"
+naming, behavior-not-implementation framing, 3-6 tests per composable,
+inline mocks instead of `beforeEach`) are loaded into context.
 
-- `useAuth.initialize()` with no existing session → ends with
-  `isLoggedIn.value === true` and `user.value.email === null`.
-- `useAuth.initialize()` with a valid `/me` session → no `/auth/device`
-  call is made.
-- `useAuth.initialize()` with both endpoints failing → ends with
-  `user.value === null` (the defensive fallback path).
-- Router guard: anonymous user visiting `/suggest` resolves without
-  redirect.
-- Router guard: anonymous user visiting `/onboarding` resolves directly
-  (no longer auto-redirected there, but the route is still reachable from
-  the menu — see Phase 3.2).
+Tests live in `frontend/tests/composables/useAuth.spec.ts` (extend the
+existing file) and `frontend/tests/router.spec.ts` (new — or co-locate
+with another existing router test if one exists).
+
+`useAuth` composable tests — behavioral framing:
+
+- **should give a new visitor an anonymous session on first boot** —
+  Arrange: `vi.mocked(api).mockRejectedValueOnce(new ApiError(401))`
+  for `/me`, then `mockResolvedValueOnce({ id, email: null, ... })` for
+  `/auth/device`. Act: call `initialize()`. Assert: `isLoggedIn.value`
+  is true and `user.value.email` is null.
+- **should reuse an existing session without creating a new device user** —
+  Arrange: `/me` resolves with an existing user. Act: call `initialize()`.
+  Assert: `api` was called exactly once (no `/auth/device` call).
+- **should leave the user unauthenticated when the server is unreachable** —
+  Arrange: both `/me` and `/auth/device` reject. Act: call `initialize()`.
+  Assert: `user.value === null` and `isLoggedIn.value === false`. (This
+  is the case where pages render `StateError`, see Phase 1.2.)
+- **should persist the device_id across boots so the same anonymous user
+  is rehydrated** — Arrange: localStorage already has `unwind-device-id`.
+  Act: trigger the device-auth path. Assert: `vi.mocked(api)` was called
+  with that exact id in the body.
+
+Router guard tests — verify the redirect blocks are gone:
+
+- **should resolve /suggest for an anonymous user without redirecting** —
+  Arrange: mock `useAuth` to return an anonymous user. Act: navigate to
+  `/suggest`. Assert: the resolved route name is `'suggest'`, not
+  `'login'`.
+- **should not redirect to /onboarding when onboarding is incomplete** —
+  Arrange: mock `useAuth` with `needsOnboarding.value === true`. Act:
+  navigate to `/suggest`. Assert: the resolved route name is `'suggest'`,
+  not `'onboarding'`.
+
+Skip the "should let an anonymous user visit /login" case unless it's
+free — it's just verifying the absence of a guard, which the two tests
+above already cover.
 
 ---
 
@@ -246,16 +327,25 @@ Update the i18n key if needed.
 
 In `frontend/src/pages/LoginPage.vue`:
 
-- Read a query flag (e.g. `?mode=upgrade`) on mount.
-- When `mode=upgrade` and `isAnonymous.value === true`, hide the
-  "use without account" button (no longer relevant — the user is
-  already device-authed) and submit the form via
-  `POST /auth/upgrade` instead of `POST /register`.
-- Success → `router.push('/suggest')` and refresh the user via
-  `fetchMe()` so the menu re-renders without the upgrade entry.
+- Read `?mode=upgrade` from `route.query` on mount; initialise an
+  internal `mode` ref to one of `'login' | 'register' | 'upgrade'`.
+- The heading, submit button label, autocomplete hint, and submit
+  handler all branch on `mode`. The toggle between login/register stays
+  the same as before — upgrade mode also toggles to login mode so a
+  returning user with an existing email account has an escape hatch.
+- In upgrade mode, hide the "Gebruik zonder account" device-auth
+  button — the user is already device-authed, so the button would
+  either be a no-op or reattach them to their current session.
+- Show a one-line `auth.upgradeIntro` above the form in upgrade mode
+  explaining that existing activities and preferences are preserved.
 
-The email/password login path (`?mode=login` or default) stays as it is
-for returning users on fresh browsers.
+The upgrade itself runs through a new `upgrade()` function on
+`useAuth` that calls `POST /auth/upgrade` and merges `{ id, email }`
+into the existing user object — no `/me` round-trip needed, because
+the upgrade endpoint only mutates `email` and `password_hash`,
+preserving `id`, `device_id`, and `onboarding_completed_at`. (Verified
+by the existing "preserves the same user id after upgrade" backend
+test.)
 
 ### 3.5 Tests
 
@@ -292,20 +382,21 @@ reads as a list rather than an action.
 
 Manual checklist against a local dev DB:
 
-- [ ] Clear localStorage and cookies, open the app → lands on `/suggest`
+- [x] Clear localStorage and cookies, open the app → lands on `/suggest`
       with the base library, no `/login` flash, no `/onboarding` redirect.
-- [ ] Inspect DB: a new user row exists with `device_id` set, `email NULL`,
+- [x] Inspect DB: a new user row exists with `device_id` set, `email NULL`,
       `password_hash NULL`.
-- [ ] Open the menu → "Maak een account" present, "Logout" absent.
+- [x] Open the menu → "Maak een account" present, "Logout" absent.
 - [ ] Click "Maak een account" → upgrade form → submit with valid
       email+password → land on `/suggest`, menu now shows "Logout" and
       no "Maak een account".
-- [ ] Inspect DB: same `id` as before, `email` and `password_hash` now
+- [x] Inspect DB: same `id` as before, `email` and `password_hash` now
       populated, `device_id` preserved. Activities and history intact.
+      -> didnt check everything but should be fine.
 - [ ] Open the menu → "Verzin activiteiten voor me" → 4-question form →
       generates activities → land on `/suggest` with new activities
       present.
-- [ ] Visit `/activities` from the menu → CRUD form works (add, edit,
+- [x] Visit `/activities` from the menu → CRUD form works (add, edit,
       delete an activity).
 - [ ] Returning email user on a fresh browser → no session → device-auth
       runs → user can click "Maak een account" but the upgrade endpoint
@@ -314,19 +405,25 @@ Manual checklist against a local dev DB:
       account. Confirm this flow still works.)
 - [ ] Hit `DELETE /me` from an anonymous session → row removed, session
       cleared, next nav re-bootstraps as a *new* anonymous user.
-- [ ] Network panel during boot shows exactly one of: `GET /me` (cached
+- [x] Network panel during boot shows exactly one of: `GET /me` (cached
       session) OR `GET /me` → 401 → `POST /auth/device`. Not both.
 - [ ] Sentry user context populated for anonymous users (`user.id`
       present in scope).
+      -> not sure. how to check?
 
 ---
 
 ## Risks and rollback
 
-- **Boot regresses to a permanent loading state if `POST /auth/device`
-  fails.** Mitigated by the defensive `/login` fallback in the router
-  guard, but worth surfacing the error in the UI rather than spinning.
-  Probably reuse the existing global error toast pattern.
+- **Boot when `POST /auth/device` fails.** `fetchMe()` sets `user.value
+  = null` and the router lets pages render. Pages like `SuggestPage`
+  catch their own fetch 401s and render `StateError` with a retry
+  button — strictly better than a permanent loading state. Caveat: the
+  page-level retry calls `fetchActivities()`, not `initialize()`, so a
+  retry doesn't re-attempt device-auth. The user has to reload the page
+  to recover. Acceptable for now (server-unreachable-during-boot is
+  rare and reload is a natural recovery path), but a follow-up could
+  wire the retry to also re-run `initialize()` so reload isn't needed.
 - **Returning email users on a fresh browser get a confusing experience.**
   They land on `/suggest` as a *new* anonymous user without realising
   their old account exists. Mitigation: the "Maak een account" menu

@@ -38,6 +38,9 @@
   "auth": {
     "login": "Inloggen",
     "register": "Registreren",
+    "upgrade": "Maak een account",
+    "upgradeButton": "Account aanmaken",
+    "upgradeIntro": "Je activiteiten en voorkeuren blijven bewaard. Met een account kan je ze terugvinden als je inlogt op andere apparaten.",
     "email": "E-mailadres",
     "password": "Wachtwoord",
     "loginButton": "Log in",
@@ -102,6 +105,8 @@
     "close": "Sluiten",
     "theme": "Thema",
     "logout": "Uitloggen",
+    "createAccount": "Maak een account",
+    "generateActivities": "Verzin activiteiten voor me",
     "deleteAccount": "Account verwijderen",
     "deleteConfirm": "Weet je het zeker? Dit kan niet ongedaan worden."
   },
