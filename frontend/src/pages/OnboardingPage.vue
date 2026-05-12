@@ -1,13 +1,14 @@
 <template>
   <PageShell>
-      <!-- Progress dots — only across the 4 questions -->
+    <PageHeader />
+      <!-- Progress dots — across the 5 questions -->
       <div
-        v-if="step >= 2 && step <= 5"
+        v-if="step >= 2 && step <= 6"
         class="flex justify-center gap-1.5 pt-[22px]"
         aria-hidden="true"
       >
         <span
-          v-for="n in 4"
+          v-for="n in 5"
           :key="n"
           class="h-1.5 rounded-[3px] transition-all duration-300"
           :class="n === step - 1 ? 'w-[22px] bg-uw-primary' : 'w-1.5 bg-uw-chip'"
@@ -22,10 +23,10 @@
         <p class="uw-body">{{ $t('onboarding.intro') }}</p>
 
         <div class="mt-auto px-[22px] flex items-center justify-between">
-          <button class="uw-text-button" @click="handleSkip">
-            {{ $t('onboarding.skip') }}
+          <button class="uw-text-button" @click="handleBackFromIntro">
+            {{ $t('onboarding.back') }}
           </button>
-          <button class="uw-actions__primary" @click="step = 2">
+          <button class="uw-actions__primary" @click="goNext(2)">
             {{ $t('onboarding.next') }}
             <span class="uw-badge">
               <ForwardIcon />
@@ -39,18 +40,22 @@
         <OnboardingStepHeader
           :question-number="1"
           :title="$t('onboarding.consentQuestion')"
+        >
+          <template #hint>{{ $t('onboarding.consentHint') }}</template>
+        </OnboardingStepHeader>
+
+        <OnboardingOptionPills
+          :options="consentOptions"
+          :model-value="consentPick"
+          class="mt-8"
+          @update:model-value="(v) => handleConsentPicked(v as 'yes' | 'no')"
         />
 
-        <div class="mt-auto mb-14 px-7 flex gap-3">
-          <button
-            v-for="option in consentOptions"
-            :key="option.value"
-            class="flex-1 py-4 rounded-full border border-uw-border-soft text-uw-ink text-sm font-medium cursor-pointer transition-colors hover:bg-uw-chip"
-            @click="handleConsentPicked(option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
+        <StepActions
+          :show-continue="isRevisit && consentPick !== ''"
+          @back="goBack(1)"
+          @continue="goNext(3)"
+        />
       </template>
 
       <!-- Step 3 — setting -->
@@ -60,11 +65,17 @@
           :title="$t('onboarding.settingQuestion')"
         />
 
-        <OnboardingOptionList
+        <OnboardingOptionPills
           :options="settingOptions"
           :model-value="setting"
-          class="mt-auto mb-14 mx-7"
-          @update:model-value="(v) => { setting = v as typeof setting; step = 4 }"
+          class="mt-8"
+          @update:model-value="(v) => handleSettingPicked(v as typeof setting)"
+        />
+
+        <StepActions
+          :show-continue="isRevisit && setting !== ''"
+          @back="goBack(2)"
+          @continue="goNext(4)"
         />
       </template>
 
@@ -75,11 +86,17 @@
           :title="$t('onboarding.socialQuestion')"
         />
 
-        <OnboardingOptionList
+        <OnboardingOptionPills
           :options="socialOptions"
           :model-value="social"
-          class="mt-auto mb-14 mx-7"
-          @update:model-value="(v) => { social = v as typeof social; step = 5 }"
+          class="mt-8"
+          @update:model-value="(v) => handleSocialPicked(v as typeof social)"
+        />
+
+        <StepActions
+          :show-continue="isRevisit && social !== ''"
+          @back="goBack(3)"
+          @continue="goNext(5)"
         />
       </template>
 
@@ -103,7 +120,39 @@
           </ToggleButton>
         </div>
 
-        <div class="mt-auto mb-12 px-[22px] flex justify-end">
+        <StepActions
+          :show-continue="true"
+          @back="goBack(4)"
+          @continue="goNext(6)"
+        />
+      </template>
+
+      <!-- Step 6 — free-text -->
+      <template v-else-if="step === 6">
+        <OnboardingStepHeader
+          :question-number="5"
+          :title="$t('onboarding.freeTextQuestion')"
+        >
+          <template #hint>{{ $t('onboarding.freeTextHint') }}</template>
+        </OnboardingStepHeader>
+
+        <div class="mt-6 px-[22px] flex flex-col gap-2">
+          <textarea
+            v-model="freeText"
+            :maxlength="FREE_TEXT_MAX"
+            :placeholder="$t('onboarding.freeTextPlaceholder')"
+            rows="5"
+            class="w-full rounded-2xl border border-uw-border-soft bg-transparent text-uw-ink p-3 font-sans text-base resize-none focus:outline-none focus:border-uw-primary"
+          />
+          <span class="self-end text-xs text-uw-ink-mute">
+            {{ freeText.length }} / {{ FREE_TEXT_MAX }}
+          </span>
+        </div>
+
+        <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
+          <button class="uw-text-button" @click="goBack(5)">
+            {{ $t('onboarding.back') }}
+          </button>
           <button class="uw-actions__primary" @click="handleGenerate">
             {{ $t('onboarding.generate') }}
             <span class="uw-badge">
@@ -113,9 +162,9 @@
         </div>
       </template>
 
-      <!-- Step 6 — loading -->
+      <!-- Step 7 — loading -->
       <div
-        v-else-if="step === 6"
+        v-else-if="step === 7"
         class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
       >
         <span class="spinner" />
@@ -124,8 +173,8 @@
         </p>
       </div>
 
-      <!-- Step 7 — done -->
-      <template v-else-if="step === 7">
+      <!-- Step 8 — done -->
+      <template v-else-if="step === 8">
         <h2 class="uw-title pt-[72px] max-w-[280px]">
           {{ $t('onboarding.doneHeading') }}
         </h2>
@@ -149,7 +198,7 @@
       >
         {{ error }}
         <button
-          v-if="step === 6"
+          v-if="step === 7"
           class="block mx-auto mt-2 uw-text-button underline"
           @click="handleGenerate"
         >
@@ -166,24 +215,38 @@ import { useI18n } from 'vue-i18n'
 import { api } from '../api/client.js'
 import { useAuth } from '../composables/useAuth.js'
 import { resetActivitiesState } from '../composables/useActivities.js'
-import OnboardingOptionList from '../components/OnboardingOptionList.vue'
+import OnboardingOptionPills from '../components/OnboardingOptionPills.vue'
 import PageShell from '../components/PageShell.vue'
 import ForwardIcon from '../components/icons/ForwardIcon.vue'
 import CheckIcon from '../components/icons/CheckIcon.vue'
 import OnboardingStepHeader from '../components/OnboardingStepHeader.vue'
 import ToggleButton from '../components/ToggleButton.vue'
+import StepActions from '../components/OnboardingStepActions.vue'
+import PageHeader from '@/components/PageHeader.vue'
 
 const router = useRouter()
 const { fetchMe } = useAuth()
 const { t } = useI18n()
 
+const FREE_TEXT_MAX = 500
+
 const step = ref(1)
 const error = ref('')
 
-const memoryConsent = ref<boolean | null>(null)
+// Track which question steps the user has already left at least once.
+// Auto-advance fires only on first pass; on revisit (back-navigation),
+// picking an option just updates the value and the user must press
+// Volgende. Avoids the silent-no-op trap where re-tapping the current
+// answer would auto-advance without visible state change.
+const visited = ref(new Set<number>())
+const isRevisit = computed(() => visited.value.has(step.value))
+
+const consentPick = ref<'' | 'yes' | 'no'>('')
+const memoryConsent = computed(() => consentPick.value === 'yes')
 const setting = ref<'' | 'indoor' | 'outdoor' | 'no_preference'>('')
 const social = ref<'' | 'alone' | 'with_others' | 'no_preference'>('')
 const interests = ref<string[]>([])
+const freeText = ref('')
 const generatedCount = ref(0)
 
 const settingOptions = computed(() => [
@@ -211,19 +274,56 @@ const interestOptions = [
   'Muziek', 'Koken', 'Lezen', 'Niks doen',
 ]
 
+function goNext(target: number) {
+  visited.value.add(step.value)
+  step.value = target
+}
+
+function goBack(target: number) {
+  step.value = target
+}
+
+function handleBackFromIntro() {
+  // Step 1 sits behind the menu action "Verzin activiteiten voor me".
+  // history.length > 1 means we have somewhere to go back to; otherwise
+  // (deep link, fresh tab) fall through to /suggest.
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.push({ name: 'suggest' })
+  }
+}
+
 function toggleInterest(interest: string) {
   interests.value = interests.value.includes(interest)
     ? interests.value.filter((item) => item !== interest)
     : [...interests.value, interest]
 }
 
-function handleConsentPicked(value: string) {
-  memoryConsent.value = value === 'yes'
-  step.value = 3
+function handleConsentPicked(value: 'yes' | 'no') {
+  consentPick.value = value
+  if (!isRevisit.value) {
+    goNext(3)
+  }
+}
+
+function handleSettingPicked(value: typeof setting.value) {
+  setting.value = value
+  if (!isRevisit.value) {
+    goNext(4)
+  }
+}
+
+function handleSocialPicked(value: typeof social.value) {
+  social.value = value
+  if (!isRevisit.value) {
+    goNext(5)
+  }
 }
 
 async function handleGenerate() {
-  step.value = 6
+  visited.value.add(step.value)
+  step.value = 7
   error.value = ''
 
   try {
@@ -235,7 +335,8 @@ async function handleGenerate() {
           setting: setting.value,
           social: social.value,
           interests: interests.value,
-          memory_consent: memoryConsent.value ?? false,
+          memory_consent: memoryConsent.value,
+          free_text: freeText.value.trim() || undefined,
         }),
       }
     )
@@ -246,21 +347,9 @@ async function handleGenerate() {
     // Invalidate the module-level activities cache so /suggest re-fetches
     // and renders the newly-generated items instead of the stale list.
     resetActivitiesState()
-    step.value = 7
+    step.value = 8
   } catch {
     error.value = t('onboarding.error')
   }
 }
-
-async function handleSkip() {
-  try {
-    await api('/onboarding/skip', { method: 'POST' })
-    await fetchMe()
-    router.push({ name: 'suggest' })
-  } catch {
-    error.value = t('onboarding.error')
-  }
-}
-
 </script>
-

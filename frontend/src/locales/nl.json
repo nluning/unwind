@@ -75,13 +75,16 @@
     "starter4": "Verras me"
   },
   "onboarding": {
-    "heading": "Hi. Fijn dat je er bent.",
-    "intro": "Unwind stelt ontspannende dingen voor als je brein niet uit wil. Vier vragen, één minuut.",
+    "heading": "Activiteiten op maat",
+    "intro": "Vijf korte vragen. Daarna verzint Unwind activiteiten die bij je passen.",
     "questionOf": "Vraag {n} van {total}",
     "consentQuestion": "Mag Unwind onthouden wat je vertelt?",
+    "consentHint": "Zo sluiten suggesties ook in de toekomst beter aan bij wat je fijn vindt.",
     "consentYes": "Ja, prima",
     "consentNo": "Liever niet",
     "next": "Begin",
+    "continue": "Volgende",
+    "back": "Terug",
     "settingQuestion": "Waar ontspan je het liefst?",
     "settingIndoor": "Binnen",
     "settingOutdoor": "Buiten",
@@ -92,13 +95,20 @@
     "socialBoth": "Allebei prima",
     "interestsQuestion": "Wat spreekt je aan?",
     "interestsHint": "Kies er zoveel als je wilt, of geen.",
+    "freeTextQuestion": "Wil je hier nog iets aan toevoegen?",
+    "freeTextHint": "Bijvoorbeeld iets wat je juist niet fijn vindt, of context die nuttig is.",
+    "freeTextPlaceholder": "Typ hier (optioneel)",
     "generate": "Klaar",
-    "skip": "Overslaan",
     "generating": "Activiteiten aan het genereren...",
     "doneHeading": "Klaar!",
     "done": "{count} activiteiten toegevoegd op basis van je voorkeuren.",
     "start": "Aan de slag",
     "error": "Er ging iets mis. Probeer het opnieuw."
+  },
+  "welcome": {
+    "heading": "Welkom bij Unwind",
+    "body": "Unwind stelt ontspannende activiteiten voor als je brein niet uit wil.",
+    "dismiss": "Begin"
   },
   "menu": {
     "label": "Menu",

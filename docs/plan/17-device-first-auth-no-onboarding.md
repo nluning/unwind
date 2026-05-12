@@ -454,3 +454,203 @@ Manual checklist against a local dev DB:
   in Mode 4 chat, rethinking the stress scale, renaming the "Stress" tab.
 - **`docs/plan/10-deployment-plan.md` Phase 0.4 cleanup** — tick the
   onboarding-related items off once this ships.
+
+---
+
+## Phase 6 — Reshape the (former) onboarding flow
+
+**Status: planned, not started.** Phases 1–5 shipped. The page still works
+when reached from the menu, but the copy and shape are residue from the
+old "first-run gate" framing. This phase rewords it as a *help me get
+better suggestions* tool, not an intake form, and lets the user move
+backward to edit answers.
+
+### 6.1 Why this matters
+
+The page now sits behind a menu action ("Verzin activiteiten voor me"),
+so the visitor has already opted in. The current copy ("Hi. Fijn dat je
+er bent." / "Vier vragen, één minuut.") greets them like a new user.
+Worse, the only escape on step 1 is "Overslaan", which is meaningless
+when the flow isn't a gate. And once they pick an answer, they're stuck
+with it — there's no way back to fix a misclick. Both are leftovers from
+when this was a forced trajectory.
+
+### 6.2 Copy changes
+
+- **Heading + intro on step 1.** Rewrite to frame the flow as
+  optional tailoring, not an intake. Working drafts (workshop the copy):
+  - heading: "Activiteiten op maat" (or "Even afstemmen")
+  - intro: "Vijf korte vragen. Daarna verzint Unwind activiteiten die bij
+    je passen."
+  - i18n keys: keep `onboarding.heading` / `onboarding.intro`; just
+    update the Dutch values.
+- **Consent question context.** Add one sentence under
+  `onboarding.consentQuestion` explaining the *what for*. Draft:
+  "Zo kunnen suggesties ook in de toekomst beter aansluiten bij wat je fijn vindt." New
+  i18n key `onboarding.consentHint`. Render it in the
+  `OnboardingStepHeader`'s existing `#hint` slot (already used by the
+  interests step) so the layout doesn't drift.
+- **Skip → back.** Drop `onboarding.skip`. Replace it with a
+  back button on step 1.
+- **i18n cleanup.** Remove `onboarding.skip` from `nl.json` once no
+  template references it. Grep before deleting.
+
+### 6.3 Back button on every question
+
+Steps 2–5 each gain a `Terug` button that decrements `step` by 1
+without clearing the previously-picked answer (so the user sees their
+prior choice highlighted on return).
+
+Implementation notes:
+
+- Steps 3 (setting) and 4 (social) currently advance via
+  `OnboardingOptionList`'s `@update:model-value` handler with an inline
+  `step = n + 1`. That pattern auto-advances on click, which conflicts
+  with letting the user *change* a previous answer (they'd land on the
+  page with the answer pre-selected, but tapping it again would just
+  re-advance silently). Solution:
+  Keep auto-advance, and on back-navigation pre-select but show a
+     "Volgende" button so the user can re-tap their current pick or
+     change it. Adds a button only on the "revisited" state.
+- Step 2 (consent) currently auto-advances on pick. Same treatment:
+  show the chosen chip as selected and require an explicit "Volgende".
+- The back button reuses the existing `uw-text-button` style (same as
+  the old skip), placed on the *left* in the actions row, with the
+  primary "Volgende" on the right. Step 1 has only the primary button
+  (no back).
+- New i18n key: `onboarding.back` — "Terug".
+
+### 6.4 Final free-text question
+
+Add a new step 6 (push the loading state to 7, done to 8) with:
+
+- Heading via `OnboardingStepHeader`, question 5 of 5. Update the
+  progress dots `v-if="step >= 2 && step <= 6"` and `v-for="n in 5"`.
+- Question copy: "Wil je hier nog iets aan toevoegen?" Hint:
+  "Optioneel — bijvoorbeeld iets wat je juist niet fijn vindt, of
+  context die nuttig is." (workshop)
+- A `<textarea>` bound to a new `freeText` ref. Cap at 500 chars
+  (matches the `user_memories.fact` column's max length so we never
+  have to truncate downstream). Show a small char counter.
+- Back button (step 5) + primary "Klaar" (current step-5 button moves
+  here).
+
+### 6.5 Filing the free text as memories
+
+The 500-char limit is a *soft* upper bound on a single textarea, but the
+content can still hold multiple discrete facts ("Ik hou van handwerken,
+woon in een appartement, kan niet stil zitten"). Don't store it as one
+opaque blob — Claude already breaks structured answers into discrete
+memories; let it do the same for free text.
+
+Backend changes in `backend/src/routes/onboarding.ts`:
+
+- Extend the body schema with an optional `free_text: { type: 'string',
+  maxLength: 500 }`.
+- Pass `free_text` through `buildOnboardingUserMessage` as a labelled
+  line: `Extra context van de gebruiker: <text>` (only when non-empty).
+- Update `ONBOARDING_SYSTEM_PROMPT` (memory section) so Claude knows
+  the free text is a memory source: "If the user provided free-text
+  context, split it into discrete factual memories alongside the
+  preferences-derived ones. Don't editorialize." Keep the
+  "Do NOT include sensitive assumptions" guard.
+
+No schema migration needed — memories already have an `'onboarding'`
+source.
+
+Frontend: extend the `handleGenerate` body with `free_text:
+freeText.value`.
+
+### 6.6 Tests
+
+- Component test for `OnboardingPage`: clicking "Terug" on step 3 goes
+  back to step 2 and preserves the consent selection visually. Same for
+  step 5 → 4.
+- Backend test for `parseOnboardingResponse` + `/onboarding/generate`:
+  given a body with `free_text`, the prompt sent to the SDK includes
+  the labelled line. Mock the SDK; assert on the recorded call args.
+- Backend test: with `memory_consent: false`, free_text is ignored
+  (don't waste tokens on a path we won't store). Update the schema
+  validation accordingly or enforce in the handler — handler is fine,
+  schema-only would require a conditional schema.
+
+### 6.7 Open questions
+
+- Do we keep "Verzin activiteiten voor me" as the menu label, or
+  rename it to match the new framing? Probably rename — `menu.tailor`
+  / "Activiteiten op maat" reads less like "AI did a thing" and more
+  like "tweak your suggestions". Workshop alongside 6.2 copy.
+- The page still calls itself "onboarding" everywhere (route name,
+  file name, i18n namespace, prompt file). Renaming is a separate
+  cleanup; flag it but don't bundle.
+
+---
+
+## Phase 7 — Welcome card on first open
+
+**Status: planned, not started.** Quick polish, separate from the
+onboarding redesign. Could ship in the same PR or a follow-up.
+
+### 7.1 Goal
+
+A first-time visitor to `unwind.nu` lands on `/suggest` (per Phase 1)
+with no idea what the app is. Give them one dismissable card that names
+the concept in one sentence, then get out of the way. Tooltips for the
+modes / add-activity / generate flows come later as separate features.
+
+### 7.2 Where to detect "first open"
+
+Three candidates in localStorage:
+
+- `unwind-device-id` — created by `getOrCreateDeviceId()` inside
+  `initialize()`. By the time `SuggestPage` mounts it's always set, so
+  this can't distinguish "first ever open" from "second open".
+- `unwind-user` — same story; set after the first `/me` success.
+- A new dedicated key, e.g. `unwind-welcomed`.
+
+Use a new key. Decoupling welcome state from auth state is worth the
+five extra characters in localStorage — it survives logout/upgrade, it
+won't be reset by the "remove unwind-user on 401" path in the api
+client, and we can flip it independently for QA. Set it on dismiss; if
+absent on `SuggestPage` mount, render the card.
+
+### 7.3 Component shape
+
+A new `WelcomeCard.vue` rendered conditionally at the top of
+`SuggestPage.vue` (above `PageHeader`? or replacing the `uw-prompt`
+heading temporarily? — recommend *above* the prompt so it doesn't
+displace the suggestion when dismissed). Roughly:
+
+- Title: "Welkom bij Unwind"
+- Body: "Unwind stelt ontspannende activiteiten voor voor als je brein niet uit wil" (final copy: workshop one round — current draft
+  is fine.)
+- A single "Begin" button that sets `unwind-welcomed=1` and hides
+  the card via a local `dismissed` ref. reuse existing component if possible. 
+
+Style as a soft accent card (reuse `uw-card` / similar UnoCSS shortcut
+— check existing card classes; don't invent a new one). Should feel
+inviting, not modal. No overlay, no focus trap.
+
+### 7.4 i18n strings
+
+New namespace in `nl.json`:
+
+- `welcome.heading` — "Welkom bij Unwind"
+- `welcome.body` — "Unwind stelt ontspannende activiteiten voor voor
+  als je brein niet uit wil."
+- `welcome.dismiss` — "Begin"
+
+### 7.5 Tests
+
+- Component test: card renders when `unwind-welcomed` is absent; does
+  not render when set; clicking the dismiss button sets the key and
+  hides the card.
+
+### 7.6 Out of scope (deferred)
+
+- Tooltips that progressively reveal modes 2/3/4, the "+ activity"
+  affordance, and "Verzin activiteiten voor me". Track as a follow-up
+  feature; needs its own design pass (sequencing, dismissal model,
+  whether to anchor to elements or use a coach-marks overlay).
+- A `?welcomed=1` query reset for QA. Trivial to add later if testing
+  the card repeatedly becomes painful.
