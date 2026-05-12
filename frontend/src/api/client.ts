@@ -27,8 +27,10 @@ export async function api<T>(
   })
 
   if (response.status === 401) {
-    localStorage.removeItem('unwind-user')
-    router.push({ name: 'login' })
+    if (localStorage.getItem('unwind-user')) {
+      localStorage.removeItem('unwind-user')
+      router.push({ name: 'login' })
+    }
     throw new ApiError(401, null)
   }
 

@@ -62,7 +62,16 @@
 
       <div class="h-px bg-uw-border-soft my-1" />
 
+      <router-link
+        v-if="isAnonymous"
+        to="/login?mode=upgrade"
+        class="block w-full py-2.5 px-4 text-sm text-uw-ink-soft text-left no-underline transition-colors hover:text-uw-primary"
+        @click="open = false"
+      >
+        {{ $t('menu.createAccount') }}
+      </router-link>
       <button
+        v-else
         class="block w-full py-2.5 px-4 text-sm text-left bg-transparent border-0 cursor-pointer transition-opacity hover:opacity-80"
         :style="{ color: 'var(--uw-danger, #b4412a)' }"
         @click="handleLogout"
@@ -91,7 +100,7 @@ import MenuDotsIcon from './icons/MenuDotsIcon.vue'
 import MoonIcon from './icons/MoonIcon.vue'
 import ConfirmDeleteButton from './ConfirmDeleteButton.vue'
 
-const { logout, deleteAccount } = useAuth()
+const { isAnonymous, logout, deleteAccount } = useAuth()
 const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()
 
 // Flip to true once light-mode `--uw-*` overrides exist in base.css.
@@ -137,6 +146,7 @@ const navLinks = [
   { to: '/stress',         label: 'nav.stress' },
   { to: '/counterbalance', label: 'nav.counterbalance' },
   { to: '/activities',     label: 'activitiesList.link' },
+  { to: '/onboarding',     label: 'menu.generateActivities' },
   { to: '/privacy',        label: 'privacy.link' },
 ]
 </script>

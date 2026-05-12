@@ -43,6 +43,8 @@ Short factual strings about the user's preferences, derived from their answers. 
 - "Vindt creatieve activiteiten fijn"
 - "Doet liever dingen alleen"
 
+If the user provided free-text context ("Extra context van de gebruiker"), split it into discrete factual memories alongside the preference-derived ones — one fact per memory string, no editorializing.
+
 Do NOT include sensitive assumptions. Only state what the user actually indicated.
 
 ## Output format
@@ -62,6 +64,7 @@ interface OnboardingAnswers {
     setting: 'indoor' | 'outdoor' | 'no_preference'
     social: 'alone' | 'with_others' | 'no_preference'
     interests: string[]
+    free_text?: string
 }
 
 export function buildOnboardingUserMessage(answers: OnboardingAnswers): string {
@@ -83,6 +86,11 @@ export function buildOnboardingUserMessage(answers: OnboardingAnswers): string {
 
     if (answers.interests.length > 0) {
         lines.push(`Interesses: ${answers.interests.join(', ')}`)
+    }
+
+    const trimmed = answers.free_text?.trim()
+    if (trimmed) {
+        lines.push(`Extra context van de gebruiker: ${trimmed}`)
     }
 
     return lines.join('\n')

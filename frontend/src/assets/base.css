@@ -5,8 +5,19 @@
   margin: 0;
 }
 
+/* iOS PWA viewport: lock html + body to the dynamic viewport so rubber-band
+   bouncing has nothing to grab. The actual app scroll happens inside
+   `.uw-screen`, not on the document. Safe-area insets are applied once,
+   on `.uw-frame` (top + bottom) — components that anchor to viewport
+   edges (BottomNav) apply their own. */
+html,
 body {
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
   line-height: 1.6;
   font-size: 15px;
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -151,14 +162,18 @@ button {
    Horizon primitives — Home redesign
    ========================================================================= */
 
+/* The app's single scroll container. html/body are locked to 100dvh with
+   overflow:hidden to kill iOS rubber-band; long pages scroll inside here. */
 .uw-screen {
   position: relative;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: none;
   background: var(--uw-bg);
   background-attachment: fixed;  /* gradient stays in viewport on long pages */
   color: var(--uw-ink);
   font-family: var(--uw-font-sans);
-  overflow: hidden;
 }
 
 .uw-screen__glow {
@@ -176,15 +191,18 @@ button {
 
 /* Centered mobile-width content column inside .uw-screen.
    Keeps paddings tuned for ~440px from looking lost on wide viewports.
-   `padding-bottom` reserves space for the fixed BottomNav (with border-box,
-   it's part of `min-height: 100dvh`, so short pages don't scroll). */
+   `padding-top` clears the iOS notch; `padding-bottom` reserves space for
+   the fixed BottomNav PLUS the home-indicator inset (BottomNav adds the
+   same inset to its own padding, so this keeps content above it).
+   `min-height` keeps short pages from collapsing the flex-column layout. */
 .uw-frame {
   position: relative;
   z-index: 1;             /* above fixed playful wash */
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  padding-bottom: 5rem;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   width: 100%;
   max-width: 28rem;       /* matches Tailwind/UnoCSS max-w-md */
   margin-left: auto;

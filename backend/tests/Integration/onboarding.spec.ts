@@ -194,6 +194,49 @@ describe('Onboarding completion stamping', () => {
     expect(afterSkipTimestamp.getTime()).toBe(originalTimestamp.getTime())
   })
 
+  it('forwards free_text to Claude as an extra-context line when memory consent is given', async () => {
+    mockCreate.mockResolvedValueOnce(buildFakeResponse())
+
+    await app.inject({
+      method: 'POST',
+      url: '/onboarding/generate',
+      headers: { cookie },
+      payload: {
+        setting: 'indoor',
+        social: 'alone',
+        interests: ['Creatief'],
+        memory_consent: true,
+        free_text: 'Ik woon in een appartement en hou van handwerken.',
+      },
+    })
+
+    expect(mockCreate).toHaveBeenCalledOnce()
+    const sentMessage = mockCreate.mock.calls[0]![0].messages[0].content as string
+    expect(sentMessage).toContain('Extra context van de gebruiker: Ik woon in een appartement en hou van handwerken.')
+  })
+
+  it('omits free_text from the prompt when memory consent is false', async () => {
+    mockCreate.mockResolvedValueOnce(buildFakeResponse())
+
+    await app.inject({
+      method: 'POST',
+      url: '/onboarding/generate',
+      headers: { cookie },
+      payload: {
+        setting: 'indoor',
+        social: 'alone',
+        interests: ['Creatief'],
+        memory_consent: false,
+        free_text: 'Dit zou niet in de prompt moeten staan.',
+      },
+    })
+
+    expect(mockCreate).toHaveBeenCalledOnce()
+    const sentMessage = mockCreate.mock.calls[0]![0].messages[0].content as string
+    expect(sentMessage).not.toContain('Extra context')
+    expect(sentMessage).not.toContain('Dit zou niet in de prompt moeten staan.')
+  })
+
   it('appends activities on a refresh instead of replacing them', async () => {
     mockCreate.mockResolvedValue(buildFakeResponse())
 

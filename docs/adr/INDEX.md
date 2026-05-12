@@ -16,3 +16,4 @@ making changes in the listed area.
 | [009](ADR-009-categories-table-not-pg-enum.md) | Categories as a table with SERIAL IDs, not a PG enum | database schema, seed data |
 | [010](ADR-010-i18n-activity-translations.md) | Slug-based i18n keys for activity content, fallback to English | frontend i18n, activity rendering |
 | [011](ADR-011-node-over-laravel.md) | Node.js + Fastify + TypeScript, hand-built auth/migrations | backend stack |
+| [012](ADR-012-device-first-auth.md) | Auto device-auth on first load; login/onboarding are opt-in menu actions, not gates | router boot, auth flows, onboarding removal, menu structure |

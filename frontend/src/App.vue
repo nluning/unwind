@@ -3,10 +3,15 @@ import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import BottomNav from './components/BottomNav.vue'
 import UserMenu from './components/UserMenu.vue'
+import { useWelcome } from './composables/useWelcome.js'
 
 const route = useRoute()
+const { isWelcomed } = useWelcome()
 const showChrome = computed(
-  () => route.meta.public !== true && route.meta.onboarding !== true
+  () =>
+    route.meta.public !== true &&
+    route.meta.onboarding !== true &&
+    isWelcomed.value
 )
 </script>
 
