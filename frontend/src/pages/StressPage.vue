@@ -49,9 +49,7 @@
         />
       </template>
 
-      <StateMessage v-else-if="accepted" variant="accent">
-        {{ $t('suggest.accepted') }}
-      </StateMessage>
+      <SuggestionAccepted v-else-if="accepted" @back="next" />
 
       <StateMessage v-else>
         {{ $t('suggest.exhausted') }}
@@ -72,6 +70,7 @@ import TextButton from '../components/TextButton.vue'
 import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
 import StateMessage from '../components/StateMessage.vue'
+import SuggestionAccepted from '../components/SuggestionAccepted.vue'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
 
@@ -84,7 +83,7 @@ const pool = computed(() =>
   stressLevel.value ? filterByStress(stressLevel.value) : []
 )
 
-const { current, accepted, handleAccept, handleSkip } = useSuggestionFlow({
+const { current, accepted, next, handleAccept, handleSkip } = useSuggestionFlow({
   mode: 'mode2',
   pool,
   extraEventData: () => ({ stress_level_before: stressLevel.value }),

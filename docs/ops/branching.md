@@ -76,13 +76,25 @@ Enabled:
 
 Pending until step 2 of the CI/CD setup is done:
 
-- ⏳ **Require status checks to pass** — the `ci` check from
-  `.github/workflows/ci.yml` becomes selectable in the dropdown only after
-  the workflow has run at least once. Re-enable this and tick `ci` after
-  the first run lands.
+- ⏳ **Require status checks to pass** — `ci` (from
+  `.github/workflows/ci.yml`) and `check-source` (from
+  `.github/workflows/enforce-merge-source.yml`) become selectable in the
+  dropdown only after each workflow has run at least once. Tick both after
+  the first runs land.
 
 Bypass list: **empty**. Including yourself defeats the rules — they exist
 to protect `main` from your own accidents, not just outsiders.
+
+## Source-branch enforcement
+
+`.github/workflows/enforce-merge-source.yml` runs on every PR targeting
+`main` and fails unless the source branch is `development`. This makes the
+policy "only `development` merges into `main`" mechanical rather than
+self-discipline — you can't accidentally land a feature branch directly on
+production, even if branch protection would otherwise allow the PR.
+
+The check is intentionally strict: there's no `fix/*` escape hatch.
+Hotfixes route through `development` like everything else (see below).
 
 ## Why this shape
 
@@ -109,16 +121,30 @@ to protect `main` from your own accidents, not just outsiders.
 
 ## Hotfixes
 
-If `main` is broken in production and `development` has unrelated
-in-progress work that isn't safe to ship:
+If `main` is broken in production, the fix still routes through
+`development` — the `check-source` workflow blocks any other path. The
+incident-mode flow:
 
-1. `git checkout main && git pull`
-2. `git checkout -b fix/short-name`
-3. Make the fix, commit, push.
-4. PR `fix/short-name` → `main` directly (skipping `development`).
-5. After merge, **also** merge `main` back into `development` so the fix
-   isn't lost on the next promotion: `git checkout development && git
-   merge main && git push`.
+1. Make sure `development` is clean and in sync with `main`. If
+   `development` has unrelated in-progress work that isn't safe to ship,
+   stash or branch it off first so the hotfix lands on a `main`-equivalent
+   tip.
+2. `git checkout development && git pull`
+3. `git checkout -b fix/short-name`
+4. Make the fix, commit, push.
+5. PR `fix/short-name` → `development`. Merge as soon as CI is green.
+6. Immediately open PR `development` → `main`. Merge when CI is green —
+   this triggers the deploy.
 
-This is the only documented path that bypasses `development`. Use it
-only when prod is actually broken.
+Slower than a direct `fix/* → main` PR by one CI run and one merge click,
+but the policy stays uniform: every commit that reaches `main` came
+through `development`. Worth the few extra minutes for an incident; the
+alternative is a per-incident decision about whether to bypass rules,
+which is exactly the kind of thing that goes wrong under pressure.
+
+If `development` was carrying unshippable work at the moment of the
+incident, the safe move is to reset it to `main` first (`git checkout
+development && git reset --hard origin/main && git push --force-with-lease`)
+after preserving the in-progress work on a separate branch. Force-pushing
+`development` is allowed (it's unprotected), but coordinate if anyone
+else has it checked out.
