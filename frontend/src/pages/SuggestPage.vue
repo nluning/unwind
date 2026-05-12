@@ -22,9 +22,7 @@
           @skip="handleSkip"
         />
 
-        <StateMessage v-else-if="accepted" variant="accent">
-          {{ $t('suggest.accepted') }}
-        </StateMessage>
+        <SuggestionAccepted v-else-if="accepted" @back="next" />
 
         <StateMessage v-else>
           {{ $t('suggest.exhausted') }}
@@ -41,6 +39,7 @@ import ActivityCard from '../components/ActivityCard.vue'
 import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
 import StateMessage from '../components/StateMessage.vue'
+import SuggestionAccepted from '../components/SuggestionAccepted.vue'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
 import WelcomeCard from '../components/WelcomeCard.vue'
@@ -50,7 +49,7 @@ const { activities, loaded, error, isEmpty, fetchActivities } = useActivities()
 
 const pool = computed(() => activities.value)
 
-const { current, accepted, handleAccept, handleSkip } = useSuggestionFlow({
+const { current, accepted, next, handleAccept, handleSkip } = useSuggestionFlow({
   mode: 'mode1',
   pool,
 })
