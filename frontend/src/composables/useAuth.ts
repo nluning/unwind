@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import * as Sentry from '@sentry/vue'
 import { api } from '../api/client.js'
 import { resetSuggestionFlowState } from './useSuggestionFlow.js'
 import { resetActivitiesState } from './useActivities.js'
@@ -11,6 +12,27 @@ interface User {
 
 const user = ref<User | null>(null)
 let initPromise: Promise<void> | null = null
+
+const DEVICE_ID_KEY = 'unwind-device-id'
+
+const EXPLICIT_LOGOUT_KEY = 'unwind-explicit-logout'
+
+export function getOrCreateDeviceId(): string {
+  let deviceId = localStorage.getItem(DEVICE_ID_KEY)
+  if (!deviceId) {
+    deviceId = crypto.randomUUID()
+    localStorage.setItem(DEVICE_ID_KEY, deviceId)
+  }
+  return deviceId
+}
+
+export function isExplicitlyLoggedOut(): boolean {
+  return !!localStorage.getItem(EXPLICIT_LOGOUT_KEY)
+}
+
+function setSentryUser(authedUser: User | null) {
+  Sentry.setUser(authedUser ? { id: authedUser.id } : null)
+}
 
 export function useAuth() {
   const isLoggedIn = computed(() => user.value !== null)
@@ -26,13 +48,25 @@ export function useAuth() {
     try {
       user.value = await api<User>('/me')
       localStorage.setItem('unwind-user', 'true')
+      setSentryUser(user.value)
       // TODO (plan/16-onboarding-user-scope.md, Phase 2.4): clean up the
       // legacy browser-scoped onboarding flag from users' localStorage:
       //   localStorage.removeItem('unwind-onboarding-done')
       // Keep for one release cycle after deploy, then delete this TODO.
     } catch {
-      user.value = null
-      localStorage.removeItem('unwind-user')
+      if (localStorage.getItem(EXPLICIT_LOGOUT_KEY)) {
+        user.value = null
+        localStorage.removeItem('unwind-user')
+        setSentryUser(null)
+        return
+      }
+      try {
+        await deviceLogin(getOrCreateDeviceId())
+      } catch {
+        user.value = null
+        localStorage.removeItem('unwind-user')
+        setSentryUser(null)
+      }
     }
   }
 
@@ -51,6 +85,8 @@ export function useAuth() {
       body: JSON.stringify({ email, password }),
     })
     localStorage.setItem('unwind-user', 'true')
+    localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
+    setSentryUser(user.value)
   }
 
   async function register(email: string, password: string) {
@@ -61,6 +97,8 @@ export function useAuth() {
       body: JSON.stringify({ email, password }),
     })
     localStorage.setItem('unwind-user', 'true')
+    localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
+    setSentryUser(user.value)
   }
 
   async function deviceLogin(deviceId: string) {
@@ -71,12 +109,26 @@ export function useAuth() {
       body: JSON.stringify({ device_id: deviceId }),
     })
     localStorage.setItem('unwind-user', 'true')
+    localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
+    setSentryUser(user.value)
+  }
+
+  async function upgrade(email: string, password: string) {
+    const result = await api<{ id: string; email: string }>('/auth/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+    if (user.value) {
+      user.value = { ...user.value, email: result.email }
+    }
   }
 
   async function logout() {
     await api('/logout', { method: 'POST' })
     user.value = null
     localStorage.removeItem('unwind-user')
+    localStorage.setItem(EXPLICIT_LOGOUT_KEY, '1')
+    setSentryUser(null)
     resetSuggestionFlowState()
     resetActivitiesState()
   }
@@ -85,6 +137,7 @@ export function useAuth() {
     await api('/me', { method: 'DELETE' })
     user.value = null
     localStorage.removeItem('unwind-user')
+    setSentryUser(null)
     resetSuggestionFlowState()
     resetActivitiesState()
   }
@@ -99,6 +152,7 @@ export function useAuth() {
     login,
     register,
     deviceLogin,
+    upgrade,
     logout,
     deleteAccount,
   }

@@ -1,31 +1,33 @@
 <template>
   <PageShell>
-      <PageHeader />
+      <WelcomeCard v-if="showWelcome" @dismiss="dismiss" />
 
-      <p class="uw-prompt">{{ $t('suggest.heading') }}</p>
+      <template v-else>
+        <PageHeader />
 
-      <StateLoading v-if="!loaded && !error" />
+        <p class="uw-prompt">{{ $t('suggest.heading') }}</p>
 
-      <StateError v-else-if="error" @retry="fetchActivities()" />
+        <StateLoading v-if="!loaded && !error" />
 
-      <StateMessage v-else-if="isEmpty">
-        {{ $t('activity.empty') }}
-      </StateMessage>
+        <StateError v-else-if="error" @retry="fetchActivities()" />
 
-      <ActivityCard
-        v-else-if="current"
-        :activity="current"
-        @accept="handleAccept"
-        @skip="handleSkip"
-      />
+        <StateMessage v-else-if="isEmpty">
+          {{ $t('activity.empty') }}
+        </StateMessage>
 
-      <StateMessage v-else-if="accepted" variant="accent">
-        {{ $t('suggest.accepted') }}
-      </StateMessage>
+        <ActivityCard
+          v-else-if="current"
+          :activity="current"
+          @accept="handleAccept"
+          @skip="handleSkip"
+        />
 
-      <StateMessage v-else>
-        {{ $t('suggest.exhausted') }}
-      </StateMessage>
+        <SuggestionAccepted v-else-if="accepted" @back="next" />
+
+        <StateMessage v-else>
+          {{ $t('suggest.exhausted') }}
+        </StateMessage>
+      </template>
   </PageShell>
 </template>
 
@@ -37,17 +39,28 @@ import ActivityCard from '../components/ActivityCard.vue'
 import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
 import StateMessage from '../components/StateMessage.vue'
+import SuggestionAccepted from '../components/SuggestionAccepted.vue'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
+import WelcomeCard from '../components/WelcomeCard.vue'
+import { useWelcome } from '../composables/useWelcome.js'
 
 const { activities, loaded, error, isEmpty, fetchActivities } = useActivities()
 
 const pool = computed(() => activities.value)
 
-const { current, accepted, handleAccept, handleSkip } = useSuggestionFlow({
+const { current, accepted, next, handleAccept, handleSkip } = useSuggestionFlow({
   mode: 'mode1',
   pool,
 })
+
+// Decoupled from auth state on purpose: unwind-device-id is already set by
+// the time SuggestPage mounts, so it can't distinguish "first ever open"
+// from "second open". A dedicated key flips independently for QA and
+// survives logout/upgrade. Shared with App.vue so the chrome (BottomNav,
+// UserMenu) hides during the landing.
+const { isWelcomed, dismiss } = useWelcome()
+const showWelcome = computed(() => !isWelcomed.value)
 
 onMounted(async () => {
   if (!loaded.value) {
