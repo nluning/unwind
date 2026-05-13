@@ -57,8 +57,8 @@ const { current, accepted, next, handleAccept, handleSkip } = useSuggestionFlow(
 // Decoupled from auth state on purpose: unwind-device-id is already set by
 // the time SuggestPage mounts, so it can't distinguish "first ever open"
 // from "second open". A dedicated key flips independently for QA and
-// survives logout/upgrade. Shared with App.vue so the chrome (BottomNav,
-// UserMenu) hides during the landing.
+// survives logout/upgrade. Shared with App.vue so the UserMenu hides during
+// the landing.
 const { isWelcomed, dismiss } = useWelcome()
 const showWelcome = computed(() => !isWelcomed.value)
 

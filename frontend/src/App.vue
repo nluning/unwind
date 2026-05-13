@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
-import BottomNav from './components/BottomNav.vue'
 import UserMenu from './components/UserMenu.vue'
+import MenuHintTooltip from './components/MenuHintTooltip.vue'
 import { useWelcome } from './composables/useWelcome.js'
 
 const route = useRoute()
-const { isWelcomed } = useWelcome()
+const { isWelcomed, showMenuHint } = useWelcome()
 const showChrome = computed(
   () =>
     route.meta.public !== true &&
@@ -19,6 +19,6 @@ const showChrome = computed(
   <div>
     <RouterView />
     <UserMenu v-if="showChrome" />
+    <MenuHintTooltip v-if="showChrome && showMenuHint" />
   </div>
-  <BottomNav v-if="showChrome" />
 </template>
