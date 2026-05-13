@@ -2,10 +2,18 @@
   <PageShell>
       <PageHeader
         back
-        :right="messages.length > 0 ? 'reset' : 'spacer'"
         @back="$router.back()"
-        @reset="handleReset"
       />
+
+      <button
+        v-if="messages.length > 0"
+        type="button"
+        class="uw-menu-btn fixed top-[18px] right-[68px] z-20"
+        :aria-label="$t('chat.newChat')"
+        @click="handleReset"
+      >
+        <PlusIcon />
+      </button>
 
       <h1
         v-if="messages.length === 0"
@@ -134,6 +142,7 @@ import { renderMarkdown } from '../utils/renderMarkdown.js'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
 import ForwardIcon from '../components/icons/ForwardIcon.vue'
+import PlusIcon from '../components/icons/PlusIcon.vue'
 
 const { t } = useI18n()
 const { messages, isStreaming, error, sendMessage, resetChat } = useChat()

@@ -8,8 +8,7 @@
 /* iOS PWA viewport: lock html + body to the dynamic viewport so rubber-band
    bouncing has nothing to grab. The actual app scroll happens inside
    `.uw-screen`, not on the document. Safe-area insets are applied once,
-   on `.uw-frame` (top + bottom) — components that anchor to viewport
-   edges (BottomNav) apply their own. */
+   on `.uw-frame` (top + bottom). */
 html,
 body {
   height: 100dvh;
@@ -191,10 +190,10 @@ button {
 
 /* Centered mobile-width content column inside .uw-screen.
    Keeps paddings tuned for ~440px from looking lost on wide viewports.
-   `padding-top` clears the iOS notch; `padding-bottom` reserves space for
-   the fixed BottomNav PLUS the home-indicator inset (BottomNav adds the
-   same inset to its own padding, so this keeps content above it).
-   `min-height` keeps short pages from collapsing the flex-column layout. */
+   `padding-top` clears the iOS notch; `padding-bottom` gives bottom-
+   anchored actions (Doen/Volgende, chat composer) breathing room above
+   the home-indicator inset. `min-height` keeps short pages from
+   collapsing the flex-column layout. */
 .uw-frame {
   position: relative;
   z-index: 1;             /* above fixed playful wash */
@@ -202,7 +201,7 @@ button {
   flex-direction: column;
   min-height: 100dvh;
   padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
   width: 100%;
   max-width: 28rem;       /* matches Tailwind/UnoCSS max-w-md */
   margin-left: auto;
@@ -346,45 +345,6 @@ button {
   justify-content: center;
 }
 
-/* Bottom nav — `.uw-nav-bar` is the full-width surface (bg + border),
-   `.uw-nav` is the centered mobile-width column of links inside it. */
-.uw-nav-bar {
-  background: var(--uw-page-bg);
-  border-top: 1px solid var(--uw-nav-border);
-}
-
-.uw-nav {
-  display: flex;
-}
-
-.uw-nav__item {
-  flex: 1;
-  padding: 13px 0 18px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--uw-nav-idle);
-  position: relative;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.uw-nav__item--active { color: var(--uw-nav-active); }
-
-.uw-nav__item--active::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--uw-nav-dot);
-}
-
 /* Watercolor wash — playful theme only */
 .uw-screen__wash { display: none; }
 
@@ -392,7 +352,7 @@ button {
   display: block;
   position: fixed;        /* anchored to viewport, not content */
   inset: 0;
-  z-index: 0;             /* sits behind .uw-frame (z=1) and BottomNav (z=10) */
+  z-index: 0;             /* sits behind .uw-frame (z=1) */
   pointer-events: none;
   background:
     radial-gradient(260px 200px at 15% 15%,  var(--uw-wash-1) 0%, var(--uw-wash-1) 28%, transparent 78%),
