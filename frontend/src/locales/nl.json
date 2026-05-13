@@ -51,12 +51,11 @@
     "error": "Er ging iets mis. Probeer het opnieuw."
   },
   "nav": {
-    "label": "Hoofdnavigatie",
     "back": "Terug",
-    "suggest": "Suggestie",
-    "stress": "Stress",
-    "counterbalance": "Balans",
-    "chat": "Chat"
+    "suggest": "Verras me",
+    "stress": "Ik ben op",
+    "counterbalance": "Wat heb ik nodig?",
+    "chat": "Praat met me"
   },
   "chat": {
     "heading": "Praat met Unwind",
@@ -114,6 +113,10 @@
     "label": "Menu",
     "close": "Sluiten",
     "theme": "Thema",
+    "groupModes": "Ontdekkingsroutes",
+    "groupLibrary": "Jouw activiteiten",
+    "groupAccount": "Account",
+    "hint": "Hier kun je een andere ontdekkingsroute kiezen, je lijst bewerken en een account aanmaken.",
     "logout": "Uitloggen",
     "createAccount": "Maak een account",
     "generateActivities": "Verzin activiteiten voor me",
@@ -159,7 +162,7 @@
     "Heart": "Hart"
   },
   "activitiesList": {
-    "link": "Mijn activiteiten",
+    "link": "Mijn lijst",
     "heading": "Mijn activiteiten",
     "newButton": "Nieuwe activiteit",
     "empty": "Nog geen activiteiten. Voeg er een toe om te beginnen.",

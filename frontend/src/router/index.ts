@@ -24,11 +24,10 @@ const router = createRouter({
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('../pages/OnboardingPage.vue'),
-      // `meta.onboarding` is still read by App.vue to hide the BottomNav
-      // and UserMenu chrome on this page. The router guard no longer
-      // reads it (onboarding stops being a gate in plan/17). Revisit
-      // chrome handling when Phase 3.2 wires this page up as a menu
-      // action.
+      // `meta.onboarding` is still read by App.vue to hide the UserMenu
+      // chrome on this page. The router guard no longer reads it
+      // (onboarding stops being a gate in plan/17). Revisit chrome
+      // handling when Phase 3.2 wires this page up as a menu action.
       meta: { onboarding: true },
     },
     {
