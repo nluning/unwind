@@ -48,7 +48,7 @@ export async function validateSession(pg: Pool, token: string) {
 
   const result = await pg.query(
     `SELECT sessions.id, sessions.user_id, sessions.expires_at,
-            users.email, users.onboarding_completed_at
+            users.email, users.onboarding_completed_at, users.memory_enabled
      FROM sessions
      JOIN users ON sessions.user_id = users.id
      WHERE sessions.id = $1`,
@@ -77,6 +77,7 @@ export async function validateSession(pg: Pool, token: string) {
       id: row.user_id,
       email: row.email,
       onboarding_completed_at: row.onboarding_completed_at,
+      memory_enabled: row.memory_enabled,
     },
   }
 }
