@@ -3,11 +3,13 @@ import * as Sentry from '@sentry/vue'
 import { api } from '../api/client.js'
 import { resetSuggestionFlowState } from './useSuggestionFlow.js'
 import { resetActivitiesState } from './useActivities.js'
+import { resetMemoriesState } from './useMemories.js'
 
 interface User {
   id: string
   email: string | null
   onboarding_completed_at: string | null
+  memory_enabled: boolean
 }
 
 const user = ref<User | null>(null)
@@ -114,12 +116,25 @@ export function useAuth() {
   }
 
   async function upgrade(email: string, password: string) {
-    const result = await api<{ id: string; email: string }>('/auth/upgrade', {
+    const result = await api<User>('/auth/upgrade', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
+    user.value = result
+  }
+
+  async function setMemoryEnabled(enabled: boolean) {
+    const result = await api<{ memory_enabled: boolean }>('/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ memory_enabled: enabled }),
+    })
     if (user.value) {
-      user.value = { ...user.value, email: result.email }
+      user.value = { ...user.value, memory_enabled: result.memory_enabled }
+    }
+    if (!result.memory_enabled) {
+      // Backend wiped user_memories; mirror that locally so any page
+      // already showing the list doesn't lag behind the server.
+      resetMemoriesState()
     }
   }
 
@@ -131,6 +146,7 @@ export function useAuth() {
     setSentryUser(null)
     resetSuggestionFlowState()
     resetActivitiesState()
+    resetMemoriesState()
   }
 
   async function deleteAccount() {
@@ -140,6 +156,7 @@ export function useAuth() {
     setSentryUser(null)
     resetSuggestionFlowState()
     resetActivitiesState()
+    resetMemoriesState()
   }
 
   return {
@@ -153,6 +170,7 @@ export function useAuth() {
     register,
     deviceLogin,
     upgrade,
+    setMemoryEnabled,
     logout,
     deleteAccount,
   }

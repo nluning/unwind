@@ -85,6 +85,14 @@
         <section class="px-3 pb-2">
           <h3 class="text-xs font-normal text-uw-ink-mute px-1 mb-1">{{ $t('menu.groupAccount') }}</h3>
           <router-link
+            to="/account"
+            class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
+            active-class="!text-uw-ink !font-medium"
+            @click="open = false"
+          >
+            {{ $t('menu.account') }}
+          </router-link>
+          <router-link
             to="/privacy"
             class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
             active-class="!text-uw-ink !font-medium"
@@ -92,28 +100,6 @@
           >
             {{ $t('privacy.link') }}
           </router-link>
-          <router-link
-            v-if="isAnonymous"
-            to="/login?mode=upgrade"
-            class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
-            @click="open = false"
-          >
-            {{ $t('menu.createAccount') }}
-          </router-link>
-          <button
-            v-else
-            class="block w-full px-3 py-2 rounded-lg text-sm text-left bg-transparent border-0 cursor-pointer transition-opacity hover:opacity-80"
-            :style="{ color: 'var(--uw-danger, #b4412a)' }"
-            @click="handleLogout"
-          >
-            {{ $t('menu.logout') }}
-          </button>
-          <ConfirmDeleteButton
-            class="block w-full px-3 py-2 rounded-lg text-sm text-left bg-transparent border-0 cursor-pointer"
-            :label="$t('menu.deleteAccount')"
-            :confirm-label="$t('menu.deleteConfirm')"
-            @confirm="handleDeleteAccount"
-          />
         </section>
       </nav>
     </div>
@@ -122,21 +108,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuth } from '../composables/useAuth.js'
 import { useTheme, type ColorScheme } from '../composables/useTheme.js'
 import { useWelcome } from '../composables/useWelcome.js'
 import MenuLinesIcon from './icons/MenuLinesIcon.vue'
 import MoonIcon from './icons/MoonIcon.vue'
-import ConfirmDeleteButton from './ConfirmDeleteButton.vue'
 
-const { isAnonymous, logout, deleteAccount } = useAuth()
 const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()
 const { dismissMenuHint } = useWelcome()
 
 // Flip to true once light-mode `--uw-*` overrides exist in base.css.
 const enableLightMode = false
-const router = useRouter()
 
 const open = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
@@ -144,18 +125,6 @@ const menuRef = ref<HTMLElement | null>(null)
 function toggleMenu() {
   open.value = !open.value
   if (open.value) dismissMenuHint()
-}
-
-async function handleLogout() {
-  open.value = false
-  await logout()
-  router.push('/login')
-}
-
-async function handleDeleteAccount() {
-  open.value = false
-  await deleteAccount()
-  router.push('/login')
 }
 
 function handleClickOutside(event: MouseEvent) {
