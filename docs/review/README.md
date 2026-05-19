@@ -34,6 +34,7 @@ for the exact prompts.
 | 5 | Yuna    | `personas/yuna.md`    | Dutch clarity, small-space living     |
 | 6 | Lisa    | `personas/lisa.md`    | NT perspective, positioning, polish   |
 | 7 | Tom     | `personas/tom.md`     | Burnout/depression, ND-adjacent       |
+| 8 | Eline   | `personas/eline.md`   | Gifted-ND, ideation-freeze, AI-as-catalyst |
 
 ### Expert lenses
 
