@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-19
 **Scope:** Panel review of the basic app concept (one suggestion at a time, ~30 shared starter activities) plus four proposed mechanisms for users to add activities on top of that library. Long-term retention question included.
-**Reviewed by:** Seven personas (Sanne, Daan, Fatima, Jeroen, Yuna, Lisa, Tom) and three expert lenses (giftedness, neurodivergence, average/below-average cognitive profile).
+**Reviewed by:** Eight personas (Sanne, Daan, Fatima, Jeroen, Yuna, Lisa, Tom, Eline) and three expert lenses (giftedness, neurodivergence, average/below-average cognitive profile). *Eline was added to the panel after the first round to address a gap surfaced in the synthesis: the gifted-ND, ideation-freeze, AI-as-creative-catalyst archetype that none of the original seven captured. Her review is appended at the end of the personas section and her additions are folded into §9 below.*
 
 ---
 
@@ -120,7 +120,27 @@ What sustains 3–6 month use, named consistently across the panel:
 4. **The app must feel like it asks less of you over time, not more** (Sanne). The arc is *receptive entry, authorial exit* — generation captured on the way out (option 4), never demanded on the way in.
 5. **Provenance is visible** (giftedness lens): every activity card silently signals *yours / yours-rephrased / library / AI-suggested*. Not as a gamifiable badge — as honest sourcing. *"The team will be tempted to hide the distinction for cleanliness. Resist that."*
 
-### 8. The ND-burnout subgroup will use the app episodically and abandon it between episodes. That is correct behaviour, not failure.
+### 8. The added Eline persona reframes Option 2 — from "personalisation" to "creative catalysis."
+
+The first-round synthesis surfaced a question the seven personas could not answer: *why does AI-generation feel valuable to the designer in a way none of the personas voiced?* Adding Eline (gifted-ND, AuDHD, ideation-freeze under depletion) made the missing mechanic explicit:
+
+> *"Mijn criticality-engine kan een eigen idee dóden voordat het een plan is, maar een idee van buiten heeft een halve seconde immunity-window. Genoeg om 'hm, dat had ik niet bedacht' te zijn voordat de filter aanslaat."*
+
+This is a **different use case than personalisation**. The other personas evaluated Option 2 as *"does the AI know me well enough to suggest the right thing?"* Eline evaluates it as *"does the AI hand me an unexpected angle that bypasses my own pre-emptive dismissal of my own ideas?"* Same feature, two mechanics. The other personas' verdicts on Option 2 are still valid for the personas they represent — Eline's verdict adds a third axis that the design needs to decide whether to serve.
+
+What Eline says Option 2 needs to be catalytic rather than stereotyping:
+- **Inputs at the level of specifics, not categories.** "Waterzicht / fineliners / podcast tijdens lopen / geen sport" — not "outside / creative / social." Categories tell the AI nothing about her; specifics give the AI a surface to riff on.
+- **A dedicated *"geef me een hoek die ik zelf niet had bedacht"* button** — divergent input on demand, distinct from "more like this." This is the catalysis mechanic; "more like this" is similarity.
+- **Calibrated-uncertainty tone** — *"dit is een gok, past dit?"* works; warm-friend confidence breaks it. Echoes Yuna and the ND-lens finding from §5.
+- **Provenance on cards is non-optional** — she needs to *see* her list become hers over time, or churn is silent and absolute.
+
+Eline's own caveat — included verbatim in her review and worth quoting — names the trap:
+
+> *"Wat mij ontgrendelt, kan voor anderen exact de muur zíjn."*
+
+If the design is built around her use case (specific-input → divergent-angle catalyst), it serves her and possibly a meaningful slice of Unwind's actual user base, **and** risks raising the input ceiling above what Sanne, Tom, Fatima, and the avg-IQ archetype can clear. The fix surfaced across §5, §8 and the avg-IQ lens: **specificity must be optional and additive.** Default path: tappable form (avg/IQ-accessible) → AI generation. Optional advanced path: free-text specifics (Eline-accessible) → AI generation with divergent-angle button. Same backend, two surfaces.
+
+### 9. The ND-burnout subgroup will use the app episodically and abandon it between episodes. That is correct behaviour, not failure.
 
 ND lens, unambiguous: *"ND-burnout users use the app intensely during burnout episodes and abandon it between them — that is correct behaviour, not failure, and retention metrics that punish it are measuring the wrong thing."* Tom's review confirms: he will not engage with Option 1, 2 or 4 in the moment he needs the app most; he will use Option 3 (swipe-up) and accept/skip. That is the entire product for him, and that is fine — provided the design does not push him toward features he cannot operate on a bad day.
 
@@ -388,10 +408,31 @@ Wat me zou laten bouncen: trage laadtijden tussen skips, herhaling binnen een we
 
 **Eén ding om te behouden.** De eenvoud van mode 1. Eén ding, accepteren of overslaan. Niet aan komen.
 
+### Eline — *gifted-AuDHD, ideation-freeze, AI-as-creative-catalyst* (added in round 2)
+
+**Eerste reactie op het basisidee.** Eerlijk? Een willekeurige suggestie uit een pool van dertig landt bij mij als *een wand waar ik al tegenaan zat te kijken*. Mijn probleem op zondagavond 21:00 is niet dat ik geen ideeën heb — mijn hoofd produceert er vijf per seconde, en m'n eigen criticality-engine schiet ze allemaal binnen een tel neer. Een random "ga wandelen" of "teken iets" voegt niets toe; dat had ik zelf ook al bedacht en al afgewezen. De *accept/skip*-mechaniek is wel goed, dat herken ik als low-friction. Maar de inhoud van die 30 items gaat voor mij voelen als generieke wellness-app-suggesties die ik *extern* lees voordat ze landen. Niet kwaadaardig, gewoon niet catalytisch.
+
+**De vier add-opties.**
+
+*Self-add CRUD.* Nee. Als ik koud ideeën kon genereren, had ik de app niet geopend. Een leeg tekstveld is exact dezelfde muur. Het werkt alleen als entry point op een goede dag — een "voeg toe wat ik nu deed"-knop op een wandeling, zodat mijn ideatie-op-goede-dagen mijn slechte-dagen-pool voedt. Dán is het bruikbaar. Als depletion-tool: dood.
+
+*AI-generated.* Dit is *de* hefboom voor mij — mits het goed gebouwd is. Waarom AI-aangereikte ideeën anders werken dan zelf genereren: mijn criticality-engine kan een eigen idee dóden voordat het een plan is, maar een idee *van buiten* heeft een halve seconde immunity-window. Genoeg om "hm, dat had ik niet bedacht" te zijn voordat de filter aanslaat. Wat het nodig heeft om catalytisch te zijn en niet stereotype-personaliser: (a) input op het niveau van *specifieken* ("waterzicht", "fineliners die ik net heb gekocht", "podcast tijdens lopen", "geen sport") — niet "outside / creative / social", want dat zegt niets over mij; (b) een expliciete *"geef me een hoek die ik zelf niet had bedacht"*-knop, divergent op aanvraag, los van similar-to-this; (c) toon met gekalibreerde onzekerheid — *"dit is een gok, past dit bij vanavond?"* werkt; *"wat tof, ik snap je nu beter"* sluit ik de app. Skip/accept-history is goed, maar gevaarlijk als de AI er een profiel-stereotype van maakt ("Eline houdt van rustig") in plaats van *frisse hoeken* eruit destilleert.
+
+*Swipe-up "meer zoals dit" / "nooit meer".* De "nooit meer" wil ik *nu*. Ik wil de al-overwogen categorie in één gebaar wegen. De "meer zoals dit" zonder zichtbare *dimensie* waarop de AI riff't ga ik mentaal reverse-engineeren ("denkt 'ie dat ik 'creatief' bedoel of 'binnen'?") — dat kost meer dan het oplevert. Geef minimaal een chip: *"meer zoals dit op de dimensie: rustig / handen-bezig / kort"* zodat ik de juiste as kan kiezen.
+
+*"Voeg in eigen woorden toe".* Goud — *maar alleen* als het one-tap save-as-is is met optionele rename. "Ademhalingsoefening" hernoemen naar "drie keer langzaam in, ramen open" maakt het van mij. Formulier eromheen en het sterft.
+
+**Lange-termijn-oordeel.** 3 maanden: alleen nog binnen als AI-generatie minimaal drie of vier keer écht catalytisch is geweest — d.w.z. ik heb een activiteit geaccepteerd die ik zelf niet had bedacht en het werkte. Anders ben ik in week 2 weg, exact zoals bij alle andere wellness-apps die ik heb geprobeerd: persoonlijk-vormig maar niet ík-vormig. 6 maanden: alleen als mijn eigen lijst (zelf-toegevoegd + hernoemd + AI-catalysed-geaccepteerd) zichtbaar de gedeelde bibliotheek heeft *verdrongen* als bron van suggesties. Die inversie moet voelbaar zijn — provenance op cards (jouw / hernoemd / library / AI) zodat ik mijn lijst zie groeien in hém zijn. Geen badges, geen streaks, geen "we missen je"-mails — daar verlaat ik de app onmiddellijk op. Drop-off-modus: ik verdwijn niet dramatisch. Ik open hem gewoon niet meer, en een maand later staat het icoon in een opruimronde.
+
+**Eén ding om te behouden.** De *single suggestion, accept/skip*-loop zelf. Lage cognitive load, één ding op het scherm, geen keuze-overload. Niet veranderen in een lijst, niet in tabs, niet in "kies uit drie". Eén ding. Dat is het enige dat depletion-proof is.
+
+**Zelf-caveat van deze lens.** *"Ik ben mij ervan bewust dat dit profiel dichtbij dat van de ontwerper zelf ligt. Als mijn verdict het sterkst klinkt voor optie 2 (AI-generated) — check dat tegen Sanne (shutdown: AI-stap kan te veel cognitive load zijn) en de gemiddelde gebruiker (specificity-input kan voor hen al té veel zijn). Wat mij ontgrendelt, kan voor anderen exact de muur zíjn."*
+
 ---
 
 ## Cross-cutting items worth tracking forward
 
+0. **Two mechanics under one feature for Option 2.** Personalisation (the AI knows me) and catalysis (the AI hands me an angle I would have killed myself). They are not the same and may need two surfaces. Eline's review made this explicit; the original seven personas evaluated only the personalisation framing. *Open question: does the design serve both, or pick one?*
 1. **The "fit vs. feasibility" distinction in accept/skip data** — surfaced by Jeroen and the ND lens, reinforces the same concern raised in 005's pruning section. If Options 2 and 3 both use skip data as fit-signal, the AI converges on the smallest-effort subset for everyone. **An after-the-fact "this actually helped" signal is the missing primary input.**
 2. **"Add in your own words" succeeds or fails on a single UX decision** — form vs. one-tap save-as-is with optional rename. The experts unanimously want the latter; every persona who rejected the feature assumed the former.
 3. **AI tone register** — calibrated uncertainty (*"dit is een gok"*) is more honest *and* dissolves the PDA-demand quality. No upbeat copy, no "we", no therapy voice. Echoes 005's finding.
