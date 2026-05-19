@@ -23,8 +23,10 @@ for the exact prompts.
 
 ## The panel
 
-| # | Name    | File                | Key lens                              |
-|---|---------|---------------------|---------------------------------------|
+### User personas
+
+| # | Name    | File                  | Key lens                              |
+|---|---------|-----------------------|---------------------------------------|
 | 1 | Sanne   | `personas/sanne.md`   | Sensory sensitivity, shutdown stress  |
 | 2 | Daan    | `personas/daan.md`    | Speed, decision paralysis, boredom    |
 | 3 | Fatima  | `personas/fatima.md`  | Exhaustion, constraints, realism      |
@@ -32,6 +34,19 @@ for the exact prompts.
 | 5 | Yuna    | `personas/yuna.md`    | Dutch clarity, small-space living     |
 | 6 | Lisa    | `personas/lisa.md`    | NT perspective, positioning, polish   |
 | 7 | Tom     | `personas/tom.md`     | Burnout/depression, ND-adjacent       |
+
+### Expert lenses
+
+Used for higher-level design or concept reviews where clinical and
+HCI framing is more useful than first-person user reactions. Not bound
+to a specific user — each lens carries its own theoretical anchors,
+biases-to-watch-for, and review focus.
+
+| # | Lens                                      | File                                       | Key concern                                                  |
+|---|-------------------------------------------|--------------------------------------------|--------------------------------------------------------------|
+| 1 | Giftedness psychologist                   | `experts/giftedness-psychologist.md`       | Authorship gradient, autonomy, deskilling risk               |
+| 2 | Neurodivergence psychologist              | `experts/nd-psychologist.md`               | Monotropism, PDA, alexithymia, ND-burnout subgroups          |
+| 3 | Avg/below-average IQ psychologist         | `experts/avg-iq-psychologist.md`           | Reading load, authoring ceiling, library-growth without typing |
 
 ## When to run reviews
 
