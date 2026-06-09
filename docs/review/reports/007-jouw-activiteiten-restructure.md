@@ -109,3 +109,46 @@ Drie knoppen onder *"Jouw activiteiten"* — *"voeg eigen activiteit toe"*, *"jo
 ## Open tension carried forward
 
 The avg/IQ lens and the giftedness lens pull in opposite directions on the chat-route's framing. The giftedness lens wants it bounded and clearly *not* the default (to protect against deskilling). The avg/IQ lens wants it elevated to equal status (because it's the only growth mechanism that doesn't depend on authoring). This is the same tension as in 006 — authorship-as-spine vs. AI-generation-as-spine — and it is not resolved by this design. It is *softened*, because the user picks the route, but the *labels and prominence* of the two routes still encode a default. Worth naming explicitly before settling on copy.
+
+---
+
+## Addendum — creativity calibration in the AI prompt
+
+A follow-up question surfaced after the panel write-up: should the LLM be prompted to be *creative / out-of-the-box* when generating activities? The hypothesis was that this might be a gifted-specific preference rather than a universal AI virtue. Asked the three expert lenses to weigh in.
+
+### Giftedness lens
+
+**Creativity is the whole point.** For gifted adults, the criticality engine kills standard suggestions in milliseconds — *"yes, walking, considered, dismissed."* The AI's only useful function is to hand them an angle their own filter had no chance to reject first. Eline doesn't open the app for *"ga eens wandelen"*; she opens it because every walk-shaped idea she could generate herself is already dead on arrival.
+
+If you blunt the creativity, this audience loses the *only* reason they used you over their own brain.
+
+### ND lens
+
+**It splits sharply along subgroup.**
+
+- **Monotropic / autistic-dominant:** creative-divergent suggestions are by definition *outside the attention tunnel*, which means they read as random, intrusive, and not-for-me. This audience wants activities *inside* their interest; novelty is noise, not value.
+- **PDA-coded:** ambitious creative output is the *worst* framing. *"We bedachten dit speciaal voor jou"* is maximal demand. The more the AI performs creativity, the more it reads as coercion dressed up as care.
+- **ADHD-dominant:** the one ND subgroup that *does* benefit from novelty. Initiation deficit plus stimulation-seeking means an unexpected suggestion can be the push that breaks the freeze. But it has to be *novel-and-doable*, not novel-and-elaborate.
+- **ND burnout:** creative = effortful = parsed-as-work. They want recognizable, fast, two-tap. *"Maak een collage van tijdschriften"* is closed before it's read.
+
+### Avg/below-average IQ lens
+
+**Creativity is a load multiplier.** A novel activity requires the user to: (1) understand what it is, (2) judge whether it applies to their life, (3) plan how to actually do it. That is three metacognitive operations stacked on a depleted brain. The familiar suggestion (*"drink een glas water en ga even bij het raam staan"*) wins not because it's better, but because the planning surface is near-zero.
+
+There is a second effect: creative-divergent suggestions read as *not for someone like me*. The implicit message *"this app suggests artisanal candle-making and silent forest bathing"* communicates audience, and that audience is not this user. Internal-blame attribution follows: *"andere mensen doen dit blijkbaar, ik ben hier blijkbaar niet de bedoelde gebruiker."*
+
+### Synthesis
+
+The intuition is correct: **out-of-the-box ideation is a gifted preference, neutral-to-actively-harmful for everyone else.** It is not a universal AI virtue — it is a population-specific accommodation.
+
+Two ways to handle it in the prompt:
+
+1. **Tune creativity to signal.** Use the user's accept/skip history and their added activities as a creativity-target. A user whose own list reads as *"thee, raam open, kat aaien, simpele dingen"* gets the AI tuned toward *that* register; a user whose list reads as *"linosnede, podcast over Romeinse geschiedenis, koud zwemmen"* gets the AI tuned toward divergence. The list itself is the creativity-thermostat.
+
+2. **Don't choose one creativity level — bake the range into the prompt.** Instead of *"think out of the box"*, prompt for a mix: of three generated suggestions, one is squarely familiar/doable, one is adjacent-but-new, one is a creative angle. *Which* of the three lands then tells the system where the user actually sits, and the mix shifts over time toward what gets accepted.
+
+Option 2 is the more honest answer, because *no single creativity level fits a single user across moments either* — Eline at 9 PM Sunday wants something doable; Eline on Saturday morning wants the divergent catalyst. The mix lets the user's tap pick the register, not the prompt.
+
+**Tradeoff to be aware of:** option 2 makes every generation a small "find the one that fits" decision. For ND-burnout and avg/IQ users, that's still a 3-way choice where 1 was easier. So even option 2 should probably default to *"1 familiar, 2 adjacent"* rather than *"1 familiar, 1 adjacent, 1 wild"* unless the user's history says otherwise.
+
+**Concrete implication for prompt design:** drop *"be creative / think out of the box"* from the system prompt as a default instruction. Replace with an instruction that anchors generated activities to the *user's existing register* (their added activities, accepted history), and only widens the range when there's signal that the user wants it. Treat creativity as a knob the user turns through use, not a virtue baked into the prompt.
