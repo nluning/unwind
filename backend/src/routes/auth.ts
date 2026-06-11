@@ -279,7 +279,7 @@ async function authRoutes(fastify: FastifyInstance) {
 
       try {
         const result = await fastify.pg.query(
-          `UPDATE users SET email = $1, password_hash = $2
+          `UPDATE users SET email = $1, password_hash = $2, device_id = NULL
            WHERE id = $3 AND email IS NULL
            RETURNING id, email, onboarding_completed_at, memory_enabled`,
           [request.body.email, passwordHash, userId]
