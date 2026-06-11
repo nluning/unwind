@@ -55,6 +55,11 @@ const router = createRouter({
       name: 'activities',
       component: () => import('../pages/ActivitiesListPage.vue'),
     },
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('../pages/AccountPage.vue'),
+    },
   ],
 })
 
