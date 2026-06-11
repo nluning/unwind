@@ -50,34 +50,44 @@
       <div class="h-px bg-uw-border-soft my-1" />
 
       <nav :aria-label="$t('menu.label')">
+        <!-- Verras me is the sole ontdekkingsroute now (plan 20 §1), so this
+             section carries no group header — there's nothing to choose between. -->
         <section class="px-3 pt-2 pb-2">
-          <h3 class="text-xs font-normal text-uw-ink-mute px-1 mb-2">{{ $t('menu.groupModes') }}</h3>
           <div class="flex flex-col gap-1">
             <router-link
-              v-for="link in modeLinks"
-              :key="link.to"
-              :to="link.to"
+              to="/suggest"
               class="block w-full px-3 py-2.5 rounded-xl text-sm text-uw-ink-soft bg-uw-chip no-underline transition-colors hover:text-uw-ink"
               active-class="!bg-uw-accent !text-uw-ink !font-medium"
               @click="open = false"
             >
-              {{ $t(link.label) }}
+              {{ $t('nav.suggest') }}
             </router-link>
           </div>
         </section>
 
         <section class="px-3 pt-1">
-          <h3 class="text-xs font-normal text-uw-ink-mute px-1 mb-1">{{ $t('menu.groupLibrary') }}</h3>
-          <router-link
-            v-for="link in libraryLinks"
-            :key="link.to"
-            :to="link.to"
-            class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
-            active-class="!text-uw-ink !font-medium"
-            @click="open = false"
-          >
-            {{ $t(link.label) }}
-          </router-link>
+          <h3 class="text-xs font-normal text-uw-ink-mute px-1 mb-1">{{ $t('jouwActiviteiten.group') }}</h3>
+          <template v-for="link in jouwActiviteitenLinks" :key="link.label">
+            <!-- The two AI routes (Q&A, analyse-fit) don't have pages yet — they
+                 land in Phase 4/5. Until then they render as disabled placeholders
+                 so the final menu shape is visible without shipping dead links. -->
+            <span
+              v-if="link.disabled"
+              class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-mute opacity-50 cursor-not-allowed select-none"
+              aria-disabled="true"
+            >
+              {{ $t(link.label) }}
+            </span>
+            <router-link
+              v-else
+              :to="link.to"
+              class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
+              active-class="!text-uw-ink !font-medium"
+              @click="open = false"
+            >
+              {{ $t(link.label) }}
+            </router-link>
+          </template>
         </section>
 
         <div class="h-px bg-uw-border-soft my-2 mx-3" />
@@ -147,15 +157,13 @@ const themes: { id: ColorScheme; swatch: string }[] = [
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 
-const modeLinks = [
-  { to: '/suggest',        label: 'nav.suggest' },
-  { to: '/stress',         label: 'nav.stress' },
-  { to: '/counterbalance', label: 'nav.counterbalance' },
-  { to: '/chat',           label: 'nav.chat' },
-]
-
-const libraryLinks = [
-  { to: '/activities', label: 'activitiesList.link' },
-  { to: '/onboarding', label: 'menu.generateActivities' },
+// The three add-options under "Jouw activiteiten" (plan 20 §2). Self-add is the
+// existing list+add page; the two AI routes are disabled placeholders until
+// their pages ship (Phase 4 = analyse-fit, Phase 5 = tappable Q&A) — flip
+// `disabled` off and set a real `to` when they land.
+const jouwActiviteitenLinks: { to: string; label: string; disabled?: boolean }[] = [
+  { to: '/activities', label: 'jouwActiviteiten.selfAdd' },
+  { to: '',            label: 'jouwActiviteiten.quickSuggest', disabled: true },
+  { to: '',            label: 'jouwActiviteiten.fromList',     disabled: true },
 ]
 </script>

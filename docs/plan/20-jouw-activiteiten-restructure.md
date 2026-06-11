@@ -16,15 +16,15 @@ Leave a hook (no UI) for a future user setting to re-enable them. Don't build th
 
 ### 2. Three add-options under *Jouw activiteiten*
 - **Self-add** — *"Iets toevoegen aan mijn lijst"*. Form-based (title + whatever fields we settle on). User-driven, calm-moment use.
-- **Tappable Q&A → one suggestion** — *"Vier vragen, een suggestie"*. AI asks four concrete (not emotional) questions via tap-targets only, returns **one** activity. User can do it now and/or add to their list.
+- **Tappable Q&A → one suggestion** — *"Vier vragen, een suggestie"*. AI asks four concrete (not emotional) questions via tap-targets only, AI looks at what the user added + what they've picked most often, generates **one** activity. User can do it now and/or add to their list.
 - **Analyse-fit → three suggestions** — *"Suggesties op basis van mijn lijst"*. AI looks at what the user added + what they've picked most often, generates three new activities, calibrated to their register. User picks which (if any) to add.
 
 Copy decisions: descriptive over imperative (no *"voeg toe"*, no *"verzin"*), no urgency framing (no *"nu"* vs. *"rustig moment"*), provenance signalled in the label of the analyse-fit route.
 
-### 3. The inversion (backend)
-*Verras me* pulls from the user's own list + most-picked + AI-accepted, with the shared starter library fading as the user's pool grows. **This is the load-bearing piece** — without it, the rest is just menu rearranging without retention payoff.
+### 3. The inversion
+*Verras me* pulls from the user's own list + most-picked + AI-accepted, with the shared starter library fading as the user's pool grows.
 
-### 4. Free-text "about me" field in *My account*
+### 4. Free-text "about me/ what unwind knows about me" field in *My account*
 Persistent self-description / preferences / specifics (water, fineliners, podcast-during-walking, no sport). Injected into the AI system prompt across both AI routes (Q&A and analyse-fit).
 
 **Constraints:**

@@ -21,13 +21,17 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      // ORPHANED by plan 20 §1 — the "Verzin activiteiten voor me" menu entry
+      // that linked here is replaced by the three "Jouw activiteiten" add-options.
+      // The page is intentionally kept (not deleted): Phase 5's tappable Q&A reuses
+      // its pill components (OnboardingOptionPills / OnboardingStepHeader /
+      // OnboardingStepActions). Reachable by URL, not by UI.
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('../pages/OnboardingPage.vue'),
       // `meta.onboarding` is still read by App.vue to hide the UserMenu
       // chrome on this page. The router guard no longer reads it
-      // (onboarding stops being a gate in plan/17). Revisit chrome
-      // handling when Phase 3.2 wires this page up as a menu action.
+      // (onboarding stops being a gate in plan/17).
       meta: { onboarding: true },
     },
     {
@@ -35,6 +39,11 @@ const router = createRouter({
       name: 'suggest',
       component: () => import('../pages/SuggestPage.vue'),
     },
+    // ORPHANED by plan 20 §1 — the other ontdekkingsroutes are dropped from the
+    // menu so "Verras me" is the only primary entry. Routes + pages are kept
+    // behind a no-UI hook for a future user setting to re-enable them (plan 20
+    // §1: "Leave a hook (no UI)... Don't build that setting now"). Reachable by
+    // URL, not by UI.
     {
       path: '/stress',
       name: 'stress',

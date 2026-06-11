@@ -5,6 +5,8 @@
  * to Claude Sonnet, gets back activities + user memories as JSON.
  */
 
+import { CREATIVITY_GUIDANCE } from './creativityGuidance.js'
+
 export const ONBOARDING_SYSTEM_PROMPT = `You generate a personalized activity list for Unwind, an app that helps people find relaxing activities when they can't switch off.
 
 You will receive the user's preferences as structured data. Based on these, generate:
@@ -34,7 +36,13 @@ Each activity must have exactly these fields:
 - Respect the user's preferences: if they said "binnen", don't suggest outdoor walks. If "alleen", don't suggest calling a friend.
 - Include a mix of categories (Head, Hands, Heart) weighted toward the user's interests.
 - Vary the duration and stress ranges — some low-effort (5-10 min, stress 4-5), some moderate (20-30 min, stress 1-3).
-- Be creative and specific. Don't repeat the base activities the app already has (podcasts, puzzles, walking, stretching, tidying, comfort TV, etc). Think of fresh, surprising suggestions.
+- Don't just repeat the base activities the app already has (podcasts, puzzles, walking, stretching, tidying, comfort TV, etc) — suggest things that fit this user specifically.
+
+## Creativity
+
+${CREATIVITY_GUIDANCE}
+
+Across the 10-15 activities, keep most of them familiar and easy to start; include only a few more adventurous ones, and only where the user's stated interests clearly invite them.
 
 ## Memory format
 

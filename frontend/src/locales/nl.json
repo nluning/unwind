@@ -113,12 +113,15 @@
     "label": "Menu",
     "close": "Sluiten",
     "theme": "Thema",
-    "groupModes": "Ontdekkingsroutes",
-    "groupLibrary": "Mijn activiteiten",
     "groupAccount": "Account",
-    "hint": "Hier kun je een andere ontdekkingsroute kiezen, je lijst bewerken en een account aanmaken.",
-    "account": "Account",
-    "generateActivities": "Verzin activiteiten voor me"
+    "hint": "Hier kun je je lijst beheren, nieuwe suggesties krijgen en een account aanmaken.",
+    "account": "Account"
+  },
+  "jouwActiviteiten": {
+    "group": "Jouw activiteiten",
+    "selfAdd": "Iets toevoegen aan mijn lijst",
+    "quickSuggest": "Vier vragen, één suggestie",
+    "fromList": "Suggesties op basis van mijn lijst"
   },
   "account": {
     "heading": "Account",
@@ -128,7 +131,7 @@
     "anonymousHint": "Maak een account om je activiteiten en herinneringen op andere apparaten terug te vinden.",
     "createAccount": "Maak een account",
     "memorySectionHeading": "Wat Unwind over je weet",
-    "memorySectionIntro": "Unwind gebruikt deze herinneringen om suggesties op jou af te stemmen. Je kan ze zelf toevoegen en verwijderen.",
+    "memorySectionIntro": "Unwind gebruikt deze info om suggesties op jou af te stemmen. Je kunt deze herinneringen zelf toevoegen en verwijderen.",
     "memoryEnabledLabel": "Herinneringen opslaan",
     "memoryDisableWarning": "Als je dit uitzet, worden al je opgeslagen herinneringen verwijderd. Dit kan niet ongedaan worden.",
     "memoryDisableConfirm": "Ja, uitzetten en verwijderen",
