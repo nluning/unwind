@@ -187,25 +187,28 @@ No migration, no new endpoint, no new UI.
 Simpler of the two AI routes (no question flow), and it's the one every persona endorsed
 (report 007: Eline's catalyst, Jeroen's observation-data route). Build it first of the two.
 
-- [ ] **4.1 — Backend `POST /activities/suggest-from-list`.** New route in `activities.ts` (or a
-      new `generate.ts`). Pulls `getUserContext()` (which already carries the user's "about me"
-      memories), calls Claude with a **purpose-built generation prompt** — NOT the chat or
-      onboarding prompt. The prompt: receives structured context only (no conversation, the AI
-      never asks questions), generates **exactly 3** activities, and imports `CREATIVITY_GUIDANCE`
-      plus a 3-item tilt (≈1 familiar / 2 adjacent; a divergent one only on a variety signal).
-      Returns the 3 as JSON. Rate-limited
-      via `createRateLimiter` against `api_usage`. Model: **Sonnet (`claude-sonnet-4-6`)** —
-      matches onboarding's Dutch-quality reasoning (decision locked 2026-06-11).
-- [ ] **4.2 — Drafts are not auto-saved.** Return the 3 as ephemeral drafts; the user picks which
-      (if any) to add. Saving reuses `POST /activities` (source `'ai'`) via `toCreatePayload`.
-- [ ] **4.3 — Frontend page/flow.** New page (e.g. `SuggestFromListPage.vue`) reachable from the
-      *Jouw activiteiten* menu. Shows 3 cards, each with one-tap "toevoegen aan mijn lijst".
-      Bounded at 3 — no "toon meer" (giftedness lens: bounded is correct).
-- [ ] **4.4 — Empty/cold-start handling.** If the user has too little to riff on, the route must
-      still produce something (avg/IQ + Jeroen: never "voeg eerst meer toe"). Fall back to
-      familiar/base-adjacent suggestions.
-- [ ] **4.5 — Tests.** Response parsing (reuse onboarding parse-test pattern), exactly-3 cap,
-      cold-start fallback, rate-limit wiring.
+- [x] **4.1 — Backend `POST /activities/suggest-from-list`.** New `routes/generate.ts` + pure
+      `routes/suggestFromListPrompt.ts`. Pulls `getUserContext()` + the user's own added activity
+      titles; **purpose-built prompt** (structured context, no questions); `SUGGESTION_COUNT = 3`;
+      imports `CREATIVITY_GUIDANCE` + the 1-familiar/2-adjacent tilt. Sonnet, `max_tokens: 1024`.
+      Rate-limited 10/day (`createRateLimiter`, endpoint `suggest_from_list`). Migration
+      `008_api_usage_suggest_from_list.sql` extends the `api_usage` endpoint CHECK.
+- [x] **4.2 — Drafts are not auto-saved.** Route returns ephemeral drafts; persists nothing
+      (integration-tested). Client saves chosen ones via `POST /activities`.
+- [x] **4.2b — Provenance (fixed 2026-06-11).** `POST /activities` now accepts an optional
+      `source` (`'user'` | `'ai'`, default `'user'`, `'base'` rejected). `toCreatePayload` tags
+      AI-saved activities `'ai'`, self-add stays `'user'`. So generated-then-saved items are
+      distinguishable in the data (the inversion already treats both as non-base). Tested.
+- [x] **4.3 — Frontend page/flow.** `SuggestFromListPage.vue` + `useSuggestFromList.ts`, route
+      `/suggest-from-list`, menu placeholder flipped live. Intro → explicit "Toon suggesties"
+      (never auto-spends a call), then 3 cards with one-tap "Toevoegen aan mijn lijst" (reuses
+      `toCreatePayload` + `createActivity`), a "Nieuwe suggesties" regenerate, and 429/error
+      states. Bounded at 3, no "toon meer". The quickSuggest menu entry stays a placeholder (Phase 5).
+- [x] **4.4 — Empty/cold-start handling.** `buildSuggestFromListUserMessage` returns a cold-start
+      instruction when there's no register — asks for low-effort suggestions, never "add more first".
+- [x] **4.5 — Tests.** `tests/Unit/suggestFromList.spec.ts` (parse, ≤3 cap, under-generate,
+      malformed-filter, cold-start message) + `tests/Integration/suggestFromList.spec.ts`
+      (returns drafts, no-persist, cold-start prompt, 502 on garbage, 10/day limit, auth). All pass.
 
 **Review focus:** *What if* Claude returns 2 or 5 activities — how does the route enforce 3?
 *Why* are drafts ephemeral instead of saved-then-deleted?

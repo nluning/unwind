@@ -65,6 +65,11 @@ const router = createRouter({
       component: () => import('../pages/ActivitiesListPage.vue'),
     },
     {
+      path: '/suggest-from-list',
+      name: 'suggest-from-list',
+      component: () => import('../pages/SuggestFromListPage.vue'),
+    },
+    {
       path: '/account',
       name: 'account',
       component: () => import('../pages/AccountPage.vue'),

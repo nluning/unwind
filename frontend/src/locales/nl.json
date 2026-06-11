@@ -123,6 +123,14 @@
     "quickSuggest": "Vier vragen, één suggestie",
     "fromList": "Suggesties op basis van mijn lijst"
   },
+  "suggestFromList": {
+    "heading": "Suggesties op basis van je lijst",
+    "intro": "Unwind kijkt naar wat je het vaakst kiest, wat je zelf hebt toegevoegd en je voorkeuren, en stelt drie nieuwe activiteiten voor. Je kan je voorkeuren aanpassen onder 'Herinneringen over jou' op de accountpagina.",
+    "generate": "Toon suggesties",
+    "add": "Toevoegen aan mijn lijst",
+    "added": "Toegevoegd",
+    "regenerate": "Nieuwe suggesties"
+  },
   "account": {
     "heading": "Account",
     "emailSectionHeading": "Inloggen",
@@ -130,7 +138,7 @@
     "anonymousLabel": "Je gebruikt Unwind anoniem op dit apparaat.",
     "anonymousHint": "Maak een account om je activiteiten en herinneringen op andere apparaten terug te vinden.",
     "createAccount": "Maak een account",
-    "memorySectionHeading": "Wat Unwind over je weet",
+    "memorySectionHeading": "Herinneringen over jou",
     "memorySectionIntro": "Unwind gebruikt deze info om suggesties op jou af te stemmen. Je kunt deze herinneringen zelf toevoegen en verwijderen.",
     "memoryEnabledLabel": "Herinneringen opslaan",
     "memoryDisableWarning": "Als je dit uitzet, worden al je opgeslagen herinneringen verwijderd. Dit kan niet ongedaan worden.",

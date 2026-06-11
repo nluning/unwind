@@ -278,6 +278,49 @@ describe('POST /activities', () => {
     expect(body.source).toBe('user')
   })
 
+  it('tags an activity as ai-sourced when source: "ai" is passed', async () => {
+    const categories = await seedCategories()
+    const headId = categories.find((c: any) => c.name === 'Head').id
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/activities',
+      headers: { cookie },
+      payload: {
+        title: 'Teken je koffiemok',
+        suggested_duration: 10,
+        min_stress_level: 1,
+        max_stress_level: 4,
+        category_ids: [headId],
+        source: 'ai',
+      },
+    })
+
+    expect(response.statusCode).toBe(201)
+    expect(response.json().source).toBe('ai')
+  })
+
+  it('rejects a source the user is not allowed to set (e.g. "base")', async () => {
+    const categories = await seedCategories()
+    const headId = categories.find((c: any) => c.name === 'Head').id
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/activities',
+      headers: { cookie },
+      payload: {
+        title: 'Sneaky base activity',
+        suggested_duration: 10,
+        min_stress_level: 1,
+        max_stress_level: 4,
+        category_ids: [headId],
+        source: 'base',
+      },
+    })
+
+    expect(response.statusCode).toBe(400)
+  })
+
   it('saves category links in the junction table', async () => {
     const categories = await seedCategories()
     const headId = categories.find((c: any) => c.name === 'Head').id

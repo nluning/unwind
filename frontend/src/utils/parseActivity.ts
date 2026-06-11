@@ -82,5 +82,7 @@ export function toCreatePayload(activity: AiActivity): CreateActivityPayload {
     min_stress_level: activity.min_stress ?? 1,
     max_stress_level: activity.max_stress ?? 5,
     category_ids: categoryIds.length > 0 ? categoryIds : [1],
+    // These come from the chat / analyse-fit AI routes — tag them as AI-sourced.
+    source: 'ai',
   }
 }
