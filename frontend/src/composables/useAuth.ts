@@ -62,6 +62,9 @@ export function useAuth() {
         setSentryUser(null)
         return
       }
+      // NOTE: also fires when an email user's session expires, silently
+      // dropping them into a fresh anonymous account. Separate concern from
+      // the upgrade/device-id fix — left as-is for now.
       try {
         await deviceLogin(getOrCreateDeviceId())
       } catch {
@@ -121,6 +124,7 @@ export function useAuth() {
       body: JSON.stringify({ email, password }),
     })
     user.value = result
+    localStorage.removeItem(DEVICE_ID_KEY)
   }
 
   async function setMemoryEnabled(enabled: boolean) {
