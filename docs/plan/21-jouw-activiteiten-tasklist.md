@@ -122,17 +122,44 @@ add more first" and the avg/IQ lens.)
 Plan 20 calls this the success criterion for the whole restructure (report 007: without it
 this is "just menu rearranging"). Do it before the add-options so there's a payoff to adding.
 
-- [ ] **2.1 — Define the fade rule.** Spec how base activities decay as the user's own pool
-      grows. Proposal: weight = f(source, times_accepted, pool composition). User/ai source and
-      high `times_accepted` get boosted; `base` source gets a multiplier that shrinks as the
-      count of non-base activities rises. Write the formula down in this file before coding it.
-- [ ] **2.2 — Implement in `useActivities.ts`.** Extend `getWeight`/`weightedPick` with the fade
-      rule. Keep the existing skip-penalty + session-penalty behaviour. (Decision 5: frontend.)
-- [ ] **2.3 — Surface the signal.** `GET /activities` already returns `source` and the counters
-      the formula needs (`times_skipped`; add `times_accepted` to the `Activity` type + the
-      select if not already projected). Confirm the frontend has every field the formula reads.
-- [ ] **2.4 — Tests.** Unit-test the weighting: a user with many accepted user/ai activities
-      sees base activities suggested measurably less often; a brand-new user still sees base.
+- [x] **2.1 — Fade rule (locked).** Each candidate gets a multiplicative weight:
+
+      ```
+      weight(a) = (1 + sqrt(a.times_accepted))   // accepted favorites rise; sqrt caps dominance
+                  / (1 + a.times_skipped)         // skips decay it (never negative)
+                  * sourceFade(a)                 // ← THE INVERSION
+                  * sessionFade(a)                // avoid repeats within a session
+
+      sourceFade(a) = a.source === 'base' ? K / (K + ownCount) : 1     // K = BASE_FADE_K = 10
+      sessionFade(a) = acceptedThisSession.has(a.id)  ? 1/10           // accept = stronger penalty
+                     : suggestedThisSession.has(a.id) ? 1/3            // shown = soft penalty
+                     : 1
+      ownCount      = # of non-base activities in the user's pool
+
+      final = max(MIN_WEIGHT, weight)             // MIN_WEIGHT = 0.01, never extinct
+      ```
+
+      **Session state is two penalties, not a filter** (decided 2026-06-11): accepting an
+      activity does NOT exclude it for the session — it's down-weighted ÷10 (vs ÷3 for merely
+      shown). Accept takes precedence over suggested (no ÷30 stacking). Rationale: a hard
+      exclusion can starve a small library into "exhausted" and contradicts the soft/floored
+      philosophy; a strong penalty keeps a just-done activity rare-this-sitting but lets a
+      favorite resurface in a long session and return boosted next session.
+
+      - **Fresh user** (ownCount 0): `sourceFade = 10/10 = 1` → base at full weight, current behaviour.
+      - **Growing pool**: base fades smoothly — half weight at 10 own activities, ~0.2 at 40 —
+        while own + most-accepted items keep weight 1+. So "Verras me" tilts toward the own list.
+      - **Junk own list** (big but all-skipped): each junk item decays to ~`1/(1+skips)`, and faded
+        base (~0.2) out-weighs it again — base recovers relative to junk, as it should.
+      - `MIN_WEIGHT` floor keeps every activity *possible* (variety), just rare when down-weighted.
+      - `K` and the curve are tunable constants, not magic — documented in the module.
+- [x] **2.2 — Implement.** Extracted the pure algorithm to `composables/suggestionWeighting.ts`
+      (`computeWeight` / `pickWeighted`, injectable `random` for deterministic tests); `useActivities.ts`
+      calls it. ownCount computed from the full pool in `suggest()`.
+- [x] **2.3 — Surface the signal.** Added `times_accepted` to the `Activity` type; `GET /activities`
+      already projects it (`activity.*`); `createActivity` seeds it to 0.
+- [x] **2.4 — Tests.** `composables/suggestionWeighting.spec.ts` — fresh-user vs. grown-pool fade,
+      accept-boost, skip-decay, junk-list recovery, session penalty, deterministic pick.
 
 **Review focus:** *Trace* one `suggest()` call for (a) a fresh user and (b) a 3-month user with
 40 own activities — show how the same code yields starter-heavy vs. own-list-heavy output.
