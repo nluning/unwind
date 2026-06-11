@@ -6,6 +6,7 @@ export interface Activity {
   min_stress_level: number
   max_stress_level: number
   source: 'base' | 'user' | 'ai'
+  times_accepted: number
   times_skipped: number
   categories: string[]
 }

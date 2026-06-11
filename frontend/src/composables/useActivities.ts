@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { api } from '../api/client.js'
 import type { Activity, CreateActivityPayload, UpdateActivityPayload } from '../types/activity.js'
+import { pickWeighted } from './suggestionWeighting.js'
 
 export type { Activity, CreateActivityPayload, UpdateActivityPayload }
 
@@ -52,34 +53,22 @@ export function useActivities() {
     )
   }
 
-  function getWeight(activity: Activity, maxSkips: number): number {
-    const baseWeight = maxSkips + 1
-    const historyPenalty = activity.times_skipped
-    const sessionPenalty = sessionSuggested.value.has(activity.id) ? 2 : 0
-
-    return Math.max(1, baseWeight - historyPenalty - sessionPenalty)
-  }
-
-  function weightedPick(candidates: Activity[]): Activity {
-    const maxSkips = Math.max(...candidates.map((activity) => activity.times_skipped), 0)
-    const weights = candidates.map((activity) => getWeight(activity, maxSkips))
-    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
-
-    let roll = Math.random() * totalWeight
-    for (let index = 0; index < candidates.length; index++) {
-      roll -= weights[index]!
-      if (roll <= 0) return candidates[index]!
-    }
-    return candidates[candidates.length - 1]!
-  }
-
   function suggest(pool?: Activity[]): Activity | null {
     const source = pool ?? activities.value
-    const available = source.filter((activity) => !sessionAccepted.value.has(activity.id))
 
-    if (available.length === 0) return null
+    if (source.length === 0) return null
 
-    const pick = weightedPick(available)
+    // Accepted-this-session activities stay in the pool but are heavily
+    // down-weighted (not excluded), so a small library can't be starved.
+    const ownCount = source.filter((activity) => activity.source !== 'base').length
+
+    const pick = pickWeighted(source, {
+      ownCount,
+      suggestedThisSession: sessionSuggested.value,
+      acceptedThisSession: sessionAccepted.value,
+    })
+    if (!pick) return null
+
     sessionSuggested.value.add(pick.id)
     return pick
   }
@@ -105,6 +94,7 @@ export function useActivities() {
     const enriched: Activity = {
       ...raw,
       categories: payload.category_ids.map((categoryId) => CATEGORY_NAME_MAP[categoryId] ?? `Unknown(${categoryId})`),
+      times_accepted: 0,
       times_skipped: 0,
     }
 
