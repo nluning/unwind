@@ -18,6 +18,9 @@ export interface CreateActivityPayload {
   min_stress_level: number
   max_stress_level: number
   category_ids: number[]
+  // Omitted for self-add (backend defaults to 'user'); the AI routes set 'ai'
+  // so generated-then-saved activities stay distinguishable from hand-added ones.
+  source?: 'user' | 'ai'
 }
 
 // PUT /activities/:id uses COALESCE($n, col) server-side: `undefined` fields

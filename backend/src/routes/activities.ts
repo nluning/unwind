@@ -77,20 +77,24 @@ async function activityRoutes(fastify: FastifyInstance) {
                 min_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
                 max_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
                 category_ids: { type: 'array', items: { type: 'integer' }, minItems: 1 },
+                // Provenance. Defaults to 'user' (self-add); the AI routes pass
+                // 'ai' when saving a generated suggestion. 'base' is reserved for
+                // the seed library and not acceptable from a user request.
+                source: { type: 'string', enum: ['user', 'ai'] },
             },
         }
     } as const
 
-    fastify.post<{ Body: { title: string; description?: string; suggested_duration: number; min_stress_level: number; max_stress_level: number; category_ids: number[] } }>
+    fastify.post<{ Body: { title: string; description?: string; suggested_duration: number; min_stress_level: number; max_stress_level: number; category_ids: number[]; source?: 'user' | 'ai' } }>
                 ('/activities', { schema: postBodySchema, preHandler: requireAuth }, async (request, reply) => {
-                    const { title, description, suggested_duration, min_stress_level, max_stress_level, category_ids } = request.body
+                    const { title, description, suggested_duration, min_stress_level, max_stress_level, category_ids, source } = request.body
                     const userId = request.user!.id
 
                     const result = await fastify.pg.query(
                         `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source, user_id)
-                         VALUES ($1, $2, $3, $4, $5, 'user', $6)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
                          RETURNING *`,
-                        [title, description ?? null, suggested_duration, min_stress_level, max_stress_level, userId]
+                        [title, description ?? null, suggested_duration, min_stress_level, max_stress_level, source ?? 'user', userId]
                     )
 
                     const activity = result.rows[0]

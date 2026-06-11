@@ -157,13 +157,12 @@ const themes: { id: ColorScheme; swatch: string }[] = [
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 
-// The three add-options under "Jouw activiteiten" (plan 20 §2). Self-add is the
-// existing list+add page; the two AI routes are disabled placeholders until
-// their pages ship (Phase 4 = analyse-fit, Phase 5 = tappable Q&A) — flip
-// `disabled` off and set a real `to` when they land.
+// The three add-options under "Jouw activiteiten" (plan 20 §2). The tappable
+// Q&A route is a disabled placeholder until its page ships (Phase 5) — flip
+// `disabled` off and set a real `to` when it lands.
 const jouwActiviteitenLinks: { to: string; label: string; disabled?: boolean }[] = [
-  { to: '/activities', label: 'jouwActiviteiten.selfAdd' },
-  { to: '',            label: 'jouwActiviteiten.quickSuggest', disabled: true },
-  { to: '',            label: 'jouwActiviteiten.fromList',     disabled: true },
+  { to: '/activities',        label: 'jouwActiviteiten.selfAdd' },
+  { to: '',                   label: 'jouwActiviteiten.quickSuggest', disabled: true },
+  { to: '/suggest-from-list', label: 'jouwActiviteiten.fromList' },
 ]
 </script>

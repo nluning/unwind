@@ -6,6 +6,7 @@
   import activityRoutes from './routes/activities.js'
   import authRoutes from './routes/auth.js'
 import chatRoutes from './routes/chat.js'
+import generateRoutes from './routes/generate.js'
 import healthRoutes from './routes/health.js'
 import memoryRoutes from './routes/memory.js'
 import onboardingRoutes from './routes/onboarding.js'
@@ -34,6 +35,7 @@ import { registerErrorHandler } from './errorHandler.js'
     await fastify.register(authRoutes)
     await fastify.register(activityRoutes)
     await fastify.register(chatRoutes)
+    await fastify.register(generateRoutes)
     await fastify.register(memoryRoutes)
     await fastify.register(onboardingRoutes)
 
