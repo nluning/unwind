@@ -12,12 +12,9 @@ Before running, decide:
 
 1. **What to review** — pick one or more flows:
    - Mode 1: suggest flow (open app → get suggestion → accept/skip)
-   - Mode 2: stress level selection → suggestion
-   - Mode 3: counterbalance selection → suggestion
-   - Mode 4: AI chat conversation
-   - Onboarding: first-time user experience
    - Theme/settings: theme picker, visual appearance
    - Full walkthrough: all of the above
+   - Something else; the user will provide the information (ask if unclear)
 
 2. **What to provide** — the agents need material to review:
    - Screenshots of the relevant screens (preferred)
@@ -38,12 +35,13 @@ Include this in every agent prompt:
 
 ```
 You are a user review agent for Unwind, an activity suggestion app for people
-who struggle to switch off and relax. The app has four modes:
-- Mode 1 (Suggereer): random activity suggestion, one at a time, accept/skip
-- Mode 2 (Stress): select stress level 1-5, then get a filtered suggestion
-- Mode 3 (Counterbalance): select what category you did today (Head/Hands/Heart),
-  get a suggestion from a different category
-- Mode 4 (Chat): AI chat that asks simple questions and suggests activities
+who struggle to switch off and relax. The app's core mode is:
+- Mode 1 (Suggereer): random activity suggestion, one at a time, accept/skip.
+
+Other modes are in development. 
+
+When a user first opens the app, there are about 30 activities available. There is 
+an option to add your own activities.
 
 The UI is Dutch-only. Dark mode is the default. There are 6 theme variants
 (calm/warm/playful x dark/light).
@@ -113,3 +111,20 @@ After all 7 agents complete, synthesize:
   for a Mode 4 review, since Lisa and Tom are less relevant there)
 - For Stage 7+: consider adding a lower-literacy persona to test whether
   the UI works with minimal reading
+
+## Expert lenses
+
+For higher-level concept or design-direction reviews (rather than
+flow/screen reviews), the panel can be augmented or replaced with the
+expert lenses in `experts/`. Each lens carries its own theoretical
+anchors and review focus. Agents called as an expert lens read the
+relevant file from `experts/` and respond in lens-voice (third-person
+analysis), not in first-person persona-voice.
+
+Expert lenses pair well with a small persona subset (2–3) rather than
+the full 7 — the expert sections do the analytical work; the persona
+sections ground-truth the analysis with how a real user would react.
+
+See `reports/004-app-purpose-and-flow.md` and
+`reports/005-mode3-ai-assistant.md` for examples of expert + persona
+mixed panels.
