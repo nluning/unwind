@@ -70,6 +70,11 @@ const router = createRouter({
       component: () => import('../pages/SuggestFromListPage.vue'),
     },
     {
+      path: '/quick-suggest',
+      name: 'quick-suggest',
+      component: () => import('../pages/QuickSuggestPage.vue'),
+    },
+    {
       path: '/account',
       name: 'account',
       component: () => import('../pages/AccountPage.vue'),
@@ -86,18 +91,10 @@ router.beforeEach(async (to) => {
   const { user, initialize } = useAuth()
   await initialize()
 
-  // An already-logged-in EMAIL user shouldn't see the login form again
-  // — they should log out first. Anonymous users (email === null) pass
-  // through because /login also hosts the upgrade flow they reach via
-  // the menu's "Maak een account" entry.
   if (to.name === 'login' && user.value?.email) {
     return { name: 'suggest' }
   }
 
-  // A user who explicitly logged out and then reloads has no session
-  // and was intentionally NOT re-authed by fetchMe (see useAuth). Send
-  // them to /login instead of letting them land on a protected page
-  // that will just 401 on every fetch.
   if (!user.value && isExplicitlyLoggedOut() && to.name !== 'login' && to.name !== 'privacy') {
     return { name: 'login' }
   }

@@ -157,12 +157,9 @@ const themes: { id: ColorScheme; swatch: string }[] = [
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 
-// The three add-options under "Jouw activiteiten" (plan 20 §2). The tappable
-// Q&A route is a disabled placeholder until its page ships (Phase 5) — flip
-// `disabled` off and set a real `to` when it lands.
 const jouwActiviteitenLinks: { to: string; label: string; disabled?: boolean }[] = [
   { to: '/activities',        label: 'jouwActiviteiten.selfAdd' },
-  { to: '',                   label: 'jouwActiviteiten.quickSuggest', disabled: true },
+  { to: '/quick-suggest',     label: 'jouwActiviteiten.quickSuggest' },
   { to: '/suggest-from-list', label: 'jouwActiviteiten.fromList' },
 ]
 </script>

@@ -8,6 +8,12 @@ import {
     buildSuggestFromListUserMessage,
     parseSuggestionsResponse,
 } from './suggestFromListPrompt.js'
+import {
+    SUGGEST_FROM_ANSWERS_SYSTEM_PROMPT,
+    buildSuggestFromAnswersUserMessage,
+    parseSingleSuggestion,
+    type QuickAnswers,
+} from './suggestFromAnswersPrompt.js'
 
 const client = new Anthropic()
 
@@ -16,13 +22,10 @@ const client = new Anthropic()
 const ADDED_ACTIVITIES_LIMIT = 30
 
 async function generateRoutes(fastify: FastifyInstance) {
-    // Relaxed-moment, opt-in route — a low daily cap is plenty and keeps the
-    // Sonnet cost predictable. Logged to api_usage like every other AI call.
+
     const suggestRateLimit = createRateLimiter({ endpoint: 'suggest_from_list', maxRequests: 10, window: 'day' })
 
-    // Analyse-fit: AI riffs on the user's own list + picks to propose 3 NEW
-    // activities. Returns ephemeral drafts — nothing is persisted here; the
-    // client saves the ones the user picks via POST /activities.
+
     fastify.post(
         '/activities/suggest-from-list',
         { preHandler: [requireAuth, suggestRateLimit] },
@@ -75,6 +78,86 @@ async function generateRoutes(fastify: FastifyInstance) {
             }
 
             reply.send({ activities })
+        }
+    )
+
+    const answersRateLimit = createRateLimiter({ endpoint: 'suggest_from_answers', maxRequests: 10, window: 'day' })
+
+    const answersBodySchema = {
+        body: {
+            type: 'object',
+            properties: {
+                location: { type: 'string', enum: ['indoor', 'outdoor'] },
+                social: { type: 'string', enum: ['alone', 'with_others'] },
+                energy: { type: 'string', enum: ['calm', 'active'] },
+                // Titles already shown this session ("Andere suggestie"): the
+                // model gets the same answers + history every regenerate and
+                // otherwise converges on the same activity, so it needs to be
+                // told what to avoid.
+                exclude: { type: 'array', items: { type: 'string', maxLength: 200 }, maxItems: 20 },
+            },
+            additionalProperties: false,
+        },
+    } as const
+
+    fastify.post<{ Body: QuickAnswers & { exclude?: string[] } }>(
+        '/activities/suggest-from-answers',
+        { schema: answersBodySchema, preHandler: [requireAuth, answersRateLimit] },
+        async (request, reply) => {
+            const userId = request.user!.id
+            const { exclude, ...answers } = request.body ?? {}
+
+            const [userContext, addedResult] = await Promise.all([
+                getUserContext(fastify.pg, userId),
+                fastify.pg.query<{ title: string }>(
+                    `SELECT title FROM activities
+                     WHERE user_id = $1
+                     ORDER BY created_at DESC
+                     LIMIT $2`,
+                    [userId, ADDED_ACTIVITIES_LIMIT]
+                ),
+            ])
+
+            const userMessage = buildSuggestFromAnswersUserMessage({
+                answers,
+                addedActivities: addedResult.rows.map((row) => row.title),
+                frequentlyAccepted: userContext.frequentlyAccepted,
+                memories: userContext.memories,
+                exclude,
+            })
+
+            const response = await client.messages.create({
+                model: 'claude-sonnet-4-6',
+                max_tokens: 1024,
+                // A little randomness so "Andere suggestie" varies even within
+                // the same answers/history, on top of the exclude list.
+                temperature: 1,
+                system: SUGGEST_FROM_ANSWERS_SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: userMessage }],
+            })
+
+            const text = response.content
+                .filter((block) => block.type === 'text')
+                .map((block) => block.text)
+                .join('')
+
+            fastify.log.info(
+                {
+                    user_id: userId,
+                    input_tokens: response.usage.input_tokens,
+                    output_tokens: response.usage.output_tokens,
+                },
+                'suggest-from-answers token usage'
+            )
+
+            const activity = parseSingleSuggestion(text)
+            if (!activity) {
+                fastify.log.error({ raw: text.slice(0, 500) }, 'Failed to parse suggest-from-answers response')
+                reply.status(502).send({ error: 'Could not generate a suggestion. Try again.' })
+                return
+            }
+
+            reply.send({ activity })
         }
     )
 }

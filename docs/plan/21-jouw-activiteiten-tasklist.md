@@ -49,14 +49,18 @@ the build. All now settled.
 4. **Menu copy (load-bearing — report 007 §Convergentie).** The three labels under
    *Jouw activiteiten*:
    - Self-add → **"Iets toevoegen aan mijn lijst"**
-   - Q&A → **"Vier vragen, één suggestie"**
+   - Q&A → **"Drie vragen, één suggestie"** (was "Vier vragen" — kort/lang dropped 2026-06-12, decision 7)
    - Analyse-fit → **"Suggesties op basis van mijn lijst"**
 5. **Self-add form shape (#1).** Keep title + category; make duration/stress optional with sane
    defaults — the depleted user shouldn't fill 5 fields.
 6. **Swipe-up gestures → defer.** Ship after the restructure (plan 20 §sequencing puts it last;
    `user_hidden_activities` already supports the hide half cheaply later).
-7. **Q&A questions (#5).** Four concrete tap-questions: **binnen/buiten · kort/lang ·
-   alleen/met iemand · rustig/actief**. No emotional ones.
+7. **Q&A questions (#5).** Three concrete tap-questions: **binnen/buiten · alleen/met iemand ·
+   rustig/actief**. No emotional ones. (kort/lang dropped 2026-06-12 — the only question that asks
+   the depleted user to *forecast* a duration rather than report current state; ND time-blindness
+   makes it the one cognitively-loaded tap. Short/low-effort is the safe depletion-moment default
+   anyway, and rustig/actief + accept-history already proxy capacity. Menu label reworded to
+   "Drie vragen, één suggestie".)
 8. **Inversion location (#3) → frontend** `weightedPick` — that's where suggestion selection
    already lives and it keeps Verras me offline-capable (ADR-007).
 
@@ -221,20 +225,26 @@ The make-or-break route per report 007 (modality is the risk). **Tap-only, concr
 no free text, no emotional questions.** Build after analyse-fit since it shares the generate
 backend pattern.
 
-- [ ] **5.1 — The 4 questions** (decision 7, locked): **binnen/buiten · kort/lang ·
-      alleen/met iemand · rustig/actief**. Concrete, tappable, no "hoe voel je je?".
-- [ ] **5.2 — Backend `POST /activities/suggest-from-answers`.** Takes the 4 tap-answers +
-      `getUserContext()` (which already carries the user's "about me" memories), returns **1**
-      activity. **Purpose-built prompt** — NOT the chat prompt: the AI never asks questions (the
-      4 answers arrive as structured input), and it returns a single activity, not a batch.
-      Reuses `CREATIVITY_GUIDANCE`; same rate limiting as Phase 4. The answers are in-the-moment
-      context layered on top of history.
-- [ ] **5.3 — Frontend flow.** Reuse `OnboardingOptionPills` / `OnboardingStepHeader` /
-      `OnboardingStepActions` for the question screens (they already do tappable + auto-advance).
-      New page (e.g. `QuickSuggestPage.vue`). Tap-only — do **not** reuse `ChatPage`/`useChat`.
-- [ ] **5.4 — Result actions.** Show the 1 suggestion with "doe dit nu" and/or
-      "toevoegen aan mijn lijst" (plan 20 §2). Calibrated-uncertainty tone, no "speciaal voor jou".
-- [ ] **5.5 — Tests.** Answer→prompt mapping, single-activity output, rate-limit wiring.
+- [x] **5.1 — The 3 questions** (decision 7, locked): **binnen/buiten · alleen/met iemand ·
+      rustig/actief**. Concrete, tappable, no "hoe voel je je?". (kort/lang dropped 2026-06-12.)
+      Each question offers a third "maakt niet uit" pill that skips the dimension.
+- [x] **5.2 — Backend `POST /activities/suggest-from-answers`.** `routes/suggestFromAnswersPrompt.ts`
+      (purpose-built prompt: AI never asks, returns **1** activity; the 3 answers arrive as
+      structured "right now" constraints layered on `getUserContext()`; reuses `CREATIVITY_GUIDANCE`).
+      Route added to `routes/generate.ts`, Sonnet, `max_tokens: 1024`, rate-limited 10/day
+      (endpoint `suggest_from_answers`). Migration `009_api_usage_suggest_from_answers.sql` extends
+      the `api_usage` CHECK. Returns an ephemeral draft — persists nothing.
+- [x] **5.3 — Frontend flow.** `QuickSuggestPage.vue` + `useSuggestFromAnswers.ts`, route
+      `/quick-suggest`, menu placeholder flipped live. Reuses `OnboardingOptionPills` /
+      `OnboardingStepHeader` (now takes a `total` prop) / `OnboardingStepActions` for the question
+      screens with first-pass auto-advance. Tap-only — does not touch `ChatPage`/`useChat`.
+- [x] **5.4 — Result actions.** Single suggestion card with "Doe dit nu" (calm confirmation via
+      `SuggestionAccepted`, no recording — the draft has no id) and "Toevoegen aan mijn lijst"
+      (`toCreatePayload` + `createActivity`), plus an "Andere suggestie" regenerate. Calibrated tone.
+- [x] **5.5 — Tests.** `tests/Unit/suggestFromAnswers.spec.ts` (answer→prompt mapping, skip-omits,
+      history-layering, single-activity parse incl. bare object, cold-start) +
+      `tests/Integration/suggestFromAnswers.spec.ts` (1 activity, constraint mapping, skip-all
+      cold-start, no-persist, enum 400, 502 on garbage, 10/day limit, auth). 19 tests, all pass.
 
 **Review focus:** *What if* the user skips all 4 questions — does it still suggest from history
 alone? *Trace* a full tap-through from question 1 to a saved activity.

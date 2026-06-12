@@ -114,14 +114,31 @@
     "close": "Sluiten",
     "theme": "Thema",
     "groupAccount": "Account",
-    "hint": "Hier kun je je lijst beheren, nieuwe suggesties krijgen en een account aanmaken.",
+    "hint": "Hier kun je je lijst beheren, nieuwe ideeën toevoegen en een account aanmaken.",
     "account": "Account"
   },
   "jouwActiviteiten": {
     "group": "Jouw activiteiten",
     "selfAdd": "Iets toevoegen aan mijn lijst",
-    "quickSuggest": "Vier vragen, één suggestie",
+    "quickSuggest": "Drie vragen, één suggestie",
     "fromList": "Suggesties op basis van mijn lijst"
+  },
+  "quickSuggest": {
+    "locationQuestion": "Waar ontspan je nu het liefst?",
+    "indoor": "Binnen",
+    "outdoor": "Buiten",
+    "socialQuestion": "Alleen of met iemand?",
+    "alone": "Alleen",
+    "withOthers": "Met iemand",
+    "energyQuestion": "Rustig of actief?",
+    "calm": "Rustig",
+    "active": "Actief",
+    "noPreference": "Maakt niet uit",
+    "resultHeading": "Dit zou je nu kunnen doen",
+    "doNow": "Doen",
+    "add": "Toevoegen aan mijn lijst",
+    "added": "Toegevoegd",
+    "regenerate": "Andere suggestie"
   },
   "suggestFromList": {
     "heading": "Suggesties op basis van je lijst",
