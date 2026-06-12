@@ -215,6 +215,9 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 18px 22px 0;
+  /* Reserve the fixed home/hamburger zone (40px buttons at top:18px → 58px)
+     so page content clears them even when the header is empty (no wordmark). */
+  min-height: 58px;
 }
 
 .uw-wordmark {
@@ -225,9 +228,9 @@ button {
 }
 
 .uw-menu-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 17px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
   border: 0;
   padding: 0;
   background: var(--uw-menu-bg);
@@ -235,6 +238,24 @@ button {
   align-items: center;
   justify-content: center;
   color: var(--uw-ink);
+  cursor: pointer;
+}
+
+/* Persistent return-to-hub control (report 009). Same circular family as the
+   accept badge (.uw-badge) — theme-primary, 40px — but a real button. Kept
+   deliberately static: no transition/animation/glow (the depleted user needs a
+   fixed, unmistakable anchor, not motion). */
+.uw-home-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: 0;
+  padding: 0;
+  background: var(--uw-primary);
+  color: var(--uw-primary-fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 
