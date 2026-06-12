@@ -8,7 +8,7 @@
       <button
         v-if="messages.length > 0"
         type="button"
-        class="uw-menu-btn fixed top-[18px] right-[68px] z-20"
+        class="uw-menu-btn fixed top-[18px] right-[70px] z-20"
         :aria-label="$t('chat.newChat')"
         @click="handleReset"
       >
