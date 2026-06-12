@@ -49,37 +49,20 @@
 
       <div class="h-px bg-uw-border-soft my-1" />
 
+      <!-- Flat, divider-grouped menu (report 009): the hub is reached via the
+           home button (not here), so there's no /suggest link; dividers carry the
+           grouping so there are no headers to re-parse; privacy lives on the
+           account page now. -->
       <nav :aria-label="$t('menu.label')">
-        <!-- Verras me is the sole ontdekkingsroute now (plan 20 §1), so this
-             section carries no group header — there's nothing to choose between. -->
-        <section class="px-3 pt-2 pb-2">
-          <div class="flex flex-col gap-1">
+        <template v-for="(group, groupIndex) in menuGroups" :key="groupIndex">
+          <div
+            v-if="groupIndex > 0"
+            class="h-px bg-uw-border-soft my-2 mx-3"
+          />
+          <section class="px-3 py-1 flex flex-col gap-1">
             <router-link
-              to="/suggest"
-              class="block w-full px-3 py-2.5 rounded-xl text-sm text-uw-ink-soft bg-uw-chip no-underline transition-colors hover:text-uw-ink"
-              active-class="!bg-uw-accent !text-uw-ink !font-medium"
-              @click="open = false"
-            >
-              {{ $t('nav.suggest') }}
-            </router-link>
-          </div>
-        </section>
-
-        <section class="px-3 pt-1">
-          <h3 class="text-xs font-normal text-uw-ink-mute px-1 mb-1">{{ $t('jouwActiviteiten.group') }}</h3>
-          <template v-for="link in jouwActiviteitenLinks" :key="link.label">
-            <!-- The two AI routes (Q&A, analyse-fit) don't have pages yet — they
-                 land in Phase 4/5. Until then they render as disabled placeholders
-                 so the final menu shape is visible without shipping dead links. -->
-            <span
-              v-if="link.disabled"
-              class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-mute opacity-50 cursor-not-allowed select-none"
-              aria-disabled="true"
-            >
-              {{ $t(link.label) }}
-            </span>
-            <router-link
-              v-else
+              v-for="link in group"
+              :key="link.label"
               :to="link.to"
               class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
               active-class="!text-uw-ink !font-medium"
@@ -87,30 +70,8 @@
             >
               {{ $t(link.label) }}
             </router-link>
-          </template>
-        </section>
-
-        <div class="h-px bg-uw-border-soft my-2 mx-3" />
-
-        <section class="px-3 pb-2">
-          <h3 class="text-xs font-normal text-uw-ink-mute px-1 mb-1">{{ $t('menu.groupAccount') }}</h3>
-          <router-link
-            to="/account"
-            class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
-            active-class="!text-uw-ink !font-medium"
-            @click="open = false"
-          >
-            {{ $t('menu.account') }}
-          </router-link>
-          <router-link
-            to="/privacy"
-            class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
-            active-class="!text-uw-ink !font-medium"
-            @click="open = false"
-          >
-            {{ $t('privacy.link') }}
-          </router-link>
-        </section>
+          </section>
+        </template>
       </nav>
     </div>
   </div>
@@ -118,6 +79,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import type { RouteLocationRaw } from 'vue-router'
 import { useTheme, type ColorScheme } from '../composables/useTheme.js'
 import { useWelcome } from '../composables/useWelcome.js'
 import MenuLinesIcon from './icons/MenuLinesIcon.vue'
@@ -157,9 +119,19 @@ const themes: { id: ColorScheme; swatch: string }[] = [
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 
-const jouwActiviteitenLinks: { to: string; label: string; disabled?: boolean }[] = [
-  { to: '/activities',        label: 'jouwActiviteiten.selfAdd' },
-  { to: '/quick-suggest',     label: 'jouwActiviteiten.quickSuggest' },
-  { to: '/suggest-from-list', label: 'jouwActiviteiten.fromList' },
+// Grouped for divider placement: your list (view vs. add, split so each label
+// tells the truth) · AI ideas · account.
+const menuGroups: { to: RouteLocationRaw; label: string }[][] = [
+  [
+    { to: '/activities',     label: 'jouwActiviteiten.viewList' },
+    { to: '/activities/new', label: 'jouwActiviteiten.selfAdd' },
+  ],
+  [
+    { to: '/quick-suggest',     label: 'jouwActiviteiten.quickSuggest' },
+    { to: '/suggest-from-list', label: 'jouwActiviteiten.fromList' },
+  ],
+  [
+    { to: '/account', label: 'menu.account' },
+  ],
 ]
 </script>

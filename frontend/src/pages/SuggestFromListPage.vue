@@ -1,6 +1,6 @@
 <template>
   <PageShell>
-    <PageHeader back @back="$router.back()" />
+    <PageHeader />
 
     <p class="uw-prompt">{{ $t('suggestFromList.heading') }}</p>
 

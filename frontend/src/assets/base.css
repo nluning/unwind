@@ -44,41 +44,41 @@ button {
 
 :root,
 [data-theme="warm"] {
-  /* Horizon · warm — dusk gradient */
-  --uw-bg-start:     #ecdcc4;
-  --uw-bg-mid-1:     #e6c9ae;
-  --uw-bg-mid-2:     #d7a48e;
-  --uw-bg-end:       #ae7c6d;
+  /* Horizon · warm — sunlit peach */
+  --uw-bg-start:     #fdeede;
+  --uw-bg-mid-1:     #fbd3b4;
+  --uw-bg-mid-2:     #f3ab84;
+  --uw-bg-end:       #db8460;
   --uw-bg:           linear-gradient(180deg,
                         var(--uw-bg-start)  0%,
                         var(--uw-bg-mid-1) 38%,
                         var(--uw-bg-mid-2) 72%,
                         var(--uw-bg-end)  100%);
   --uw-glow:         radial-gradient(circle,
-                        rgba(244,212,168,0.55) 0%,
-                        rgba(232,178,132,0.20) 45%,
+                        rgba(253,228,200,0.60) 0%,
+                        rgba(244,190,150,0.22) 45%,
                         transparent 72%);
 
-  --uw-ink:          #2a1f1a;
-  --uw-ink-soft:     rgba(42,31,26,0.78);
-  --uw-ink-mute:     rgba(42,31,26,0.62);
+  --uw-ink:          #3a261c;
+  --uw-ink-soft:     rgba(58,38,28,0.78);
+  --uw-ink-mute:     rgba(58,38,28,0.62);
 
-  --uw-chip-bg:      rgba(42,31,26,0.10);
-  --uw-border:       rgba(42,31,26,0.35);
-  --uw-border-soft:  rgba(42,31,26,0.18);
+  --uw-chip-bg:      rgba(58,38,28,0.10);
+  --uw-border:       rgba(58,38,28,0.35);
+  --uw-border-soft:  rgba(58,38,28,0.18);
 
-  --uw-primary:      #a4614d;             /* terracotta */
-  --uw-primary-soft: rgba(164,97,77,0.9);
-  --uw-primary-fg:   #fbefe0;
-  --uw-accent-soft:  rgba(42,31,26,0.08);
+  --uw-primary:      #d27a52;             /* warm apricot-coral */
+  --uw-primary-soft: rgba(210,122,82,0.9);
+  --uw-primary-fg:   #fdf1e6;
+  --uw-accent-soft:  rgba(58,38,28,0.08);
 
-  --uw-nav-border:   rgba(42,31,26,0.18);
-  --uw-nav-active:   #2a1f1a;
-  --uw-nav-dot:      #a4614d;
-  --uw-nav-idle:     rgba(42,31,26,0.50);
-  --uw-menu-bg:      rgba(42,31,26,0.08);
+  --uw-nav-border:   rgba(58,38,28,0.18);
+  --uw-nav-active:   #3a261c;
+  --uw-nav-dot:      #d27a52;
+  --uw-nav-idle:     rgba(58,38,28,0.50);
+  --uw-menu-bg:      rgba(58,38,28,0.08);
 
-  --uw-page-bg:      #ae7c6d;
+  --uw-page-bg:      #db8460;
   --uw-danger:       #b4412a;
 }
 

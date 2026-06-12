@@ -64,6 +64,19 @@ const router = createRouter({
       name: 'activities',
       component: () => import('../pages/ActivitiesListPage.vue'),
     },
+    // Create + edit are their own routes (not an in-page mode) so navigating
+    // between the list and the form is always a real route change — a query
+    // param on /activities didn't remount the page. See plan 22 Chunk 4.
+    {
+      path: '/activities/new',
+      name: 'activity-new',
+      component: () => import('../pages/ActivityFormPage.vue'),
+    },
+    {
+      path: '/activities/:id/edit',
+      name: 'activity-edit',
+      component: () => import('../pages/ActivityFormPage.vue'),
+    },
     {
       path: '/suggest-from-list',
       name: 'suggest-from-list',

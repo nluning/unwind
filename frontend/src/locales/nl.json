@@ -114,15 +114,14 @@
     "label": "Menu",
     "close": "Sluiten",
     "theme": "Thema",
-    "groupAccount": "Account",
     "hint": "Hier kun je je lijst beheren, nieuwe ideeën toevoegen en een account aanmaken.",
     "account": "Account"
   },
   "jouwActiviteiten": {
-    "group": "Jouw activiteiten",
-    "selfAdd": "Iets toevoegen aan mijn lijst",
-    "quickSuggest": "Drie vragen, één suggestie",
-    "fromList": "Suggesties op basis van mijn lijst"
+    "viewList": "Bekijk mijn lijst",
+    "selfAdd": "Zelf iets toevoegen",
+    "quickSuggest": "Drie vragen, één idee",
+    "fromList": "Ideeën op basis van mijn lijst"
   },
   "quickSuggest": {
     "locationQuestion": "Waar ontspan je nu het liefst?",
@@ -162,7 +161,7 @@
     "memoryDisableWarning": "Als je dit uitzet, worden al je opgeslagen herinneringen verwijderd. Dit kan niet ongedaan worden.",
     "memoryDisableConfirm": "Ja, uitzetten en verwijderen",
     "memoryDisableCancel": "Annuleer",
-    "memoryDisabled": "Herinneringen staan uit. Unwind onthoudt niets over je.",
+    "memoryDisabled": "Herinneringen staan uit.",
     "memoryEmpty": "Er zijn nog geen herinneringen.",
     "memoryAddPlaceholder": "Schrijf iets wat Unwind over jou mag weten",
     "memoryAddButton": "Toevoegen",
@@ -217,6 +216,7 @@
     "link": "Mijn lijst",
     "heading": "Mijn activiteiten",
     "newButton": "Nieuwe activiteit",
+    "editHeading": "Activiteit bewerken",
     "empty": "Nog geen activiteiten. Voeg er een toe om te beginnen.",
     "editButton": "Bewerk",
     "deleteButton": "Verwijder",

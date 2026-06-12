@@ -1,6 +1,6 @@
 <template>
   <PageShell>
-    <PageHeader back @back="router.back()" />
+    <PageHeader />
 
     <main class="flex flex-col px-[26px] py-6 gap-8">
       <h1 class="font-serif text-2xl tracking-tight text-uw-ink m-0">
@@ -172,6 +172,14 @@
           @confirm="handleDeleteAccount"
         />
       </section>
+
+      <!-- Privacy lives here now (out of the menu, report 009) — a quiet footer link. -->
+      <router-link
+        to="/privacy"
+        class="self-start text-sm text-uw-ink-mute no-underline transition-colors hover:text-uw-ink-soft"
+      >
+        {{ $t('privacy.link') }}
+      </router-link>
     </main>
   </PageShell>
 </template>

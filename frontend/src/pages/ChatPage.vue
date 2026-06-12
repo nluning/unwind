@@ -1,9 +1,6 @@
 <template>
   <PageShell>
-      <PageHeader
-        back
-        @back="$router.back()"
-      />
+      <PageHeader />
 
       <button
         v-if="messages.length > 0"
