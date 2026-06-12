@@ -154,10 +154,22 @@ the redundant, unpredictable control the report wants gone.
      `router.push({ name: 'suggest' })` (step 1 exits to the hub, never to history).
    - Confirm `StepActions` (OnboardingStepActions) renders a chevron-style back so it
      reads as "step back," visually distinct from the round home button.
-3. **`PageHeader.vue`** — the `back` prop/emit is now used by no page. Either remove it
-   (cleaner) or keep it documented-as-reserved. **Recommend removing** it and the
-   spacer `<div>`; reintroduce only if a future in-header step-back appears. (Decision
-   for review.)
+3. **`PageHeader.vue`** — `back` prop/emit **kept** (not removed). After the cut it
+   still has legitimate users: `PrivacyPage` (a public, chrome-less page that needs its
+   own escape — repointed to `/account` in Chunk 5) and the dormant `StressPage` /
+   `CounterbalancePage`, whose header chevron is a genuine *in-flow* step-back (resets
+   the level/category picker), not a leave-back.
+
+**Done in this chunk (2026-06-12):**
+- Removed redundant *leave*-backs (`$router.back()`) from `SuggestFromListPage`,
+  `AccountPage`, `ChatPage` — the home button is the way out.
+- `QuickSuggestPage`: removed the header chevron; `handleBack()` step-1 now
+  `router.push({ name: 'suggest' })` instead of the `window.history.length > 1 →
+  history.back()` fallback. In-flow step-back stays in `OnboardingStepActions`.
+- **Left untouched:** `StressPage` / `CounterbalancePage` (orphaned, URL-only behind
+  the no-UI hook). Their in-flow header chevron now visually sits under the global
+  home button (both top-left). Acceptable while dormant; revisit if those routes are
+  revived. `PrivacyPage` deferred to Chunk 5.
 
 **Review:**
 - *What if* a user deep-links to `/quick-suggest` and presses step-1 back — where do
@@ -192,11 +204,19 @@ Target shape (dividers `h-px bg-uw-border-soft`, **no `<h3>` headers**):
   the add entry so `active-class` matching stays sane.
 - Keep `@click="open = false"` and the outside-click close. Keep `dismissMenuHint()`.
 
-**Review:**
-- *Why* dividers over headers at ~6 items? (re-parsing load; grouping is carried for
-  free)
-- *Trace* "I want to add my own activity" from a cold core screen: hamburger → which
-  row → what renders on `/activities`?
+**Done in this chunk (2026-06-12):**
+- `<nav>` rewritten as a data-driven `menuGroups` array (3 groups) rendered with a
+  divider before every group after the first; one uniform link style; no headers.
+- Dropped the `/suggest` link, the `disabled`-placeholder support, and the `/privacy`
+  link. Add entry uses `:to="{ path: '/activities', query: { new: '1' } }"`.
+- **Folded in Chunk 6's menu copy** (the labels are intrinsic to the menu — wiring old
+  keys then rewiring made no sense): `jouwActiviteiten` now `viewList` "Bekijk mijn
+  lijst" / `selfAdd` "zelf iets toevoegen" / `quickSuggest` "drie vragen, een idee" /
+  `fromList` "ideeën op basis van mijn lijst". Removed `jouwActiviteiten.group` and
+  `menu.groupAccount`. `nav.suggest` ("Verras me") is now unused but left in place
+  (harmless; revisit in the final copy sweep).
+- Interim gap until Chunk 5: `/privacy` is reachable only by URL (still linked from
+  `LoginPage`). The account-footer link lands in Chunk 5.
 
 ### Chunk 4 — `?new=1` opens the add form (`ActivitiesListPage.vue`)
 
@@ -211,11 +231,27 @@ Make the split label honest: the add entry must land *on the form*, not the list
    (the `StateLoading` branch still wins until `loaded`, then the form shows; verify
    this ordering holds).
 
-**Review:**
-- *What if* the user opens `/activities?new=1`, cancels, then the list reloads — does
-  the form re-open? (it must not — that's why we clear the query)
-- *Why* a query param over a new route/page? ("A label that lies costs more than an
-  extra row" — but a new page costs more than a param)
+**Done in this chunk (2026-06-12) — revised away from the query param:**
+The `?new=1` approach was built first but **failed in practice**: `/activities` →
+`/activities?new=1` is a query-only change on the same route, so Vue doesn't remount
+and `onMounted` never re-runs; and after stripping the query, "Bekijk mijn lijst"
+(`/activities`) is the same URL you're already on, so no navigation fires at all. A
+`watch` patches the first case but not the no-op second one, and it tangles with the
+inline "Bewerk" edit.
+
+**Resolution — dedicated routes (diverges from report 009's "no new page"):** the SPA
+behavior wasn't anticipated when 009 chose the param. Extracted the form into its own
+page so list ↔ form is always a real route change:
+- **New `ActivityFormPage.vue`** — create + edit. `:id` param ⇒ edit (loads the
+  activity from the `useActivities` singleton, falls back to `/activities` on a stale
+  id); no param ⇒ create. Save/cancel → `router.push('/activities')`.
+- **Routes** `/activities/new` (`activity-new`) and `/activities/:id/edit`
+  (`activity-edit`), both → `ActivityFormPage`.
+- **`ActivitiesListPage`** reduced to list-only: "+ Nieuwe activiteit" / empty-state →
+  `/activities/new`; "Bewerk" → `/activities/:id/edit`. Removed the inline form,
+  `editing` state, and the `?new=1` `onMounted` logic.
+- **Menu** "Zelf iets toevoegen" → `/activities/new`.
+- i18n: added `activitiesList.editHeading` ("Activiteit bewerken").
 
 ### Chunk 5 — Privacy demotion + the "iets voor nu" surfacing decision
 
@@ -230,9 +266,15 @@ Make the split label honest: the add entry must land *on the form*, not the list
    nu" (default). Leave `suggest.heading` empty. Confirm with Noor whether the core
    should ever display the name visibly.
 
-**Review:**
-- *Why* demote privacy out of primary nav? (ND lens: it's a rarely-needed legal page,
-  not a relaxation action — it doesn't earn a primary slot)
+**Done in this chunk (2026-06-12):**
+- `AccountPage.vue` — added a quiet muted `router-link` to `/privacy` as a footer at the
+  bottom of `<main>` (`privacy.link`).
+- `PrivacyPage.vue` — **left on `router.back()`** (the noted exception): it's reachable
+  from both `/login` and the new account footer, so `router.back()` returns to the
+  correct origin; repointing to `/account` would bounce a login→privacy visitor through
+  the auth guard.
+- "iets voor nu" surfacing: confirmed **aria-label only** (`nav.home` = "Naar iets voor
+  nu"); `suggest.heading` stays empty to keep the hub calm. No visible core title.
 
 ### Chunk 6 — Copy pass (`src/locales/nl.json`)
 
@@ -295,7 +337,8 @@ routes, matching "drie vragen, een idee").
 - `src/assets/base.css` — add `.uw-home-btn`; bump `.uw-menu-btn` 34px → 40px
 - `src/pages/ChatPage.vue` — nudge reset-button offset `right-[68px]` → `right-[70px]`
 - `src/App.vue` — `showHome` gate + `<HomeButton>`
-- `src/components/PageHeader.vue` — remove `back` prop/emit (Chunk 2 decision)
+- `src/components/PageHeader.vue` — added `wordmark` prop (Chunk 1 follow-up); `back` prop kept (still used by PrivacyPage + dormant Stress/Counterbalance)
+- `src/pages/SuggestFromListPage.vue`, `AccountPage.vue`, `ChatPage.vue` — removed redundant header leave-back
 - `src/components/UserMenu.vue` — rewrite `<nav>`, new links array
 - `src/pages/QuickSuggestPage.vue` — drop header chevron, fix step-1 back
 - `src/pages/SuggestFromListPage.vue` — drop header back
