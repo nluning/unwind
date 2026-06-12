@@ -1,16 +1,6 @@
-/**
- * Prompt + parsing for the analyse-fit route (POST /activities/suggest-from-list).
- *
- * The AI looks at what the user has added + picked most + what the app knows
- * about them, and proposes a small, bounded set of NEW activities calibrated to
- * their register. Unlike chat, there is no conversation and the AI never asks
- * questions — it receives structured context and replies with JSON only.
- * Unlike onboarding, it generates a handful (not 10–15) and no memories.
- */
+
 import { CREATIVITY_GUIDANCE } from './creativityGuidance.js'
 
-// How many suggestions the route returns. Bounded on purpose (giftedness lens:
-// "drie activiteiten" is right; don't grow a "toon er meer").
 export const SUGGESTION_COUNT = 3
 
 export interface GeneratedActivity {
@@ -62,16 +52,11 @@ Return ONLY this JSON object, no other text:
 \`\`\``
 
 export interface SuggestFromListContext {
-    addedActivities: string[]    // titles of the user's own activities
-    frequentlyAccepted: string[] // titles the user picks most often
-    memories: string[]           // what the app knows about the user
+    addedActivities: string[]
+    frequentlyAccepted: string[]
+    memories: string[]
 }
 
-/**
- * Build the user message from the user's register. With no signal at all
- * (a fresh user), returns a cold-start instruction so the AI still produces
- * broadly-appealing, low-effort suggestions rather than nothing.
- */
 export function buildSuggestFromListUserMessage(context: SuggestFromListContext): string {
     const lines: string[] = []
 
@@ -92,7 +77,7 @@ export function buildSuggestFromListUserMessage(context: SuggestFromListContext)
     return lines.join('\n')
 }
 
-function isValidActivity(activity: unknown): activity is GeneratedActivity {
+export function isValidActivity(activity: unknown): activity is GeneratedActivity {
     if (typeof activity !== 'object' || activity === null) return false
     const candidate = activity as Record<string, unknown>
     return (
@@ -107,11 +92,6 @@ function isValidActivity(activity: unknown): activity is GeneratedActivity {
     )
 }
 
-/**
- * Extract and validate activities from the model response. Returns up to
- * SUGGESTION_COUNT valid activities (so a model that over-generates is capped),
- * or null if no JSON could be parsed at all.
- */
 export function parseSuggestionsResponse(text: string): GeneratedActivity[] | null {
     const jsonMatch = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*\})/)
     if (!jsonMatch) return null

@@ -16,7 +16,7 @@ Leave a hook (no UI) for a future user setting to re-enable them. Don't build th
 
 ### 2. Three add-options under *Jouw activiteiten*
 - **Self-add** — *"Iets toevoegen aan mijn lijst"*. Form-based (title + whatever fields we settle on). User-driven, calm-moment use.
-- **Tappable Q&A → one suggestion** — *"Vier vragen, een suggestie"*. AI asks four concrete (not emotional) questions via tap-targets only, AI looks at what the user added + what they've picked most often, generates **one** activity. User can do it now and/or add to their list.
+- **Tappable Q&A → one suggestion** — *"Drie vragen, een suggestie"*. AI asks three concrete (not emotional) questions via tap-targets only, AI looks at what the user added + what they've picked most often, generates **one** activity. User can do it now and/or add to their list.
 - **Analyse-fit → three suggestions** — *"Suggesties op basis van mijn lijst"*. AI looks at what the user added + what they've picked most often, generates three new activities, calibrated to their register. User picks which (if any) to add.
 
 Copy decisions: descriptive over imperative (no *"voeg toe"*, no *"verzin"*), no urgency framing (no *"nu"* vs. *"rustig moment"*), provenance signalled in the label of the analyse-fit route.
@@ -32,7 +32,7 @@ Persistent self-description / preferences / specifics (water, fineliners, podcas
 - Complements but does not replace the tappable Q&A. Different moments: this is calm-moment self-description; the Q&A is in-the-moment context.
 
 ### 5. Tappable-only on the Q&A route
-No free-text input anywhere in the depletion-moment flow. Concrete questions only (*"binnen of buiten nu?"*, *"kort of lang?"*), no emotional ones (*"hoe voel je je?"*).
+No free-text input anywhere in the depletion-moment flow. Concrete questions only (*"binnen of buiten nu?"*, *"alleen of met iemand?"*), no emotional ones (*"hoe voel je je?"*). Dropped *"kort of lang?"* (2026-06-12): it's the only question that asks the depleted user to *forecast* a duration rather than report current state — ND time-blindness makes that the one cognitively-loaded tap in an otherwise reflexive flow. Short/low-effort is the safe default for a depletion moment anyway, and `rustig/actief` + accept-history already proxy capacity.
 
 ### 6. Creativity calibration in the AI prompt
 Drop *"be creative / think out of the box"* as a default instruction. Anchor generated activities to the user's existing register (added activities + accepted history). Mix familiar / adjacent / divergent, default mix tilted toward familiar/adjacent unless history signals otherwise. See addendum on report 007.
