@@ -1,6 +1,6 @@
 <template>
   <PageShell>
-    <PageHeader back @back="$router.back()" />
+    <PageHeader />
 
     <!-- Question phase — three concrete tap-questions, tap-only (plan 21 §5). -->
     <template v-if="phase === 'questions'">
@@ -96,6 +96,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useSuggestFromAnswers, type QuickAnswers } from '../composables/useSuggestFromAnswers.js'
 import type { AiActivity } from '../utils/parseActivity.js'
@@ -111,6 +112,7 @@ import SuggestionAccepted from '../components/SuggestionAccepted.vue'
 import CheckIcon from '../components/icons/CheckIcon.vue'
 
 const { t } = useI18n()
+const router = useRouter()
 const { suggestion, failed, rateLimitMessage, generate, save } = useSuggestFromAnswers()
 
 const QUESTION_COUNT = 3
@@ -189,9 +191,10 @@ function advance() {
 function handleBack() {
   if (step.value > 1) {
     step.value -= 1
-  } else if (window.history.length > 1) {
-    // Q1 back leaves the flow.
-    history.back()
+  } else {
+    // Q1 back leaves the flow → return to the hub by name, never history-based
+    // (a cold-launched standalone PWA can trap on history.back()).
+    router.push({ name: 'suggest' })
   }
 }
 

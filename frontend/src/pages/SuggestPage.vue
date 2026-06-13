@@ -3,7 +3,7 @@
       <WelcomeCard v-if="showWelcome" @dismiss="dismiss" />
 
       <template v-else>
-        <PageHeader />
+        <PageHeader wordmark />
 
         <p class="uw-prompt">{{ $t('suggest.heading') }}</p>
 
