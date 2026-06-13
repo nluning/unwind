@@ -88,10 +88,12 @@ export function buildSystemPrompt(options: PromptOptions): string {
     const { messageCount, stressLevel, userContext } = options
     const sections: string[] = []
 
-    // User memories (from onboarding / AI-learned / user-added)
+    // User memories (from onboarding / AI-learned / user-added). These are the
+    // user's own notes about themselves and their preferences, often written in
+    // the first person ("ik houd van muziek"), so frame them as self-reported.
     if (userContext.memories.length > 0) {
         sections.push(
-            'What you know about this user:\n' +
+            'The user has told you the following about themselves and what they like, in their own words:\n' +
             userContext.memories.map(fact => `- ${fact}`).join('\n')
         )
     }
