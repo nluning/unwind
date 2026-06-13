@@ -52,7 +52,6 @@
   },
   "nav": {
     "back": "Terug",
-    "home": "Naar iets voor nu",
     "suggest": "Verras me",
     "stress": "Ik ben op",
     "counterbalance": "Wat heb ik nodig?",
@@ -142,7 +141,7 @@
   },
   "suggestFromList": {
     "heading": "Suggesties op basis van je lijst",
-    "intro": "Unwind kijkt naar wat je het vaakst kiest, wat je zelf hebt toegevoegd en je voorkeuren, en stelt drie nieuwe activiteiten voor. Je kan je voorkeuren aanpassen onder 'Herinneringen over jou' op de accountpagina.",
+    "intro": "Unwind kijkt naar wat je het vaakst kiest, wat je zelf hebt toegevoegd en je voorkeuren, en stelt drie nieuwe activiteiten voor. Je kan je voorkeuren aanpassen onder 'Wat Unwind over jou onthoudt' op de accountpagina.",
     "generate": "Toon suggesties",
     "add": "Toevoegen aan mijn lijst",
     "added": "Toegevoegd",
@@ -155,7 +154,7 @@
     "anonymousLabel": "Je gebruikt Unwind anoniem op dit apparaat.",
     "anonymousHint": "Maak een account om je activiteiten en herinneringen op andere apparaten terug te vinden.",
     "createAccount": "Maak een account",
-    "memorySectionHeading": "Herinneringen over jou",
+    "memorySectionHeading": "Wat Unwind over jou onthoudt",
     "memorySectionIntro": "Unwind gebruikt deze info om suggesties op jou af te stemmen. Je kunt deze herinneringen zelf toevoegen en verwijderen.",
     "memoryEnabledLabel": "Herinneringen opslaan",
     "memoryDisableWarning": "Als je dit uitzet, worden al je opgeslagen herinneringen verwijderd. Dit kan niet ongedaan worden.",
@@ -164,6 +163,7 @@
     "memoryDisabled": "Herinneringen staan uit.",
     "memoryEmpty": "Er zijn nog geen herinneringen.",
     "memoryAddPlaceholder": "Schrijf iets wat Unwind over jou mag weten",
+    "memoryAddExamples": "Bijvoorbeeld: ‘Ik houd van muziek’, ‘Ik vind het leuk om iets samen met mijn kinderen van vijf en zeven te doen’ of ‘Ik houd van natuur, maar woon in de stad’.",
     "memoryAddButton": "Toevoegen",
     "memoryAddError": "Kon niet opslaan. Probeer opnieuw.",
     "memoryDeleteButton": "Verwijderen",

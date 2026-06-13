@@ -1,6 +1,9 @@
 # Navigation / menu restructure — implementation plan
 
-**Status: implementation plan, derived from `docs/review/reports/009-navigation-menu-restructure.md` (2026-06-12).**
+**Status: COMPLETE (2026-06-13).** All chunks (1–6) built and committed; Chunk 7's
+automated gate passes (`lint:check`, `vue-tsc --noEmit`, `build` all clean). Only the
+manual UX walkthrough (Chunk 7.2) remains optional. Derived from
+`docs/review/reports/009-navigation-menu-restructure.md` (2026-06-12).**
 **Reads on top of:** report 009 (the design + persona verdicts), plan 20/21 (the
 *Jouw activiteiten* restructure this builds on), ADR-012 (device-first auth /
 menu-as-opt-in). Supersedes the menu shape locked in plan 21 §4 where it conflicts.
@@ -297,6 +300,17 @@ routes, matching "drie vragen, een idee").
 > Report 009 (newer, 2026-06-12) and its persona panel explicitly endorse the new
 > wording, so 009 governs — but call this out in the commit so the divergence from
 > plan 21 is intentional and visible.
+
+**Done (2026-06-13):**
+- Menu copy landed in Chunk 3. Final wording kept **sentence-case with the natural
+  Dutch "één"** rather than the all-lowercase draft in the table above — i.e.
+  `quickSuggest` = "Drie vragen, één idee", `fromList` = "Ideeën op basis van mijn
+  lijst", `selfAdd` = "Zelf iets toevoegen". The lowercase styling in this table was a
+  draft intent; the capitalised forms read better and are the shipped strings.
+- `nav.home` ("Naar iets voor nu") was **removed**; the home button's `aria-label`
+  now reuses `nav.suggest` = "Verras me" (Noor's call, 2026-06-13). The "iets voor nu"
+  phrase therefore no longer appears anywhere — the calm hub stays unlabelled, as
+  intended.
 
 **Review:**
 - *Why* keep `fromList` plural? (it returns 3 ideas — an earlier singular phrasing was

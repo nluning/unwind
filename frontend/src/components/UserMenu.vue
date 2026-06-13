@@ -114,8 +114,8 @@ onBeforeUnmount(() => {
 })
 
 const themes: { id: ColorScheme; swatch: string }[] = [
-  { id: 'warm',    swatch: '#ae7c6d' },
   { id: 'calm',    swatch: '#6d8c94' },
+  { id: 'warm',    swatch: '#db8460' },
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 

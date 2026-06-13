@@ -1,7 +1,7 @@
 <template>
   <button
     class="uw-home-btn fixed top-[18px] left-[22px] z-20"
-    :aria-label="$t('nav.home')"
+    :aria-label="$t('nav.suggest')"
     @click="goHome"
   >
     <HomeIcon :size="18" />

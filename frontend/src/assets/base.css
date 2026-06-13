@@ -153,7 +153,7 @@ button {
 
 /* Type */
 :root {
-  --uw-font-serif: "Fraunces", ui-serif, Georgia, serif;
+  --uw-font-serif: "Newsreader", ui-serif, Georgia, serif;
   --uw-font-sans:  "Inter", system-ui, -apple-system, Segoe UI, sans-serif;
 }
 
