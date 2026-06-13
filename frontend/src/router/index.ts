@@ -21,13 +21,17 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      // ORPHANED by plan 20 §1 — the "Verzin activiteiten voor me" menu entry
+      // that linked here is replaced by the three "Jouw activiteiten" add-options.
+      // The page is intentionally kept (not deleted): Phase 5's tappable Q&A reuses
+      // its pill components (OnboardingOptionPills / OnboardingStepHeader /
+      // OnboardingStepActions). Reachable by URL, not by UI.
       path: '/onboarding',
       name: 'onboarding',
       component: () => import('../pages/OnboardingPage.vue'),
       // `meta.onboarding` is still read by App.vue to hide the UserMenu
       // chrome on this page. The router guard no longer reads it
-      // (onboarding stops being a gate in plan/17). Revisit chrome
-      // handling when Phase 3.2 wires this page up as a menu action.
+      // (onboarding stops being a gate in plan/17).
       meta: { onboarding: true },
     },
     {
@@ -35,6 +39,11 @@ const router = createRouter({
       name: 'suggest',
       component: () => import('../pages/SuggestPage.vue'),
     },
+    // ORPHANED by plan 20 §1 — the other ontdekkingsroutes are dropped from the
+    // menu so "Verras me" is the only primary entry. Routes + pages are kept
+    // behind a no-UI hook for a future user setting to re-enable them (plan 20
+    // §1: "Leave a hook (no UI)... Don't build that setting now"). Reachable by
+    // URL, not by UI.
     {
       path: '/stress',
       name: 'stress',
@@ -55,6 +64,34 @@ const router = createRouter({
       name: 'activities',
       component: () => import('../pages/ActivitiesListPage.vue'),
     },
+    // Create + edit are their own routes (not an in-page mode) so navigating
+    // between the list and the form is always a real route change — a query
+    // param on /activities didn't remount the page. See plan 22 Chunk 4.
+    {
+      path: '/activities/new',
+      name: 'activity-new',
+      component: () => import('../pages/ActivityFormPage.vue'),
+    },
+    {
+      path: '/activities/:id/edit',
+      name: 'activity-edit',
+      component: () => import('../pages/ActivityFormPage.vue'),
+    },
+    {
+      path: '/suggest-from-list',
+      name: 'suggest-from-list',
+      component: () => import('../pages/SuggestFromListPage.vue'),
+    },
+    {
+      path: '/quick-suggest',
+      name: 'quick-suggest',
+      component: () => import('../pages/QuickSuggestPage.vue'),
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('../pages/AccountPage.vue'),
+    },
   ],
 })
 
@@ -67,18 +104,10 @@ router.beforeEach(async (to) => {
   const { user, initialize } = useAuth()
   await initialize()
 
-  // An already-logged-in EMAIL user shouldn't see the login form again
-  // — they should log out first. Anonymous users (email === null) pass
-  // through because /login also hosts the upgrade flow they reach via
-  // the menu's "Maak een account" entry.
   if (to.name === 'login' && user.value?.email) {
     return { name: 'suggest' }
   }
 
-  // A user who explicitly logged out and then reloads has no session
-  // and was intentionally NOT re-authed by fetchMe (see useAuth). Send
-  // them to /login instead of letting them land on a protected page
-  // that will just 401 on every fetch.
   if (!user.value && isExplicitlyLoggedOut() && to.name !== 'login' && to.name !== 'privacy') {
     return { name: 'login' }
   }

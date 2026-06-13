@@ -5,7 +5,12 @@ import { requireAuth } from '../middleware/auth.js'
 async function sendAuthResponse(
   fastify: FastifyInstance,
   reply: FastifyReply,
-  user: { id: string; email: string | null; onboarding_completed_at: Date | null },
+  user: {
+    id: string
+    email: string | null
+    onboarding_completed_at: Date | null
+    memory_enabled: boolean
+  },
   status: number
 ) {
   const token = generateSessionToken()
@@ -18,6 +23,7 @@ async function sendAuthResponse(
       id: user.id,
       email: user.email,
       onboarding_completed_at: user.onboarding_completed_at,
+      memory_enabled: user.memory_enabled,
     })
 }
 
@@ -56,7 +62,7 @@ async function authRoutes(fastify: FastifyInstance) {
 
       const result = await fastify.pg.query(
         `INSERT INTO users (email, password_hash) VALUES ($1, $2)
-         RETURNING id, email, onboarding_completed_at`,
+         RETURNING id, email, onboarding_completed_at, memory_enabled`,
         [email, passwordHash]
       )
 
@@ -85,7 +91,7 @@ async function authRoutes(fastify: FastifyInstance) {
       const { email, password } = request.body
 
       const result = await fastify.pg.query(
-        'SELECT id, email, password_hash, onboarding_completed_at FROM users WHERE email = $1',
+        'SELECT id, email, password_hash, onboarding_completed_at, memory_enabled FROM users WHERE email = $1',
         [email]
       )
 
@@ -132,6 +138,61 @@ async function authRoutes(fastify: FastifyInstance) {
     }
   )
 
+  // --- PATCH /me ---
+  //
+  // Currently only flips memory_enabled. When disabling, the existing
+  // user_memories rows are wiped in the same transaction — keeping the
+  // flag and storage in sync with what "off" means to the user.
+
+  const patchMeSchema = {
+    body: {
+      type: 'object',
+      required: ['memory_enabled'],
+      properties: {
+        memory_enabled: { type: 'boolean' },
+      },
+    },
+  } as const
+
+  fastify.patch<{ Body: { memory_enabled: boolean } }>(
+    '/me',
+    { schema: patchMeSchema, preHandler: requireAuth },
+    async (request, reply) => {
+      const userId = request.user!.id
+      const { memory_enabled } = request.body
+
+      if (memory_enabled) {
+        await fastify.pg.query(
+          'UPDATE users SET memory_enabled = true WHERE id = $1',
+          [userId]
+        )
+        reply.send({ memory_enabled: true })
+        return
+      }
+
+      const client = await fastify.pg.connect()
+      try {
+        await client.query('BEGIN')
+        await client.query(
+          'UPDATE users SET memory_enabled = false WHERE id = $1',
+          [userId]
+        )
+        await client.query(
+          'DELETE FROM user_memories WHERE user_id = $1',
+          [userId]
+        )
+        await client.query('COMMIT')
+      } catch (err) {
+        await client.query('ROLLBACK')
+        throw err
+      } finally {
+        client.release()
+      }
+
+      reply.send({ memory_enabled: false })
+    }
+  )
+
   // --- DELETE /me ---
 
   fastify.delete(
@@ -169,11 +230,16 @@ async function authRoutes(fastify: FastifyInstance) {
 
       // Check if this device already has a user
       const existing = await fastify.pg.query(
-        'SELECT id, email, onboarding_completed_at FROM users WHERE device_id = $1',
+        'SELECT id, email, onboarding_completed_at, memory_enabled FROM users WHERE device_id = $1',
         [device_id]
       )
 
-      let user: { id: string; email: string | null; onboarding_completed_at: Date | null }
+      let user: {
+        id: string
+        email: string | null
+        onboarding_completed_at: Date | null
+        memory_enabled: boolean
+      }
 
       if (existing.rows.length > 0) {
         user = existing.rows[0]
@@ -181,7 +247,7 @@ async function authRoutes(fastify: FastifyInstance) {
         // Create an anonymous user (no email, no password)
         const result = await fastify.pg.query(
           `INSERT INTO users (device_id) VALUES ($1)
-           RETURNING id, email, onboarding_completed_at`,
+           RETURNING id, email, onboarding_completed_at, memory_enabled`,
           [device_id]
         )
         user = result.rows[0]
@@ -213,7 +279,9 @@ async function authRoutes(fastify: FastifyInstance) {
 
       try {
         const result = await fastify.pg.query(
-          'UPDATE users SET email = $1, password_hash = $2 WHERE id = $3 AND email IS NULL RETURNING id, email',
+          `UPDATE users SET email = $1, password_hash = $2, device_id = NULL
+           WHERE id = $3 AND email IS NULL
+           RETURNING id, email, onboarding_completed_at, memory_enabled`,
           [request.body.email, passwordHash, userId]
         )
 

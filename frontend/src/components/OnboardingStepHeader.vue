@@ -1,7 +1,7 @@
 <template>
   <div class="px-7 pt-14 flex flex-col gap-3">
     <span class="font-serif text-[17px] text-uw-ink-mute">
-      {{ $t('onboarding.questionOf', { n: questionNumber, total: 5 }) }}
+      {{ $t('onboarding.questionOf', { n: questionNumber, total }) }}
     </span>
     <h2
       class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink"
@@ -15,8 +15,12 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  questionNumber: number
-  title: string
-}>()
+withDefaults(
+  defineProps<{
+    questionNumber: number
+    title: string
+    total?: number
+  }>(),
+  { total: 5 }
+)
 </script>

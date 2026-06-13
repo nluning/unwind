@@ -9,6 +9,7 @@
         id: string
         email: string | null
         onboarding_completed_at: Date | null
+        memory_enabled: boolean
       }
     }
   }
