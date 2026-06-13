@@ -1,7 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 
 interface RateLimitOptions {
-    endpoint: 'chat' | 'onboarding'
+    endpoint: 'chat' | 'onboarding' | 'suggest_from_list' | 'suggest_from_answers'
     maxRequests: number
     window: 'day' | 'week' | 'total'
 }
@@ -37,12 +37,14 @@ export function createRateLimiter(options: RateLimitOptions) {
         )
 
         if (result.rowCount === 0) {
-            reply.status(429).send({
-                error: endpoint === 'chat'
-                // TO DO: check if translation is needed
-                    ? 'Je hebt je limiet voor vandaag bereikt. Probeer het morgen weer.'
-                    : 'Je hebt je limiet voor deze week bereikt. Probeer het over een paar dagen weer.',
-            })
+            // Message keyed on the window, not the endpoint, so every limiter
+            // gives an accurate "try again when" regardless of which route it guards.
+            const limitMessage =
+                window === 'day' ? 'Je hebt je limiet voor vandaag bereikt. Probeer het morgen weer.'
+                : window === 'week' ? 'Je hebt je limiet voor deze week bereikt. Probeer het over een paar dagen weer.'
+                : 'Je hebt je limiet bereikt.'
+
+            reply.status(429).send({ error: limitMessage })
             return reply
         }
     }

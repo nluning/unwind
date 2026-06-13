@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import UserMenu from './components/UserMenu.vue'
+import HomeButton from './components/HomeButton.vue'
 import MenuHintTooltip from './components/MenuHintTooltip.vue'
 import { useWelcome } from './composables/useWelcome.js'
 
@@ -13,12 +14,17 @@ const showChrome = computed(
     route.meta.onboarding !== true &&
     isWelcomed.value
 )
+// The hub (/suggest) is reached via the home button, so it never shows one
+// itself — there it's redundant. Everywhere else the chrome is visible, it's
+// the sole route back.
+const showHome = computed(() => showChrome.value && route.name !== 'suggest')
 </script>
 
 <template>
   <div>
     <RouterView />
     <UserMenu v-if="showChrome" />
+    <HomeButton v-if="showHome" />
     <MenuHintTooltip v-if="showChrome && showMenuHint" />
   </div>
 </template>

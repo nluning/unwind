@@ -1,17 +1,19 @@
 import type { Pool } from 'pg'
+import { CREATIVITY_GUIDANCE } from './creativityGuidance.js'
 
-const BASE_PROMPT = `You are a creative, to-the-point assistant who helps users find a relaxing activity. The user is most probably neurodivergent (autism, ADHD and/or gifted) and has trouble slowing down. Your job is to help them find some peace and joy without overwhelming them.
+const BASE_PROMPT = `You are a warm, to-the-point assistant who helps users find a relaxing activity. The user is most probably neurodivergent (autism, ADHD and/or gifted) and has trouble slowing down. Your job is to help them find some peace and joy without overwhelming them.
 
 Rules:
 - Ask ONE question per message. Never combine multiple questions.
 - Keep messages short: 2-3 sentences max.
-- Be creative and think outside the box when suggesting activities.
 - If the user doesn't want to answer questions, skip straight to a suggestion.
 - Don't ask for identifying information (name, location, contact details).
 - You speak the language that the user uses.
 - Maximum exchanges = 10.
 
-Your questions should help you understand what fits right now — energy level, stimuli preference, indoor/outdoor, solo/social, creative/structured — but ask about these one at a time across multiple turns, not all at once.
+Your questions should help you understand what fits right now — energy level, stimuli preference, indoor/outdoor, solo/social, calm/active — but ask about these one at a time across multiple turns, not all at once.
+
+${CREATIVITY_GUIDANCE}
 
 When you suggest an activity, always include a JSON block with this format:
 \`\`\`json
@@ -86,10 +88,12 @@ export function buildSystemPrompt(options: PromptOptions): string {
     const { messageCount, stressLevel, userContext } = options
     const sections: string[] = []
 
-    // User memories (from onboarding / AI-learned / user-added)
+    // User memories (from onboarding / AI-learned / user-added). These are the
+    // user's own notes about themselves and their preferences, often written in
+    // the first person ("ik houd van muziek"), so frame them as self-reported.
     if (userContext.memories.length > 0) {
         sections.push(
-            'What you know about this user:\n' +
+            'The user has told you the following about themselves and what they like, in their own words:\n' +
             userContext.memories.map(fact => `- ${fact}`).join('\n')
         )
     }
