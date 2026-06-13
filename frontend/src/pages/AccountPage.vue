@@ -124,6 +124,9 @@
                 maxlength="500"
                 class="uw-input resize-none"
               />
+              <p class="text-sm text-uw-ink-mute m-0">
+                {{ $t('account.memoryAddExamples') }}
+              </p>
               <p
                 v-if="addError"
                 class="text-sm m-0"
