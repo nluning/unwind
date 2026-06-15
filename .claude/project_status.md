@@ -46,6 +46,42 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Phase 0.4 (bug fixes) still deferred.
 - Next: Stage 6 deployment is complete. Open follow-up: GHCR retention policy for old SHA tags (no automation yet).
 
+**Error logging hardening (2026-06-15):**
+- Chat (Mode 4: `/chat` + `/chat/stream`) and onboarding (`/onboarding/generate`)
+  are now **dead code** — both files marked `// DEAD CODE` at the top. Device-first
+  auth dropped onboarding (ADR-012 / plan 17); chat retired. Left in tree with
+  explanatory comments rather than deleted.
+- Phase A — live AI parse failures now reach Sentry. `Sentry.captureMessage` added
+  at the two `generate.ts` parse-failure branches (suggest-from-list /
+  suggest-from-answers). Those return `null` (no throw), so they were a Sentry
+  blind spot — `setupFastifyErrorHandler` never sees a non-thrown failure. Stable
+  message strings (clean issue grouping), `endpoint` tag, raw output (≤500 chars)
+  in `extra`. The dead chat/onboarding parse branches were left as comments
+  documenting the same blind-spot pattern instead of being instrumented.
+- Phase B — release tracking + frontend source maps:
+  - `release` = git SHA on both sides. Backend reads `SENTRY_RELEASE` (Dockerfile
+    ARG/ENV ← `deploy.yml` build-arg `github.sha`); frontend reads
+    `VITE_SENTRY_RELEASE` the same way. Lets Sentry attribute issues to a deploy.
+  - Backend user attribution: `Sentry.setUser({ id })` in `requireAuth` middleware
+    (id only — no email/PII; request-scoped via Sentry's per-request isolation).
+  - Explicit `sendDefaultPii: false` on both `Sentry.init` calls.
+  - Frontend source maps: `@sentry/vite-plugin` in `vite.config.ts`, **gated on
+    `SENTRY_AUTH_TOKEN`** so local/token-less builds skip upload entirely.
+    `build.sourcemap: true`; maps deleted after upload (not served by nginx).
+    Token passed as a **BuildKit secret mount** (`RUN --mount=type=secret`), not a
+    build-arg, so it never lands in an image layer or the GHA build cache — matters
+    because the repo + GHCR images are public. New GitHub secret `SENTRY_AUTH_TOKEN`
+    is an **org auth token** (org `script-fs`, project `unwind-frontend`); org +
+    project slugs are hardcoded in `vite.config.ts` (non-secret).
+  - Skipped by design: a `beforeSend` scrubber (chat/onboarding going dead removed
+    the sensitive-content surface) and a 4xx noise filter (Sentry's Fastify
+    integration defaults to capturing 5xx only).
+  - Backend source maps (project `node`) intentionally NOT done — compiled-TS stack
+    traces are readable enough at ~100 users.
+- Verify after the next `main` deploy: Sentry **Releases** shows the SHA with
+  artifacts attached, and a frontend error resolves to `.vue`/`.ts` frames rather
+  than minified bundle positions. Minified frames almost always = release mismatch.
+
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
 - Memory consent is opt-in (default false, asked during onboarding)

@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import Anthropic from '@anthropic-ai/sdk'
+import * as Sentry from '@sentry/node'
 import { requireAuth } from '../middleware/auth.js'
 import { createRateLimiter } from '../middleware/rateLimit.js'
 import { getUserContext } from './buildSystemPrompt.js'
@@ -73,6 +74,11 @@ async function generateRoutes(fastify: FastifyInstance) {
             const activities = parseSuggestionsResponse(text)
             if (!activities || activities.length === 0) {
                 fastify.log.error({ raw: text.slice(0, 500) }, 'Failed to parse suggest-from-list response')
+                Sentry.captureMessage('Failed to parse suggest-from-list response', {
+                    level: 'error',
+                    tags: { endpoint: 'suggest-from-list' },
+                    extra: { raw: text.slice(0, 500) },
+                })
                 reply.status(502).send({ error: 'Could not generate suggestions. Try again.' })
                 return
             }
@@ -90,10 +96,6 @@ async function generateRoutes(fastify: FastifyInstance) {
                 location: { type: 'string', enum: ['indoor', 'outdoor'] },
                 social: { type: 'string', enum: ['alone', 'with_others'] },
                 energy: { type: 'string', enum: ['calm', 'active'] },
-                // Titles already shown this session ("Andere suggestie"): the
-                // model gets the same answers + history every regenerate and
-                // otherwise converges on the same activity, so it needs to be
-                // told what to avoid.
                 exclude: { type: 'array', items: { type: 'string', maxLength: 200 }, maxItems: 20 },
             },
             additionalProperties: false,
@@ -153,6 +155,11 @@ async function generateRoutes(fastify: FastifyInstance) {
             const activity = parseSingleSuggestion(text)
             if (!activity) {
                 fastify.log.error({ raw: text.slice(0, 500) }, 'Failed to parse suggest-from-answers response')
+                Sentry.captureMessage('Failed to parse suggest-from-answers response', {
+                    level: 'error',
+                    tags: { endpoint: 'suggest-from-answers' },
+                    extra: { raw: text.slice(0, 500) },
+                })
                 reply.status(502).send({ error: 'Could not generate a suggestion. Try again.' })
                 return
             }
