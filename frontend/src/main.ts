@@ -25,6 +25,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         dsn: import.meta.env.VITE_SENTRY_DSN,
         tunnel: '/sentry-tunnel',
         environment: import.meta.env.MODE,
+        release: import.meta.env.VITE_SENTRY_RELEASE,
+        sendDefaultPii: false,
         tracesSampleRate: 0.1,
     })
 }

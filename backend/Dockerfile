@@ -46,6 +46,11 @@ COPY --from=builder /app/dist ./dist
 COPY src/db/migrations ./dist/db/migrations
 COPY src/db/seed.sql ./dist/db/seed.sql
 
+# Git SHA of this build, passed by CI. Read by instrument.ts as the Sentry
+# release so each issue can be traced to the deploy that introduced it.
+ARG SENTRY_RELEASE
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
+
 # Don't run the container as root. Create a non-root user and switch to it.
 # If the app gets compromised, the attacker has limited permissions.
 USER node

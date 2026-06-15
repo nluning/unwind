@@ -49,10 +49,6 @@
 
       <div class="h-px bg-uw-border-soft my-1" />
 
-      <!-- Flat, divider-grouped menu (report 009): the hub is reached via the
-           home button (not here), so there's no /suggest link; dividers carry the
-           grouping so there are no headers to re-parse; privacy lives on the
-           account page now. -->
       <nav :aria-label="$t('menu.label')">
         <template v-for="(group, groupIndex) in menuGroups" :key="groupIndex">
           <div
@@ -119,8 +115,6 @@ const themes: { id: ColorScheme; swatch: string }[] = [
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 
-// Grouped for divider placement: your list (view vs. add, split so each label
-// tells the truth) · AI ideas · account.
 const menuGroups: { to: RouteLocationRaw; label: string }[][] = [
   [
     { to: '/activities',     label: 'jouwActiviteiten.viewList' },
