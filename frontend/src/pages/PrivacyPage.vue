@@ -34,14 +34,10 @@
         <p>{{ $t('privacy.controlExplanation') }}</p>
         <ul class="list-disc pl-5 flex flex-col gap-1">
           <li>{{ $t('privacy.controlMemoriesOff') }}</li>
+          <li>{{ $t('privacy.controlAiUse') }}</li>
           <li>{{ $t('privacy.controlDeleteMemories') }}</li>
           <li>{{ $t('privacy.controlDeleteAccount') }}</li>
         </ul>
-      </section>
-
-      <section class="flex flex-col gap-3 text-sm text-uw-ink-soft leading-relaxed">
-        <h2 class="text-base text-uw-ink m-0">{{ $t('privacy.chatDataHeading') }}</h2>
-        <p>{{ $t('privacy.chatDataExplanation') }}</p>
       </section>
 
       <section class="flex flex-col gap-3 text-sm text-uw-ink-soft leading-relaxed">
