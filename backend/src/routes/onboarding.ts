@@ -1,3 +1,5 @@
+// DEAD CODE
+
 import type { FastifyInstance } from 'fastify'
 import Anthropic from '@anthropic-ai/sdk'
 import { requireAuth } from '../middleware/auth.js'
@@ -162,6 +164,10 @@ async function onboardingRoutes(fastify: FastifyInstance) {
             const result = parseOnboardingResponse(text)
             if (!result || result.activities.length === 0) {
                 fastify.log.error({ raw: text.slice(0, 500) }, 'Failed to parse onboarding response')
+                // NOTE: onboarding is dead code. If revived, add a
+                // Sentry.captureMessage here — a parse failure returns null
+                // (no thrown error), so it's a Sentry blind spot otherwise.
+                // (Same pattern as the live branches in generate.ts.)
                 reply.status(502).send({ error: 'Could not generate activities. Try again.' })
                 return
             }

@@ -1,4 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
+import * as Sentry from '@sentry/node'
 import { validateSession } from '../auth.js'
 
 export async function requireAuth(request: FastifyRequest, reply: FastifyReply) {
@@ -17,4 +18,6 @@ export async function requireAuth(request: FastifyRequest, reply: FastifyReply) 
   }
 
   request.user = result.user
+
+  Sentry.setUser({ id: result.user.id })
 }

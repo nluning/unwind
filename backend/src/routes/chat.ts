@@ -1,3 +1,5 @@
+// DEAD CODE
+
 import type { FastifyInstance } from 'fastify'
 import Anthropic from '@anthropic-ai/sdk'
 import { requireAuth } from '../middleware/auth.js'
@@ -142,6 +144,13 @@ async function chatRoutes(fastify: FastifyInstance) {
 
                 reply.raw.end()
             } catch (err: any) {
+                // NOTE: chat is currently dead code. If revived, this catch is a
+                // Sentry blind spot: by here we've already called reply.raw.writeHead(200),
+                // so the route resolves normally and neither the Fastify error handler
+                // nor Sentry.setupFastifyErrorHandler ever sees the error. Capture
+                // explicitly with Sentry.captureException(err) before writing the SSE
+                // error event. (Same pattern as the parse-failure branches in
+                // generate.ts / onboarding.ts.)
                 if (err?.status === 429) {
                     reply.raw.write(`data: ${JSON.stringify({ type: 'error', error: 'AI service is busy. Try again in a moment.' })}\n\n`)
                 } else {
