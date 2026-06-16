@@ -27,7 +27,7 @@ description: Testing patterns for Vue frontend components and composables using 
 ## Core Philosophy
 
 **Test behavior, not implementation.** Every test should answer "Why does this
-feature exist?" not "What does the code do?"
+feature/logic exist?" not "What does the code do?"
 
 ### The Behavioral Testing Mindset
 
@@ -155,6 +155,9 @@ frontend/
 │   ├── components/
 │   │   └── ActivityCard.vue
 │   ├── composables/
+│   │   ├── __mocks__/
+│   │   │   ├── useActivities.ts
+│   │   │   └── useAuth.ts
 │   │   ├── useActivities.ts
 │   │   ├── useAuth.ts
 │   │   └── useSuggestionFlow.ts
@@ -187,80 +190,125 @@ frontend/
 ### Framework
 
 - **Vitest** with **Vue Test Utils**
-- `shallowMount` by default — only use `mount` when testing slot content or
-  child component interaction
+- `shallowMount` by default.
 
 ---
 
 ## Mock Organization
 
-Unwind has a simple architecture — keep mocks simple too. Two levels:
+Three levels, from global to local.
 
-### 1. Setup file (shared mocks)
+### 1. Setup file (global)
 
-`frontend/tests/setup.ts` — global config and mocks used across all tests:
+`frontend/tests/setup.ts` runs before every test file. It holds the RouterLink
+stub and the api-client safety net so no test can reach the network:
 
 ```typescript
 import { config } from '@vue/test-utils'
 import { vi } from 'vitest'
 
-// Stub router-link globally
 config.global.stubs = {
     RouterLink: true,
 }
 
-// Mock the API client — almost every test needs this
 vi.mock('../src/api/client', () => ({
     api: vi.fn(),
+    // Keep ApiError a real class — useSuggestFromAnswers, useSuggestFromList,
+    // and LoginPage do `instanceof ApiError`, which crashes if it's undefined.
+    ApiError: class ApiError extends Error {
+        constructor(
+            public status: number,
+            public body: unknown,
+        ) {
+            super(`API error ${status}`)
+        }
+    },
 }))
 ```
 
-### 2. Inline mocks (per test file)
+This mock is a **safety net, not a per-test tool**. Composable specs that drive
+a response import `api` and set it (see below). Component specs usually mock the
+composable and never reach `api` — the exceptions are `LoginPage` and
+`OnboardingPage`, which call `api` directly.
 
-Mock composables and modules at the top of each test file:
+### 2. Shared composable mocks (`__mocks__`)
 
-```typescript
-vi.mock('../../src/composables/useActivities')
-vi.mock('../../src/composables/useAuth')
-```
-
-**No `__mocks__` directories needed** — the codebase is small enough that
-inline mocks are clear and maintainable.
-
-### Mocking Composables
-
-Composables return objects with refs and functions. Mock them by returning the
-same shape:
+`useActivities` and `useAuth` are imported across most pages and have large
+return shapes; re-declaring them inline in every spec invites drift. Give each
+heavily-reused composable one mock in a `__mocks__` folder beside the source,
+exporting both an auto-mock default and a factory for overrides:
 
 ```typescript
-import { vi } from 'vitest'
+// src/composables/__mocks__/useActivities.ts
 import { ref, computed } from 'vue'
+import { vi } from 'vitest'
+import type { Activity, useActivities as Real } from '../useActivities'
 
-vi.mock('../../src/composables/useActivities', () => ({
-    useActivities: () => ({
-        activities: ref([]),
+export function makeUseActivitiesMock(
+    overrides: Partial<ReturnType<typeof Real>> = {},
+): ReturnType<typeof Real> {
+    return {
+        activities: ref<Activity[]>([]),
         loaded: ref(true),
+        error: ref(false),
         isEmpty: computed(() => false),
         fetchActivities: vi.fn(),
+        createActivity: vi.fn(),
+        updateActivity: vi.fn(),
+        deleteActivity: vi.fn(),
         filterByStress: vi.fn(() => []),
         filterByExcludedCategories: vi.fn(() => []),
         suggest: vi.fn(() => null),
         markAccepted: vi.fn(),
         resetSession: vi.fn(),
-        createActivity: vi.fn(),
-    }),
-}))
+        ...overrides,
+    }
+}
+
+export const useActivities = vi.fn(makeUseActivitiesMock)
 ```
 
-### Mocking the API Client
+Typing the factory against `ReturnType<typeof Real>` makes drift loud: add a
+field to the real composable and vue-tsc fails until the mock matches.
+
+A bare `vi.mock` with no factory auto-resolves this file. Override per test
+with the factory:
 
 ```typescript
-import { vi } from 'vitest'
+import { useActivities, makeUseActivitiesMock } from '../../src/composables/useActivities'
+import { ref } from 'vue'
+
+vi.mock('../../src/composables/useActivities')
+
+// default works out of the box; override one field when a test needs it:
+vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ loaded: ref(false) }))
+```
+
+Promote a composable to `__mocks__` only once it's reused — one mocked in a
+single spec can stay inline.
+
+### 3. Inline mocks (per test file)
+
+For a composable used in only one or two specs, mock inline at the top of the
+file:
+
+```typescript
+vi.mock('../../src/composables/useChat')
+```
+
+### Mocking the API Client (composable specs)
+
+```typescript
 import { api } from '../../src/api/client'
 
 // In a test:
 vi.mocked(api).mockResolvedValueOnce([{ id: '1', title: 'Walk' }])
 ```
+
+### Chat uses fetch directly, not the api client
+
+`useChat` streams over SSE and calls `fetch` directly, so the api-client mock
+does nothing for it. Mock `global.fetch` (and the stream reader) in chat specs.
 
 ---
 
@@ -268,7 +316,7 @@ vi.mocked(api).mockResolvedValueOnce([{ id: '1', title: 'Walk' }])
 
 - **One Act/Assert per test** — split multiple interactions into separate tests
 - **Always use explicit AAA comments** — `// Arrange`, `// Act`, `// Assert`
-- **Clear mocks inline** — use `mockClear()` in Arrange, not in `beforeEach`
+- **Clear mocks inline** — use `mockClear()` after assert, not in `beforeEach`
 - **No shared test variables** — write everything inline per test (no
   `defaultProps`, factory functions, etc.)
 - **No `wrapper.vm` access** — test rendered output, not internal state
