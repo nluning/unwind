@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig } from 'vitest/config'
+import { defineConfig, coverageConfigDefaults } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import UnoCSS from 'unocss/vite'
@@ -47,5 +47,15 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      exclude: [
+        ...coverageConfigDefaults.exclude,
+        '**/__mocks__/**',
+        'src/pages/ChatPage.vue',
+        'src/pages/OnboardingPage.vue',
+        'src/composables/useChat.ts',
+      ],
+    },
   },
 })

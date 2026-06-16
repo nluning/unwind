@@ -4,7 +4,7 @@
       {{ title }}
     </h1>
 
-    <p v-if="description" class="uw-body">
+    <p v-if="description" class="uw-body" data-test="description">
       {{ description }}
     </p>
 
@@ -22,14 +22,14 @@
     </div>
 
     <div class="uw-actions mt-auto">
-      <button class="uw-actions__primary" @click="$emit('accept')">
+      <button class="uw-actions__primary" data-test="accept" @click="$emit('accept')">
         <span class="uw-badge" aria-hidden="true">
           <CheckIcon />
         </span>
         {{ $t('activity.accept') }}
       </button>
 
-      <button class="uw-actions__secondary" @click="$emit('skip')">
+      <button class="uw-actions__secondary" data-test="skip" @click="$emit('skip')">
         {{ $t('activity.skip') }}
         <ForwardIcon />
       </button>

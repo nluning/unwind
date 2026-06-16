@@ -109,21 +109,20 @@ it('should display activity duration', ...)
 
 // GOOD: one test for the card's content
 it('should show complete activity information', () => {
-    // Arrange
-    const activity = {
-        title: 'Ga een rondje lopen',
-        description: 'Geen bestemming, gewoon lopen.',
-        suggested_duration: 15,
-        categories: ['Hands'],
-    }
-
-    // Act
-    const wrapper = shallowMount(ActivityCard, { props: { activity } })
+    // Arrange & Act
+    const wrapper = shallowMount(ActivityCard, {
+        props: {
+            // @ts-expect-error partial test activity — only the rendered fields matter
+            activity: {
+                title: 'Ga een rondje lopen',
+                description: 'Geen bestemming, gewoon lopen.',
+            },
+        },
+    })
 
     // Assert
     expect(wrapper.text()).toContain('Ga een rondje lopen')
-    expect(wrapper.text()).toContain('15')
-    expect(wrapper.text()).toContain('Handen')
+    expect(wrapper.text()).toContain('Geen bestemming, gewoon lopen.')
 })
 ```
 
@@ -192,6 +191,13 @@ frontend/
 - **Vitest** with **Vue Test Utils**
 - `shallowMount` by default.
 
+### Coverage
+
+`vitest run --coverage` uses the v8 provider. `__mocks__` files are excluded as
+test infra (`coverage.exclude` in `vite.config.ts`). Stubbed leaf components
+(e.g. `components/icons/`) read 0% because `shallowMount` never renders them —
+exclude them rather than chasing their coverage.
+
 ---
 
 ## Mock Organization
@@ -209,6 +215,12 @@ import { vi } from 'vitest'
 
 config.global.stubs = {
     RouterLink: true,
+}
+
+// $t passthrough so components render without the i18n plugin; specs that need
+// real translations install the plugin per-mount.
+config.global.mocks = {
+    $t: (key: string) => key,
 }
 
 vi.mock('../src/api/client', () => ({
@@ -317,8 +329,16 @@ does nothing for it. Mock `global.fetch` (and the stream reader) in chat specs.
 - **One Act/Assert per test** — split multiple interactions into separate tests
 - **Always use explicit AAA comments** — `// Arrange`, `// Act`, `// Assert`
 - **Clear mocks inline** — use `mockClear()` after assert, not in `beforeEach`
-- **No shared test variables** — write everything inline per test (no
-  `defaultProps`, factory functions, etc.)
+- **No shared test *data*** — write props, fixtures, and expected values inline
+  per test (no `defaultProps`, no data factories like `makeActivity`). Include
+  only the fields the test exercises and suppress the missing-field type error
+  with `// @ts-expect-error partial test activity` — it keeps the object minimal
+  and fails loudly if those fields ever stop being required. Dependency *mocks*
+  are the exception: shared mock factories live in `__mocks__` (see Mock
+  Organization) because they're infrastructure, not the subject under test.
+- **Select with `data-test`, not CSS classes** — styling classes
+  (`.uw-actions__primary`) change with restyles; `[data-test="accept"]` is a
+  stable hook tied to intent.
 - **No `wrapper.vm` access** — test rendered output, not internal state
 - **Prefer `mockReturnValue` over `mockImplementation`** — use
   `mockImplementation` only when return value depends on arguments
@@ -336,21 +356,15 @@ Every test uses AAA (Arrange-Act-Assert) with explicit comments:
 describe('ActivityCard', () => {
     it('should let parent handle accept action', () => {
         // Arrange
-        const activity = {
-            id: '1',
-            title: 'Walk',
-            description: null,
-            suggested_duration: 15,
-            min_stress_level: 1,
-            max_stress_level: 5,
-            source: 'base' as const,
-            times_skipped: 0,
-            categories: ['Hands'],
-        }
-        const wrapper = shallowMount(ActivityCard, { props: { activity } })
+        const wrapper = shallowMount(ActivityCard, {
+            props: {
+                // @ts-expect-error partial test activity — only the rendered fields matter
+                activity: { title: 'Walk' },
+            },
+        })
 
         // Act
-        wrapper.find('.btn-accept').trigger('click')
+        wrapper.find('[data-test="accept"]').trigger('click')
 
         // Assert
         expect(wrapper.emitted('accept')).toHaveLength(1)
@@ -370,11 +384,9 @@ beforeEach(() => {
 it('should fetch activities on mount', async () => {
     // Arrange
     const mockFetch = vi.fn()
-    vi.mocked(useActivities).mockReturnValue({
-        ...defaultActivitiesReturn,
-        fetchActivities: mockFetch,
-        loaded: ref(false),
-    })
+    vi.mocked(useActivities).mockReturnValue(
+        makeUseActivitiesMock({ fetchActivities: mockFetch, loaded: ref(false) }),
+    )
 
     // Act
     shallowMount(SuggestPage)
@@ -431,12 +443,12 @@ describe('useActivities', () => {
 
 ### Composables that call the API
 
-Mock the API client, not the composable:
+The api client is already mocked globally (`tests/setup.ts`) — don't re-`vi.mock`
+it here (a bare re-mock drops the real `ApiError`). Just import `api` and set its
+return value:
 
 ```typescript
 import { api } from '../../src/api/client'
-
-vi.mock('../../src/api/client')
 
 it('should populate activities from API', async () => {
     // Arrange
@@ -471,34 +483,31 @@ it('should show stress level selector before suggestions', () => {
     const wrapper = shallowMount(StressPage)
 
     // Assert
-    expect(wrapper.findAll('.stress-btn')).toHaveLength(5)
+    expect(wrapper.findAll('[data-test="stress-level"]')).toHaveLength(5)
 })
 ```
 
 ### i18n in Tests
 
-Mount with the i18n plugin or mock `$t`:
+`$t` is stubbed to a passthrough globally in `tests/setup.ts`, so component
+specs render without any per-test i18n wiring — assert on `data-test` hooks and
+mocked composable output, not on Dutch copy.
+
+Install the real plugin **only** when the unit under test *is* the translation —
+e.g. a composable-level spec like `useActivityTranslation.spec.ts` that needs
+real `useI18n()` lookups. Use a small controlled `messages` set, not the real
+`nl.json`, so the test checks lookup logic rather than copy:
 
 ```typescript
 import { createI18n } from 'vue-i18n'
-import nl from '../../src/locales/nl.json'
 
 const i18n = createI18n({
+    legacy: false,
     locale: 'nl',
-    messages: { nl },
+    messages: { nl: { activities: { 'even-wandelen': { title: 'Wandel even' } } } },
 })
 
-const wrapper = shallowMount(Component, {
-    global: { plugins: [i18n] },
-})
-```
-
-Or for simpler tests, stub the translation:
-
-```typescript
-config.global.mocks = {
-    $t: (key: string) => key,
-}
+mount(Host, { global: { plugins: [i18n] } })
 ```
 
 ---
@@ -513,9 +522,9 @@ expect(wrapper.emitted('skip')).toHaveLength(1)
 // Text content
 expect(wrapper.text()).toContain('Geen activiteiten gevonden')
 
-// Element existence
-expect(wrapper.find('.activity-card').exists()).toBe(true)
-expect(wrapper.find('.empty-state').exists()).toBe(false)
+// Element existence (select via data-test, not styling classes)
+expect(wrapper.find('[data-test="activity-card"]').exists()).toBe(true)
+expect(wrapper.find('[data-test="empty-state"]').exists()).toBe(false)
 
 // Mock calls
 expect(vi.mocked(api)).toHaveBeenCalledWith('/activities')
@@ -560,7 +569,7 @@ Do NOT flag these as issues — they are **intentional conventions**:
 | Do NOT suggest | Why it's intentional |
 |----------------|---------------------|
 | Extracting repeated setup to `beforeEach` | Tests must be self-contained — no shared state |
-| Shared helpers or factory functions | Each test walks through all steps inline |
+| Extracting inline test *data* to a factory | Test data is inline by design; only dependency *mocks* use factories, in `__mocks__` |
 | `describe.each` for similar tests | Fully written-out tests preferred over parameterized suites |
 | Reducing "duplication" across tests | Readability and independence over DRY |
 
@@ -584,5 +593,5 @@ Before finalizing tests:
 - [ ] No tests for "renders X" or "calls Y"
 - [ ] Tests would survive a refactor
 - [ ] AAA comments in every test
-- [ ] `npm run test` passes (if frontend test script exists)
-- [ ] TypeScript compiles (`npx vue-tsc --noEmit`)
+- [ ] `npm run test:unit` passes
+- [ ] TypeScript compiles (`npm run type-check`)
