@@ -35,6 +35,15 @@
     "high": "Heel gestrest",
     "noMatch": "Geen activiteiten voor dit stressniveau."
   },
+  "filter": {
+    "label": "Filter",
+    "title": "Filters",
+    "stress": "Hoe gespannen ben je?",
+    "categories": "Categorieën",
+    "clear": "Wissen",
+    "done": "Klaar",
+    "noMatch": "Geen activiteiten passen bij deze filters."
+  },
   "auth": {
     "login": "Inloggen",
     "register": "Registreren",
