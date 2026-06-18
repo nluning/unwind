@@ -1,6 +1,4 @@
-// @vitest-environment jsdom
-// useActivities transitively imports the router (api/client), which needs a
-// DOM. The filter helpers themselves are pure given an explicit `source`.
+// @vitest-environment jsdom — useActivities transitively imports the router, which needs a DOM.
 import { describe, it, expect } from 'vitest'
 import type { Activity } from '../types/activity.js'
 import { useActivities } from './useActivities.js'

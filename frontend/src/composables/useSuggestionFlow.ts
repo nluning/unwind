@@ -34,9 +34,7 @@ function getFlowState(mode: string): FlowState {
 export const stressLevelState = ref<number | null>(null)
 export const excludedCategoriesState = ref<string[]>([])
 
-// Filters for the Suggest hub (mode1). A null stress level and empty category
-// list both mean "no filter." Lifted to module scope like the picker state
-// above so the user's filter choices survive navigation away and back.
+// Suggest-hub (mode1) filters, module-scoped like the picker state above.
 export const suggestFilterStressState = ref<number | null>(null)
 export const suggestFilterCategoriesState = ref<string[]>([])
 

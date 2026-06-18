@@ -41,9 +41,7 @@ export function useActivities() {
     }
   }
 
-  // `source` defaults to the full list but can be passed an already-filtered
-  // array so filters compose (e.g. stress then category) without intersecting
-  // by id.
+  // `source` lets filters compose by chaining their results.
   function filterByStress(stressLevel: number, source: Activity[] = activities.value): Activity[] {
     return source.filter(
       (activity) => activity.min_stress_level <= stressLevel && activity.max_stress_level >= stressLevel

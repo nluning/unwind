@@ -25,16 +25,11 @@
 </template>
 
 <script setup lang="ts">
-// Presentational 1–5 stress picker shared by StressPage (pick-and-go) and the
-// Suggest filter panel (optional filter). With `clearable`, tapping the already
-// selected level clears it back to null — needed when the level is an optional
-// filter rather than a required choice.
 const props = withDefaults(
   defineProps<{
     modelValue: number | null
+    // When set, tapping the selected level clears it back to null.
     clearable?: boolean
-    // 'serif' keeps the large StressPage numerals; 'sans' matches the
-    // category pills in the filter panel.
     font?: 'serif' | 'sans'
   }>(),
   { clearable: false, font: 'serif' },
