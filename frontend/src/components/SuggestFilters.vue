@@ -1,7 +1,7 @@
 <template>
   <div
     ref="filterRef"
-    class="fixed top-[18px] left-[22px] z-20"
+    class="fixed top-[18px] left-1/2 -translate-x-1/2 z-20"
   >
     <button
       class="uw-menu-btn"
@@ -19,7 +19,7 @@
 
     <div
       v-if="open"
-      class="absolute left-0 top-[calc(100%+8px)] w-72 rounded-xl py-3 px-4 overflow-hidden backdrop-blur-[8px]"
+      class="absolute left-1/2 -translate-x-1/2 top-[calc(100%+8px)] w-72 rounded-xl py-3 px-4 overflow-hidden backdrop-blur-[8px]"
       :style="{
         background: 'var(--uw-card, rgba(255,255,255,0.95))',
         boxShadow: '0 10px 30px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.06)',
@@ -34,7 +34,7 @@
 
       <section class="mt-4">
         <p class="text-xs text-uw-ink-mute mb-2">{{ $t('filter.stress') }}</p>
-        <StressLevelPicker v-model="stressLevel" clearable />
+        <StressLevelPicker v-model="stressLevel" clearable font="sans" />
       </section>
 
       <section class="mt-5">
