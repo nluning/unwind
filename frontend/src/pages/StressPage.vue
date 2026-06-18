@@ -10,24 +10,7 @@
         <h1 class="uw-title pt-[80px] max-w-[260px]">{{ $t('stress.prompt') }}</h1>
 
         <div class="mt-10 px-[22px]">
-          <div class="flex justify-between items-center">
-            <button
-              v-for="level in 5"
-              :key="level"
-              class="w-12 h-12 rounded-full border border-uw-border bg-transparent text-uw-ink font-serif text-lg cursor-pointer transition-colors hover:bg-uw-chip"
-              :class="{
-                'bg-uw-primary text-uw-primary-fg border-transparent':
-                  stressLevel === level,
-              }"
-              @click="stressLevel = level"
-            >
-              {{ level }}
-            </button>
-          </div>
-          <div class="flex justify-between mt-3 text-xs text-uw-ink-mute">
-            <span>{{ $t('stress.low') }}</span>
-            <span>{{ $t('stress.high') }}</span>
-          </div>
+          <StressLevelPicker v-model="stressLevel" />
         </div>
       </template>
 
@@ -66,6 +49,7 @@ import {
   stressLevelState,
 } from '../composables/useSuggestionFlow.js'
 import ActivityCard from '../components/ActivityCard.vue'
+import StressLevelPicker from '../components/StressLevelPicker.vue'
 import TextButton from '../components/TextButton.vue'
 import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
