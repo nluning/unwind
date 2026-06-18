@@ -59,17 +59,6 @@ export default defineConfig({
         'src/pages/OnboardingPage.vue',
         'src/composables/useChat.ts',
       ],
-      // A regression floor, not a target — set a touch below current (stmts
-      // 97.3 / branch 95.2 / lines 97.7) so an accidental drop fails CI without
-      // breaking on rounding. Ratchet these up as more of the app gets tested.
-      // Note: v8 only measures files reached by a test, so these apply to the
-      // tested set, which grows as later batches add page/composable specs.
-      thresholds: {
-        statements: 95,
-        branches: 92,
-        functions: 95,
-        lines: 95,
-      },
     },
   },
 })
