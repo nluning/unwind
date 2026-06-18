@@ -1,17 +1,13 @@
 import { ref, computed } from 'vue'
 import { api } from '../api/client.js'
 import type { Activity, CreateActivityPayload, UpdateActivityPayload } from '../types/activity.js'
+import { CATEGORY_ID_MAP } from '../types/activity.js'
 import { pickWeighted } from './suggestionWeighting.js'
 
 export type { Activity, CreateActivityPayload, UpdateActivityPayload }
-
-// Hardcoded to match seed.sql SERIAL IDs. If categories become user-configurable,
-// replace with a GET /categories endpoint.
-export const CATEGORY_ID_MAP: Record<string, number> = {
-  Head: 1,
-  Hands: 2,
-  Heart: 3,
-}
+// Re-exported so existing page imports (ActivityFormPage, CounterbalancePage)
+// keep working; the canonical home is types/activity.ts.
+export { CATEGORY_ID_MAP }
 
 const CATEGORY_NAME_MAP: Record<number, string> = Object.fromEntries(
   Object.entries(CATEGORY_ID_MAP).map(([name, id]) => [id, name])

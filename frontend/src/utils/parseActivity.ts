@@ -1,4 +1,4 @@
-import { CATEGORY_ID_MAP } from '../composables/useActivities.js'
+import { CATEGORY_ID_MAP } from '../types/activity.js'
 import type { CreateActivityPayload } from '../types/activity.js'
 
 export interface AiActivity {
