@@ -34,6 +34,10 @@ function getFlowState(mode: string): FlowState {
 export const stressLevelState = ref<number | null>(null)
 export const excludedCategoriesState = ref<string[]>([])
 
+// Suggest-hub (mode1) filters, module-scoped like the picker state above.
+export const suggestFilterStressState = ref<number | null>(null)
+export const suggestFilterCategoriesState = ref<string[]>([])
+
 export function resetSuggestionFlowState() {
   for (const state of flowStateByMode.values()) {
     state.current.value = null
@@ -41,6 +45,8 @@ export function resetSuggestionFlowState() {
   }
   stressLevelState.value = null
   excludedCategoriesState.value = []
+  suggestFilterStressState.value = null
+  suggestFilterCategoriesState.value = []
 }
 
 export function useSuggestionFlow(options: SuggestionFlowOptions) {

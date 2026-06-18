@@ -1,6 +1,6 @@
 ---
 name: Code style preferences
-description: No single-letter variables, template-first in Vue SFCs. Applies to all code written or reviewed.
+description: No single-letter variables, template-first in Vue SFCs, minimal comments. Applies to all code written or reviewed.
 type: feedback
 ---
 
@@ -17,3 +17,11 @@ Vue SFC order: `<template>` on top, then `<script>`, then `<style>`.
 **Why:** Noor's preferred reading order. Template first shows the structure before the logic.
 
 **How to apply:** All new `.vue` files must use template-first order. Don't reorder existing files unless editing them.
+
+---
+
+Keep comments minimal — remove explanatory comments unless genuinely essential (a non-obvious *why*, or a gotcha that would otherwise get re-broken, e.g. a test's `@vitest-environment` directive). Don't narrate what the code already says.
+
+**Why:** Noor finds explanatory comment noise clutters the code; the codebase trends comment-heavy and she's steering it leaner.
+
+**How to apply:** In new code, only comment non-obvious rationale or hazards. When editing existing files, trim redundant explanatory comments you come across.

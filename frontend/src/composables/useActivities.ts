@@ -41,15 +41,22 @@ export function useActivities() {
     }
   }
 
-  function filterByStress(stressLevel: number): Activity[] {
-    return activities.value.filter(
+  // `source` lets filters compose by chaining their results.
+  function filterByStress(stressLevel: number, source: Activity[] = activities.value): Activity[] {
+    return source.filter(
       (activity) => activity.min_stress_level <= stressLevel && activity.max_stress_level >= stressLevel
     )
   }
 
-  function filterByExcludedCategories(excludedCategories: string[]): Activity[] {
-    return activities.value.filter(
+  function filterByExcludedCategories(excludedCategories: string[], source: Activity[] = activities.value): Activity[] {
+    return source.filter(
       (activity) => !activity.categories.some((cat) => excludedCategories.includes(cat))
+    )
+  }
+
+  function filterByIncludedCategories(includedCategories: string[], source: Activity[] = activities.value): Activity[] {
+    return source.filter(
+      (activity) => activity.categories.some((cat) => includedCategories.includes(cat))
     )
   }
 
@@ -143,6 +150,7 @@ export function useActivities() {
     deleteActivity,
     filterByStress,
     filterByExcludedCategories,
+    filterByIncludedCategories,
     suggest,
     markAccepted,
     resetSession,
