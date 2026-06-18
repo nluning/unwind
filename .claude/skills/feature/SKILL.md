@@ -47,6 +47,14 @@ component at a time), not the whole feature in one shot. Follow conventions in
 CLAUDE.md and the relevant ADRs. Match surrounding code style (no single-letter
 variables; template-first in Vue SFCs).
 
+**Always write tests alongside the code — we test whatever we build or fix.**
+For frontend components and composables, follow the **`/test`** skill for the
+project's Vitest patterns (and consult it whenever you add or fix a test).
+Cover the logic the chunk introduces: new composable behaviour, pure helpers,
+edge cases, and the states a component renders. Run the suite before the review
+gate. If Noor explicitly decides to skip tests for a given feature, note it and
+move on.
+
 ## Phase 5 — Code review ▸
 
 Review the diff yourself — correctness, security, conventions (CLAUDE.md +
