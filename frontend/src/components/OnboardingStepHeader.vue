@@ -8,7 +8,7 @@
     >
       {{ title }}
     </h2>
-    <span v-if="$slots.hint" class="text-[13px] text-uw-ink-mute">
+    <span v-if="$slots.hint" data-test="hint" class="text-[13px] text-uw-ink-mute">
       <slot name="hint" />
     </span>
   </div>
