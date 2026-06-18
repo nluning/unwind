@@ -60,6 +60,19 @@ describe('parseActivity', () => {
       // Assert
       expect(result.activity).toBeNull()
     })
+
+    it('should return the message unchanged when it contains no activity', () => {
+      // Arrange — an ordinary chat reply with no JSON block at all
+      const content = 'Wat fijn dat je even tijd voor jezelf neemt.'
+
+      // Act
+      const result = parseMessage(content)
+
+      // Assert
+      expect(result.activity).toBeNull()
+      expect(result.textBefore).toBe(content)
+      expect(result.textAfter).toBe('')
+    })
   })
 
   describe('toCreatePayload', () => {

@@ -514,6 +514,51 @@ it('should show stress level selector before suggestions', () => {
 })
 ```
 
+### Interacting with a stubbed child (shallowMount)
+
+`shallowMount` replaces child components with stubs, so *how you drive a child
+interaction depends on whether the child declares the emit* — and you should do
+it without importing the child, so the test stays tied to the parent's
+behaviour, not to which component fulfils it. Locate the stub by a `data-test`
+hook on the child in the parent template, not `findComponent(Child)`.
+
+**Child declares the emit** → fire it as a component event with `.vm.$emit()`.
+A native `.trigger('click')` on the stub does nothing, because the parent's
+`@click` is a *component-event* listener, not a native one:
+
+```typescript
+// OnboardingOptionPills renders <ToggleButton data-test="pill" @click="...">,
+// and ToggleButton has defineEmits<{ click: [] }>(). Drive + inspect via the hook:
+const pills = wrapper.findAllComponents('[data-test="pill"]')
+expect(pills[1].props('selected')).toBe(true)   // assert a prop passed in
+pills[1].vm.$emit('click')                       // fire the declared emit out
+```
+
+**Child does NOT declare the emit** → the `@click` falls through as a native
+listener on the stub root, so `.trigger('click')` works:
+
+```typescript
+// StateError renders <TextButton @click="emit('retry')">, and TextButton has
+// no emits — so the listener is native and a DOM click reaches it:
+await wrapper.findComponent(TextButton).trigger('click')
+```
+
+**Asserting slotted content passed to a stub** → stubs don't render their slots
+by default, so content you pass into a child (e.g. `<ToggleButton>{{ label }}`)
+is absent from the output. Turn on `renderStubDefaultSlot` for that mount to
+assert it without un-stubbing the child:
+
+```typescript
+const wrapper = shallowMount(OnboardingOptionPills, {
+    props: { options, modelValue: '' },
+    global: { renderStubDefaultSlot: true },
+})
+expect(wrapper.findAllComponents('[data-test="pill"]')[0].text()).toBe('Thuis')
+```
+
+Reach for `mount` only when the child's *rendered DOM* is the thing under test;
+for a thin wrapper, the techniques above keep the unit isolated.
+
 ### i18n in Tests
 
 `$t` is stubbed to a passthrough globally in `tests/setup.ts`, so component
@@ -536,6 +581,40 @@ const i18n = createI18n({
 
 mount(Host, { global: { plugins: [i18n] } })
 ```
+
+#### Real i18n: which technique depends on how the component reads it
+
+The global `$t` passthrough only shadows the **template-global `$t`** — not the
+composition `t` from `useI18n()`. So when a spec genuinely needs real
+translations, the technique is dictated by how the component consumes them:
+
+- **Component uses `const { t } = useI18n()`** → install the plugin with
+  `global: { plugins: [i18n] }`. `useI18n().t` reads the injected instance
+  directly, so the passthrough is irrelevant (the `useActivityTranslation` way,
+  above).
+- **Component uses the template `$t`** → installing the plugin is **not enough**:
+  VTU layers `config.global.mocks.$t` on top of the plugin and the mock wins, so
+  `$t('x')` still returns the raw key `'x'`. Override that one key with a real
+  translator instead (there's no per-mount way to *delete* a global mock):
+
+  ```typescript
+  const i18n = createI18n({
+      legacy: false,
+      locale: 'nl',
+      messages: { nl: { onboarding: { questionOf: 'Vraag {n} van {total}' } } },
+  })
+  const translate = (key: string, named: Record<string, unknown>) =>
+      i18n.global.t(key, named)
+
+  shallowMount(OnboardingStepHeader, {
+      props: { questionNumber: 1, title: 'Waar ben je nu?' },
+      global: { mocks: { $t: translate } }, // overrides the passthrough for this mount
+  })
+  // asserting 'Vraag 1 van 5' proves n + the total default both flow through
+  ```
+
+  Don't reshape the component to use `useI18n()` just to make the test easier —
+  the template `$t` is idiomatic.
 
 ---
 
