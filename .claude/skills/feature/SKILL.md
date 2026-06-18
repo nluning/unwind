@@ -49,8 +49,11 @@ variables; template-first in Vue SFCs).
 
 ## Phase 5 — Code review ▸
 
-Run the **`/code-review`** skill on the diff. Present findings to Noor.
+Review the diff yourself — correctness, security, conventions (CLAUDE.md +
+relevant ADRs), and anything privacy-sensitive. Present findings to Noor.
 **Wait** — this is a review gate, not a rubber stamp.
+
+This is a code review, not the `/review` learning flow — don't quiz Noor.
 
 ## Phase 6 — Adjust
 
