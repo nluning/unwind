@@ -74,7 +74,8 @@ When the work on `development` is ready to ship:
 git log main..development --oneline
 ```
 
-Then open a PR `development` → `main` in the GitHub UI. CI runs again on
+Then open a PR `development` → `main` in the GitHub UI or run 
+`gh pr create --base main --head development`. CI runs again on
 the merge target. If green, use a **merge commit** (not squash or rebase)
 — this triggers the deploy workflow and unwind.nu updates within a few
 minutes.
