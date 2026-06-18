@@ -78,6 +78,21 @@ gh pr create --base development --title "<title>" --body "Closes #N
 ```
 CI runs on push. Report the PR URL. Don't merge — that's Noor's call.
 
+Once the PR is open, move issue `#N` to the **In review** lane on the Unwind
+(#2) board (Status field). The project/field/option IDs are stable; only the
+item ID is per-issue:
+
+```bash
+# Look up the item id for issue #N
+item=$(gh project item-list 2 --owner nluning --format json --limit 200 \
+  | python -c "import sys,json;print(next(i['id'] for i in json.load(sys.stdin)['items'] if i.get('content',{}).get('number')==$N))")
+
+gh project item-edit --project-id PVT_kwHODIEOyc4BV-IR \
+  --id "$item" \
+  --field-id PVTSSF_lAHODIEOyc4BV-IRzhRV-P8 \
+  --single-select-option-id aba860b9   # Status = In review
+```
+
 ## Notes
 
 - If a significant architectural decision gets made along the way, offer to run
