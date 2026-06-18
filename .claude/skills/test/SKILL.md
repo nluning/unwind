@@ -350,6 +350,33 @@ does nothing for it. Mock `global.fetch` (and the stream reader) in chat specs.
 
 ## Test Structure
 
+### One outer `describe` per file
+
+Always wrap a file's contents in a single top-level `describe` named for the
+module under test (the source file, e.g. `parseActivity`). Nest a `describe` per
+exported unit inside it. This makes it obvious at a glance — in the file and in
+the reporter output — that the whole module is covered, and keeps multi-export
+files (a util file with several functions) from reading as a flat pile of
+`it`s.
+
+```typescript
+// parseActivity.spec.ts — outer describe names the module
+describe('parseActivity', () => {
+    describe('parseMessage', () => {
+        it('should extract a fenced json activity block', () => { /* ... */ })
+    })
+
+    describe('toCreatePayload', () => {
+        it('should map pipe-separated categories to their ids', () => { /* ... */ })
+    })
+})
+```
+
+A single-export file still gets the outer describe (named for the module),
+even though it has only one inner block — consistency over saving a line.
+
+### AAA inside every test
+
 Every test uses AAA (Arrange-Act-Assert) with explicit comments:
 
 ```typescript
@@ -587,6 +614,7 @@ Do NOT flag these as issues — they are **intentional conventions**:
 
 Before finalizing tests:
 
+- [ ] File wrapped in one outer `describe` named for the module
 - [ ] All `it()` descriptions start with "should"
 - [ ] Test names describe user requirements, not implementation
 - [ ] 3-6 tests per component/composable
