@@ -41,15 +41,24 @@ export function useActivities() {
     }
   }
 
-  function filterByStress(stressLevel: number): Activity[] {
-    return activities.value.filter(
+  // `source` defaults to the full list but can be passed an already-filtered
+  // array so filters compose (e.g. stress then category) without intersecting
+  // by id.
+  function filterByStress(stressLevel: number, source: Activity[] = activities.value): Activity[] {
+    return source.filter(
       (activity) => activity.min_stress_level <= stressLevel && activity.max_stress_level >= stressLevel
     )
   }
 
-  function filterByExcludedCategories(excludedCategories: string[]): Activity[] {
-    return activities.value.filter(
+  function filterByExcludedCategories(excludedCategories: string[], source: Activity[] = activities.value): Activity[] {
+    return source.filter(
       (activity) => !activity.categories.some((cat) => excludedCategories.includes(cat))
+    )
+  }
+
+  function filterByIncludedCategories(includedCategories: string[], source: Activity[] = activities.value): Activity[] {
+    return source.filter(
+      (activity) => activity.categories.some((cat) => includedCategories.includes(cat))
     )
   }
 
@@ -143,6 +152,7 @@ export function useActivities() {
     deleteActivity,
     filterByStress,
     filterByExcludedCategories,
+    filterByIncludedCategories,
     suggest,
     markAccepted,
     resetSession,
