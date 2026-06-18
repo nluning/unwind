@@ -37,10 +37,10 @@
   },
   "filter": {
     "label": "Filter",
-    "title": "Filter suggesties",
-    "stress": "Stressniveau",
+    "title": "Filters",
+    "stress": "Hoe gespannen ben je?",
     "categories": "Categorieën",
-    "clear": "Filters wissen",
+    "clear": "Wissen",
     "done": "Klaar",
     "noMatch": "Geen activiteiten passen bij deze filters."
   },

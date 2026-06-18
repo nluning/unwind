@@ -77,6 +77,7 @@ button {
   --uw-nav-dot:      #d27a52;
   --uw-nav-idle:     rgba(58,38,28,0.50);
   --uw-menu-bg:      rgba(58,38,28,0.08);
+  --uw-card:         rgba(255,249,242,0.86);
 
   --uw-page-bg:      #db8460;
   --uw-danger:       #b4412a;
@@ -116,6 +117,7 @@ button {
   --uw-nav-dot:      #3f6670;
   --uw-nav-idle:     rgba(26,42,46,0.50);
   --uw-menu-bg:      rgba(26,42,46,0.07);
+  --uw-card:         rgba(241,247,247,0.86);
 
   --uw-page-bg:      #6d8c94;
 }
@@ -147,6 +149,7 @@ button {
   --uw-nav-dot:      #3d7a4a;
   --uw-nav-idle:     rgba(31,42,36,0.50);
   --uw-menu-bg:      rgba(31,42,36,0.06);
+  --uw-card:         rgba(250,248,241,0.90);
 
   --uw-page-bg:      #f6f3e9;
 }

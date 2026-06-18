@@ -4,11 +4,14 @@
       <button
         v-for="level in 5"
         :key="level"
-        class="w-12 h-12 rounded-full border border-uw-border bg-transparent text-uw-ink font-serif text-lg cursor-pointer transition-colors hover:bg-uw-chip"
-        :class="{
-          'bg-uw-primary text-uw-primary-fg border-transparent':
-            modelValue === level,
-        }"
+        class="w-12 h-12 rounded-full border border-uw-border bg-transparent text-uw-ink text-lg cursor-pointer transition-colors hover:bg-uw-chip"
+        :class="[
+          font === 'serif' ? 'font-serif' : 'font-medium',
+          {
+            'bg-uw-primary text-uw-primary-fg border-transparent':
+              modelValue === level,
+          },
+        ]"
         @click="select(level)"
       >
         {{ level }}
@@ -27,8 +30,14 @@
 // selected level clears it back to null — needed when the level is an optional
 // filter rather than a required choice.
 const props = withDefaults(
-  defineProps<{ modelValue: number | null; clearable?: boolean }>(),
-  { clearable: false },
+  defineProps<{
+    modelValue: number | null
+    clearable?: boolean
+    // 'serif' keeps the large StressPage numerals; 'sans' matches the
+    // category pills in the filter panel.
+    font?: 'serif' | 'sans'
+  }>(),
+  { clearable: false, font: 'serif' },
 )
 
 const emit = defineEmits<{ 'update:modelValue': [value: number | null] }>()
