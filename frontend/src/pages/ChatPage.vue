@@ -1,26 +1,53 @@
 <template>
   <PageShell>
-      <PageHeader />
+      <PageHeader back @back="goBack" />
 
-      <button
-        v-if="messages.length > 0"
-        type="button"
-        class="uw-menu-btn fixed top-[18px] right-[70px] z-20"
-        :aria-label="$t('chat.newChat')"
-        @click="handleReset"
+      <!-- Persistent context: the activity this chat is about. Stays put once
+           the conversation starts. -->
+      <div
+        v-if="seedActivity"
+        class="shrink-0 pt-[80px] px-[26px] pb-2 flex flex-col gap-3"
       >
-        <PlusIcon />
-      </button>
+        <h1 class="uw-title !pt-0 !px-0">{{ $t('chat.aboutHeading') }}</h1>
 
-      <h1
-        v-if="messages.length === 0"
-        class="uw-title pt-[80px] max-w-[260px]"
-      >
-        {{ $t('chat.startersHint') }}
-      </h1>
+        <div class="rounded-xl border border-uw-border-soft bg-uw-chip p-4 flex flex-col gap-2">
+          <h2 class="font-serif text-lg text-uw-ink leading-snug">
+            {{ titleFor(seedActivity) }}
+          </h2>
+          <p
+            v-if="descriptionFor(seedActivity)"
+            class="text-sm text-uw-ink-soft"
+          >
+            {{ descriptionFor(seedActivity) }}
+          </p>
+          <div class="uw-chips !px-0 !pt-1">
+            <span class="uw-chip">
+              {{ $t('activity.duration', { minutes: seedActivity.suggested_duration }) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Commit to doing it — lined up under the title and card. -->
+        <button
+          v-if="!accepted"
+          class="uw-actions__primary self-start"
+          @click="handleAccept"
+        >
+          <span class="uw-badge" aria-hidden="true">
+            <CheckIcon />
+          </span>
+          {{ $t('activity.accept') }}
+        </button>
+        <p
+          v-else
+          class="text-sm text-uw-primary self-start"
+        >
+          {{ $t('suggest.accepted') }}
+        </p>
+      </div>
 
       <div
-        v-else
+        v-if="messages.length > 0"
         ref="messageContainer"
         class="flex-1 overflow-y-auto px-[18px] pt-4 pb-3 flex flex-col gap-2.5"
       >
@@ -84,19 +111,8 @@
         </template>
       </div>
 
-      <div
-        v-if="messages.length === 0"
-        class="mt-auto mb-3 px-[22px] flex flex-col gap-2 items-start"
-      >
-        <button
-          v-for="starter in starters"
-          :key="starter"
-          class="rounded-full border border-uw-border-soft bg-transparent text-uw-ink text-sm font-medium px-3.5 py-2.5 cursor-pointer transition-colors hover:bg-uw-chip"
-          @click="handleStarter(starter)"
-        >
-          {{ starter }}
-        </button>
-      </div>
+      <!-- Push the input to the bottom before the conversation starts. -->
+      <div v-else class="flex-1" aria-hidden="true" />
 
       <p
         v-if="error"
@@ -131,32 +147,39 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useChat } from '../composables/useChat.js'
+import { useRouter } from 'vue-router'
+import { useChat, takeChatSeed } from '../composables/useChat.js'
 import { useActivities } from '../composables/useActivities.js'
+import { useActivityTranslation } from '../composables/useActivityTranslation.js'
+import { api } from '../api/client.js'
 import { parseMessage, toCreatePayload, type AiActivity } from '../utils/parseActivity.js'
 import { renderMarkdown } from '../utils/renderMarkdown.js'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
 import ForwardIcon from '../components/icons/ForwardIcon.vue'
-import PlusIcon from '../components/icons/PlusIcon.vue'
+import CheckIcon from '../components/icons/CheckIcon.vue'
 
-const { t } = useI18n()
-const { messages, isStreaming, error, sendMessage, resetChat } = useChat()
+const router = useRouter()
+const { messages, isStreaming, error, sendMessage } = useChat()
 const { createActivity } = useActivities()
-
-const starters = computed(() => [
-  t('chat.starter1'),
-  t('chat.starter2'),
-  t('chat.starter3'),
-  t('chat.starter4'),
-])
+const { titleFor, descriptionFor } = useActivityTranslation()
 
 const inputText = ref('')
 const messageContainer = ref<HTMLElement | null>(null)
 const inputElement = ref<HTMLInputElement | null>(null)
 const savedIndices = ref<Set<number>>(new Set())
 const saving = ref<number | null>(null)
+
+const seedActivity = ref(takeChatSeed())
+
+const seedContext = computed(() =>
+  seedActivity.value
+    ? {
+        title: titleFor(seedActivity.value),
+        description: descriptionFor(seedActivity.value) ?? undefined,
+      }
+    : undefined
+)
 
 const parsedMessages = computed(() =>
   messages.value.map((message) => {
@@ -168,21 +191,27 @@ const parsedMessages = computed(() =>
   })
 )
 
-function handleStarter(text: string) {
-  sendMessage(text)
+function goBack() {
+  router.back()
 }
 
 function handleSend() {
   const text = inputText.value.trim()
   if (!text || isStreaming.value) return
   inputText.value = ''
-  sendMessage(text)
+  sendMessage(text, undefined, seedContext.value)
 }
 
-function handleReset() {
-  resetChat()
-  savedIndices.value = new Set()
-  saving.value = null
+const accepted = ref(false)
+
+function handleAccept() {
+  const activity = seedActivity.value
+  if (!activity || accepted.value) return
+  accepted.value = true
+  api('/usage-events', {
+    method: 'POST',
+    body: JSON.stringify({ activity_id: activity.id, action: 'accepted', mode: 'mode4' }),
+  }).catch(() => {})
 }
 
 async function handleSave(index: number, activity: AiActivity) {

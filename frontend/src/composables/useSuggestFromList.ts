@@ -1,23 +1,20 @@
 import { ref } from 'vue'
 import { api, ApiError } from '../api/client.js'
 import { useActivities } from './useActivities.js'
+import type { Activity } from '../types/activity.js'
 import { toCreatePayload, type AiActivity } from '../utils/parseActivity.js'
 
-// Analyse-fit route (plan 21 Phase 4): asks the backend for 3 NEW activities
-// riffed on the user's own list + picks, and saves the ones the user chooses.
-// State is local to the composable instance — re-entering the page starts fresh
-// (and never auto-spends a generation; the user taps to generate).
 export function useSuggestFromList() {
   const { createActivity } = useActivities()
 
   const suggestions = ref<AiActivity[]>([])
   const loading = ref(false)
   const failed = ref(false)
-  // Server-provided message when the daily limit is hit (already localized
-  // Dutch); null for other failures, which fall back to the generic StateError.
   const rateLimitMessage = ref<string | null>(null)
 
-  async function generate() {
+  // `seedActivityId` anchors the batch to one activity ("Meer van dit"); omit it
+  // for the generic whole-library suggestion flow.
+  async function generate(seedActivityId?: string) {
     loading.value = true
     failed.value = false
     rateLimitMessage.value = null
@@ -25,6 +22,12 @@ export function useSuggestFromList() {
     try {
       const result = await api<{ activities: AiActivity[] }>('/activities/suggest-from-list', {
         method: 'POST',
+        ...(seedActivityId
+          ? {
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ seed_activity_id: seedActivityId }),
+            }
+          : {}),
       })
       suggestions.value = result.activities
     } catch (error) {
@@ -37,8 +40,8 @@ export function useSuggestFromList() {
     }
   }
 
-  async function save(activity: AiActivity) {
-    await createActivity(toCreatePayload(activity))
+  async function save(activity: AiActivity): Promise<Activity> {
+    return createActivity(toCreatePayload(activity))
   }
 
   return { suggestions, loading, failed, rateLimitMessage, generate, save }

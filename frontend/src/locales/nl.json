@@ -21,7 +21,13 @@
     "loading": "Laden...",
     "error": "Kan activiteiten niet laden.",
     "retry": "Probeer opnieuw",
-    "exhausted": "Geen nieuwe suggesties meer."
+    "exhausted": "Geen nieuwe suggesties meer.",
+    "actions": {
+      "open": "Meer opties",
+      "more": "Meer van dit",
+      "remove": "Dit niet meer voorstellen",
+      "chat": "Chat hierover"
+    }
   },
   "counterbalance": {
     "heading": "Balanceer je dag",
@@ -70,17 +76,12 @@
     "heading": "Praat met Unwind",
     "placeholder": "Typ een bericht...",
     "send": "Verstuur",
-    "newChat": "Nieuw gesprek",
     "save": "Opslaan in mijn lijst",
     "saved": "Opgeslagen!",
     "rateLimit": "Je hebt je limiet voor vandaag bereikt. Probeer het morgen weer.",
     "error": "Er ging iets mis. Probeer het opnieuw.",
     "loading": "Aan het nadenken...",
-    "startersHint": "Waar kan ik mee helpen?",
-    "starter1": "Ik ben gestrest",
-    "starter2": "Ik verveel me",
-    "starter3": "Ik kan niet stoppen met werken",
-    "starter4": "Verras me"
+    "aboutHeading": "Chat over:"
   },
   "onboarding": {
     "heading": "Activiteiten op maat",
@@ -152,6 +153,7 @@
     "heading": "Suggesties op basis van je lijst",
     "intro": "Unwind kijkt naar wat je het vaakst kiest, wat je zelf hebt toegevoegd en je voorkeuren, en stelt drie nieuwe activiteiten voor. Je kan je voorkeuren aanpassen onder 'Wat Unwind over jou onthoudt' op de accountpagina.",
     "generate": "Toon suggesties",
+    "generating": "Activiteiten aan het genereren",
     "add": "Toevoegen aan mijn lijst",
     "added": "Toegevoegd",
     "regenerate": "Nieuwe suggesties"

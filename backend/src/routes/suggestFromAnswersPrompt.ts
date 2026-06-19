@@ -52,10 +52,11 @@ Return ONLY this JSON object, no other text:
 
 export interface SuggestFromAnswersContext {
     answers: QuickAnswers
-    addedActivities: string[]    // titles of the user's own activities
-    frequentlyAccepted: string[] // titles the user picks most often
-    memories: string[]           // what the app knows about the user
-    exclude?: string[]           // titles already shown this session — don't repeat them
+    addedActivities: string[]
+    frequentlyAccepted: string[]
+    memories: string[]
+    doneToday?: string[]
+    exclude?: string[]
 }
 
 const LOCATION_LABEL: Record<NonNullable<QuickAnswers['location']>, string> = {
@@ -85,6 +86,9 @@ export function buildSuggestFromAnswersUserMessage(context: SuggestFromAnswersCo
     }
     if (context.frequentlyAccepted.length > 0) {
         historyLines.push(`Kiest het vaakst: ${context.frequentlyAccepted.join(', ')}`)
+    }
+    if (context.doneToday && context.doneToday.length > 0) {
+        historyLines.push(`Heeft vandaag al gedaan (stel deze niet opnieuw voor): ${context.doneToday.join(', ')}`)
     }
     if (context.memories.length > 0) {
         historyLines.push('Wat de app over de gebruiker weet:\n' + context.memories.map((fact) => `- ${fact}`).join('\n'))

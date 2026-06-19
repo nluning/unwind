@@ -55,16 +55,29 @@ export interface SuggestFromListContext {
     addedActivities: string[]
     frequentlyAccepted: string[]
     memories: string[]
+    doneToday?: string[]
+    seed?: { title: string; description: string | null }
 }
 
 export function buildSuggestFromListUserMessage(context: SuggestFromListContext): string {
     const lines: string[] = []
+
+    if (context.seed) {
+        const seedDescription = context.seed.description ? ` — ${context.seed.description}` : ''
+        lines.push(
+            `De gebruiker wil meer activiteiten in de geest van deze: '${context.seed.title}'${seedDescription}. ` +
+            `Stel ${SUGGESTION_COUNT} activiteiten voor die hier qua sfeer, energie en categorie dicht bij liggen, maar wel nieuw zijn — geen herhaling van deze activiteit zelf.`
+        )
+    }
 
     if (context.addedActivities.length > 0) {
         lines.push(`Activiteiten die de gebruiker zelf heeft toegevoegd: ${context.addedActivities.join(', ')}`)
     }
     if (context.frequentlyAccepted.length > 0) {
         lines.push(`Kiest het vaakst: ${context.frequentlyAccepted.join(', ')}`)
+    }
+    if (context.doneToday && context.doneToday.length > 0) {
+        lines.push(`Heeft vandaag al gedaan (stel deze niet opnieuw voor): ${context.doneToday.join(', ')}`)
     }
     if (context.memories.length > 0) {
         lines.push('Wat de app over de gebruiker weet:\n' + context.memories.map((fact) => `- ${fact}`).join('\n'))
