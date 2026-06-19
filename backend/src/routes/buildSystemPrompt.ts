@@ -1,38 +1,35 @@
 import type { Pool } from 'pg'
-import { CREATIVITY_GUIDANCE } from './creativityGuidance.js'
 
-const BASE_PROMPT = `You are a warm, to-the-point assistant who helps users find a relaxing activity. The user is most probably neurodivergent (autism, ADHD and/or gifted) and has trouble slowing down. Your job is to help them find some peace and joy without overwhelming them.
+const BASE_PROMPT = `You are a warm, concise assistant inside Unwind, an app that suggests relaxing activities to people who have trouble switching off. The user was just shown a specific activity and opened this chat to talk about THAT activity. They are most probably neurodivergent (autism, ADHD and/or gifted) and easily overwhelmed — stay calm, concrete and brief.
 
-Rules:
-- Ask ONE question per message. Never combine multiple questions.
-- Keep messages short: 2-3 sentences max.
-- If the user doesn't want to answer questions, skip straight to a suggestion.
-- Don't ask for identifying information (name, location, contact details).
-- You speak the language that the user uses.
-- Maximum exchanges = 10.
+They usually want one of three things:
+- Specification — e.g. "which book?", "where do I find a crossword?". Give a concrete answer: name a couple of options, or say where to look (a link is great).
+- Adjustment — e.g. "I can't go outside, but I liked this — something similar at home?". Offer a close variant that keeps what they liked and is easy to start; keep it recognizably near the original, don't reach for novel or out-of-the-box ideas.
+- Clarification — e.g. "what do you mean, fold a paper?". Explain simply, step by step if it helps.
 
-Your questions should help you understand what fits right now — energy level, stimuli preference, indoor/outdoor, solo/social, calm/active — but ask about these one at a time across multiple turns, not all at once.
+Guidelines:
+- Keep replies short: 1-2 sentences, one idea at a time.
+- Be specific and practical — a concrete next step, a name, or a link beats vague encouragement.
+- Answer directly; don't interrogate. Ask a question only when you genuinely can't help without one.
+- Reply in the language the user writes in.
+- Never ask for identifying information (name, location, contact details).
 
-${CREATIVITY_GUIDANCE}
-
-When you suggest an activity, always include a JSON block with this format:
+When — and only when — you propose a concrete activity the user could save, include a JSON block in this format:
 \`\`\`json
 { "title": "...", "description": "...", "category": "Head|Heart|Hands", "duration_minutes": N, "min_stress": N, "max_stress": N }
 \`\`\``
 
-export const MAX_MESSAGES = 20
+export const MAX_MESSAGES = 30
 
 // ── Database queries ────────────────────────────────────────────
 
 interface UserContext {
     memories: string[]
     frequentlyAccepted: string[]
-    frequentlySkipped: string[]
     doneToday: string[]
 }
 
 export async function getUserContext(pg: Pool, userId: string): Promise<UserContext> {
-    // Run all three queries in parallel — they're independent
     const [memoriesResult, patternsResult, todayResult] = await Promise.all([
         pg.query(
             'SELECT fact FROM user_memories WHERE user_id = $1 ORDER BY created_at',
@@ -40,13 +37,12 @@ export async function getUserContext(pg: Pool, userId: string): Promise<UserCont
         ),
         pg.query(
             `SELECT a.title,
-                    SUM(CASE WHEN ue.action = 'accepted' THEN 1 ELSE 0 END)::int AS accepted,
-                    SUM(CASE WHEN ue.action = 'skipped' THEN 1 ELSE 0 END)::int AS skipped
+                    SUM(CASE WHEN ue.action = 'accepted' THEN 1 ELSE 0 END)::int AS accepted
              FROM usage_events ue
              JOIN activities a ON ue.activity_id = a.id
              WHERE ue.user_id = $1
              GROUP BY a.title
-             ORDER BY accepted DESC, skipped DESC
+             ORDER BY accepted DESC
              LIMIT 10`,
             [userId]
         ),
@@ -64,14 +60,9 @@ export async function getUserContext(pg: Pool, userId: string): Promise<UserCont
         .filter(row => row.accepted > 0)
         .map(row => row.title)
 
-    const skipped = patternsResult.rows
-        .filter(row => row.skipped > 1)
-        .map(row => row.title)
-
     return {
         memories: memoriesResult.rows.map(row => row.fact),
         frequentlyAccepted: accepted,
-        frequentlySkipped: skipped,
         doneToday: todayResult.rows.map(row => row.title),
     }
 }
@@ -82,15 +73,20 @@ interface PromptOptions {
     messageCount: number
     stressLevel?: number
     userContext: UserContext
+    activityContext?: { title: string; description?: string }
 }
 
 export function buildSystemPrompt(options: PromptOptions): string {
-    const { messageCount, stressLevel, userContext } = options
+    const { messageCount, stressLevel, userContext, activityContext } = options
     const sections: string[] = []
 
-    // User memories (from onboarding / AI-learned / user-added). These are the
-    // user's own notes about themselves and their preferences, often written in
-    // the first person ("ik houd van muziek"), so frame them as self-reported.
+    if (activityContext) {
+        const description = activityContext.description ? ` — ${activityContext.description}` : ''
+        sections.push(
+            `The activity they were shown is: '${activityContext.title}'${description}. Keep your help focused on this one.`
+        )
+    }
+
     if (userContext.memories.length > 0) {
         sections.push(
             'The user has told you the following about themselves and what they like, in their own words:\n' +
@@ -98,32 +94,15 @@ export function buildSystemPrompt(options: PromptOptions): string {
         )
     }
 
-    // Activity patterns
-    const patterns: string[] = []
-    if (userContext.frequentlyAccepted.length > 0) {
-        patterns.push(`Frequently accepts: ${userContext.frequentlyAccepted.join(', ')}`)
-    }
-    if (userContext.frequentlySkipped.length > 0) {
-        patterns.push(`Frequently skips: ${userContext.frequentlySkipped.join(', ')}`)
-    }
-    if (userContext.doneToday.length > 0) {
-        patterns.push(`Done today: ${userContext.doneToday.join(', ')}`)
-    }
-    if (patterns.length > 0) {
-        sections.push('Activity patterns:\n' + patterns.map(line => `- ${line}`).join('\n'))
-    }
-
-    // Per-request context
     if (stressLevel) {
         sections.push(`User's current stress level: ${stressLevel}/5`)
     }
 
-    // Conversation limit warnings
     const remaining = MAX_MESSAGES - messageCount
     if (remaining <= 2) {
-        sections.push('This is the last message in this conversation. Tell the user they can start a new conversation if they\'d like to continue.')
+        sections.push('This is the final reply in this chat. Answer their point, then warmly let them know the conversation ends here.')
     } else if (remaining <= 6) {
-        sections.push(`This conversation has ${remaining} messages left. Wrap up by making a suggestion soon.`)
+        sections.push('Only a few messages left in this chat — start gently steering it toward a calm, natural close.')
     }
 
     if (sections.length === 0) return BASE_PROMPT
