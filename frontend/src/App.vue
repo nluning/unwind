@@ -14,10 +14,9 @@ const showChrome = computed(
     route.meta.onboarding !== true &&
     isWelcomed.value
 )
-// The hub (/suggest) is reached via the home button, so it never shows one
-// itself — there it's redundant. Everywhere else the chrome is visible, it's
-// the sole route back.
-const showHome = computed(() => showChrome.value && route.name !== 'suggest')
+const showHome = computed(
+  () => showChrome.value && route.name !== 'suggest' && route.name !== 'chat'
+)
 </script>
 
 <template>

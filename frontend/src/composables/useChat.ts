@@ -1,18 +1,41 @@
 import { ref } from 'vue'
+import type { Activity } from '../types/activity.js'
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
+export interface ChatActivityContext {
+  title: string
+  description?: string
+}
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+
+// Module-scoped so it survives the navigation from the Verras-me page
+// ("Chat hierover") to the chat page, mirroring useSuggestionFlow's module
+// state. ChatPage reads and clears it on mount so a later plain visit to /chat
+// doesn't resurface a stale activity. Holds the full activity so the chat page
+// can render its card.
+const chatSeedActivity = ref<Activity | null>(null)
+
+export function setChatSeed(activity: Activity | null) {
+  chatSeedActivity.value = activity
+}
+
+export function takeChatSeed(): Activity | null {
+  const seed = chatSeedActivity.value
+  chatSeedActivity.value = null
+  return seed
+}
 
 export function useChat() {
   const messages = ref<ChatMessage[]>([])
   const isStreaming = ref(false)
   const error = ref<string | null>(null)
 
-  async function sendMessage(text: string, stressLevel?: number) {
+  async function sendMessage(text: string, stressLevel?: number, activityContext?: ChatActivityContext) {
     error.value = null
 
     // Add the user's message to the conversation
@@ -32,6 +55,9 @@ export function useChat() {
         body: JSON.stringify({
           messages: messages.value.slice(0, -1).map(({ role, content }) => ({ role, content })),
           stress_level: stressLevel,
+          // Hidden context: the activity the user opened this chat about. Sent
+          // alongside every message so the assistant keeps it in mind.
+          ...(activityContext ? { activity_context: activityContext } : {}),
         }),
       })
 

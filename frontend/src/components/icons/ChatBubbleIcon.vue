@@ -10,14 +10,14 @@
     stroke-linejoin="round"
     aria-hidden="true"
   >
-    <path d="M2.5 3.25 L6.5 8.5 V13" />
-    <path d="M13.5 3.25 L9.5 8.5 V13" />
+    <ellipse cx="8" cy="6.8" rx="6" ry="4.2" />
+    <path d="M5 10.5 L3.8 13.2 L7 11" />
   </svg>
 </template>
 
 <script setup lang="ts">
 withDefaults(
   defineProps<{ size?: number | string; strokeWidth?: number | string }>(),
-  { size: 16, strokeWidth: 1.4 },
+  { size: 20, strokeWidth: 1.6 },
 )
 </script>

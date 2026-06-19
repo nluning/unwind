@@ -18,22 +18,30 @@ import {
 
 const client = new Anthropic()
 
-// Cap on how many of the user's own activities to feed the prompt. The most
-// recent are the freshest register signal; 30 keeps the prompt bounded.
 const ADDED_ACTIVITIES_LIMIT = 30
 
 async function generateRoutes(fastify: FastifyInstance) {
 
     const suggestRateLimit = createRateLimiter({ endpoint: 'suggest_from_list', maxRequests: 10, window: 'day' })
 
+    const suggestFromListBodySchema = {
+        body: {
+            type: ['object', 'null'],
+            properties: {
+                seed_activity_id: { type: 'string', format: 'uuid' },
+            },
+            additionalProperties: false,
+        },
+    } as const
 
-    fastify.post(
+    fastify.post<{ Body: { seed_activity_id?: string } }>(
         '/activities/suggest-from-list',
-        { preHandler: [requireAuth, suggestRateLimit] },
+        { schema: suggestFromListBodySchema, preHandler: [requireAuth, suggestRateLimit] },
         async (request, reply) => {
             const userId = request.user!.id
+            const seedActivityId = request.body?.seed_activity_id
 
-            const [userContext, addedResult] = await Promise.all([
+            const [userContext, addedResult, seedResult] = await Promise.all([
                 getUserContext(fastify.pg, userId),
                 fastify.pg.query<{ title: string }>(
                     `SELECT title FROM activities
@@ -42,12 +50,26 @@ async function generateRoutes(fastify: FastifyInstance) {
                      LIMIT $2`,
                     [userId, ADDED_ACTIVITIES_LIMIT]
                 ),
+                seedActivityId
+                    ? fastify.pg.query<{ title: string; description: string | null; user_id: string | null }>(
+                          `SELECT title, description, user_id FROM activities WHERE id = $1`,
+                          [seedActivityId]
+                      )
+                    : Promise.resolve({ rows: [] as { title: string; description: string | null; user_id: string | null }[] }),
             ])
+
+            const seedRow = seedResult.rows[0]
+            const seed =
+                seedRow && (seedRow.user_id === userId || seedRow.user_id === null)
+                    ? { title: seedRow.title, description: seedRow.description }
+                    : undefined
 
             const userMessage = buildSuggestFromListUserMessage({
                 addedActivities: addedResult.rows.map((row) => row.title),
                 frequentlyAccepted: userContext.frequentlyAccepted,
                 memories: userContext.memories,
+                doneToday: userContext.doneToday,
+                seed,
             })
 
             const response = await client.messages.create({
@@ -125,6 +147,7 @@ async function generateRoutes(fastify: FastifyInstance) {
                 addedActivities: addedResult.rows.map((row) => row.title),
                 frequentlyAccepted: userContext.frequentlyAccepted,
                 memories: userContext.memories,
+                doneToday: userContext.doneToday,
                 exclude,
             })
 
