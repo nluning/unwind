@@ -53,11 +53,9 @@ export function useSuggestionFlow(options: SuggestionFlowOptions) {
   const { suggest, markAccepted } = useActivities()
   const { current, accepted } = getFlowState(options.mode)
 
-  // Tracks whether this composable instance has seen a non-empty pool yet.
-  // The first non-empty pool after mount is treated as "returning to the
-  // page" — restore the persisted suggestion if it's still in the pool.
-  // Any later pool change is a deliberate user action (changed stress level
-  // or category), which should always yield a fresh suggestion.
+  // Tracks whether this composable instance has seen a non-empty pool yet, so
+  // the first non-empty pool can clear any sticky confirmation from a previous
+  // visit before deciding whether to restore or pick a suggestion.
   let sawNonEmptyPool = false
 
   watch(
@@ -67,21 +65,23 @@ export function useSuggestionFlow(options: SuggestionFlowOptions) {
 
       if (!sawNonEmptyPool) {
         sawNonEmptyPool = true
-        // Always clear any sticky "accepted" confirmation from a previous
-        // visit — the user asked not to see it again on return.
+        // Clear any sticky "accepted" confirmation from a previous visit — the
+        // user asked not to see it again on return.
         accepted.value = false
-
-        const persistedValid =
-          current.value !== null &&
-          newPool.some((activity) => activity.id === current.value!.id)
-        if (!persistedValid) {
-          current.value = suggest(newPool)
-        }
+      } else if (accepted.value) {
         return
       }
 
-      accepted.value = false
-      current.value = suggest(newPool)
+      // Keep the current suggestion when it's still in the pool; only pick a
+      // fresh one when it's gone (filtered out, deleted) or we don't have one
+      // yet. This way merely *adding* an activity — which grows the pool — never
+      // bumps the suggestion the user is looking at.
+      const stillValid =
+        current.value !== null &&
+        newPool.some((activity) => activity.id === current.value!.id)
+      if (!stillValid) {
+        current.value = suggest(newPool)
+      }
     },
     { immediate: true }
   )

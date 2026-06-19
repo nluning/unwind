@@ -139,4 +139,67 @@ describe('POST /activities/suggest-from-list', () => {
     })
     expect(response.statusCode).toBe(401)
   })
+
+  it('anchors the prompt to a seed activity owned by the user', async () => {
+    mockCreate.mockResolvedValueOnce(fakeResponse(3))
+
+    const seed = await app.pg.query<{ id: string }>(
+      `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source, user_id)
+       VALUES ('Lees een boek', 'Een half uur fictie', 30, 1, 5, 'user', $1) RETURNING id`,
+      [userId]
+    )
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/activities/suggest-from-list',
+      headers: { cookie },
+      payload: { seed_activity_id: seed.rows[0]!.id },
+    })
+
+    expect(response.statusCode).toBe(200)
+    const sentMessage = mockCreate.mock.calls[0]![0].messages[0].content as string
+    expect(sentMessage).toContain('Lees een boek')
+    expect(sentMessage).toContain('in de geest van')
+  })
+
+  it('drops the seed and falls back to a generic prompt when it belongs to someone else', async () => {
+    mockCreate.mockResolvedValueOnce(fakeResponse(3))
+
+    // A second user's private activity — not visible to our user.
+    const other = await app.inject({
+      method: 'POST',
+      url: '/register',
+      payload: { email: 'other@example.com', password: 'password123' },
+    })
+    const otherUserId = other.json().id
+    const seed = await app.pg.query<{ id: string }>(
+      `INSERT INTO activities (title, description, suggested_duration, min_stress_level, max_stress_level, source, user_id)
+       VALUES ('Geheime activiteit', null, 30, 1, 5, 'user', $1) RETURNING id`,
+      [otherUserId]
+    )
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/activities/suggest-from-list',
+      headers: { cookie },
+      payload: { seed_activity_id: seed.rows[0]!.id },
+    })
+
+    expect(response.statusCode).toBe(200)
+    const sentMessage = mockCreate.mock.calls[0]![0].messages[0].content as string
+    expect(sentMessage).not.toContain('Geheime activiteit')
+    expect(sentMessage).not.toContain('in de geest van')
+  })
+
+  it('rejects a non-uuid seed_activity_id', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/activities/suggest-from-list',
+      headers: { cookie },
+      payload: { seed_activity_id: 'not-a-uuid' },
+    })
+
+    expect(response.statusCode).toBe(400)
+    expect(mockCreate).not.toHaveBeenCalled()
+  })
 })

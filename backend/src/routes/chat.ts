@@ -1,12 +1,17 @@
-// DEAD CODE
-
 import type { FastifyInstance } from 'fastify'
 import Anthropic from '@anthropic-ai/sdk'
+import * as Sentry from '@sentry/node'
 import { requireAuth } from '../middleware/auth.js'
 import { createRateLimiter } from '../middleware/rateLimit.js'
 import { buildSystemPrompt, getUserContext, MAX_MESSAGES } from './buildSystemPrompt.js'
 
 const client = new Anthropic()
+
+interface ChatBody {
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>
+    stress_level?: number
+    activity_context?: { title: string; description?: string }
+}
 
 async function chatRoutes(fastify: FastifyInstance) {
     const chatRateLimit = createRateLimiter({ endpoint: 'chat', maxRequests: 70, window: 'day' })
@@ -30,21 +35,31 @@ async function chatRoutes(fastify: FastifyInstance) {
                     maxItems: MAX_MESSAGES,
                 },
                 stress_level: { type: 'integer', minimum: 1, maximum: 5 },
+                activity_context: {
+                    type: 'object',
+                    required: ['title'],
+                    properties: {
+                        title: { type: 'string', maxLength: 200 },
+                        description: { type: 'string', maxLength: 500 },
+                    },
+                    additionalProperties: false,
+                },
             },
         },
     }
 
-    fastify.post<{ Body: { messages: Array<{ role: 'user' | 'assistant'; content: string }>; stress_level?: number } }>(
+    fastify.post<{ Body: ChatBody }>(
         '/chat',
         { schema: postBodySchema, preHandler: [requireAuth, chatRateLimit] },
         async (request, reply) => {
-            const { messages, stress_level } = request.body
+            const { messages, stress_level, activity_context } = request.body
             const userContext = await getUserContext(fastify.pg, request.user!.id)
 
             const systemPrompt = buildSystemPrompt({
                 messageCount: messages.length,
                 stressLevel: stress_level,
                 userContext,
+                activityContext: activity_context,
             })
 
             const response = await client.messages.create({
@@ -80,17 +95,18 @@ async function chatRoutes(fastify: FastifyInstance) {
 
     // --- Streaming endpoint (SSE) ---
 
-    fastify.post<{ Body: { messages: Array<{ role: 'user' | 'assistant'; content: string }>; stress_level?: number } }>(
+    fastify.post<{ Body: ChatBody }>(
         '/chat/stream',
         { schema: postBodySchema, preHandler: [requireAuth, chatRateLimit] },
         async (request, reply) => {
-            const { messages, stress_level } = request.body
+            const { messages, stress_level, activity_context } = request.body
             const userContext = await getUserContext(fastify.pg, request.user!.id)
 
             const systemPrompt = buildSystemPrompt({
                 messageCount: messages.length,
                 stressLevel: stress_level,
                 userContext,
+                activityContext: activity_context,
             })
 
             // Tell the client this is an SSE stream
@@ -144,17 +160,16 @@ async function chatRoutes(fastify: FastifyInstance) {
 
                 reply.raw.end()
             } catch (err: any) {
-                // NOTE: chat is currently dead code. If revived, this catch is a
-                // Sentry blind spot: by here we've already called reply.raw.writeHead(200),
-                // so the route resolves normally and neither the Fastify error handler
-                // nor Sentry.setupFastifyErrorHandler ever sees the error. Capture
-                // explicitly with Sentry.captureException(err) before writing the SSE
-                // error event. (Same pattern as the parse-failure branches in
-                // generate.ts / onboarding.ts.)
+                // We've already called reply.raw.writeHead(200), so the route
+                // resolves normally and neither the Fastify error handler nor
+                // Sentry.setupFastifyErrorHandler sees the error — capture it
+                // explicitly before writing the SSE error event. (Same pattern as
+                // the parse-failure branches in generate.ts / onboarding.ts.)
                 if (err?.status === 429) {
                     reply.raw.write(`data: ${JSON.stringify({ type: 'error', error: 'AI service is busy. Try again in a moment.' })}\n\n`)
                 } else {
                     fastify.log.error(err, 'Claude API stream error')
+                    Sentry.captureException(err)
                     reply.raw.write(`data: ${JSON.stringify({ type: 'error', error: 'AI service is temporarily unavailable.' })}\n\n`)
                 }
 

@@ -10,14 +10,16 @@
     stroke-linejoin="round"
     aria-hidden="true"
   >
-    <path d="M2.5 3.25 L6.5 8.5 V13" />
-    <path d="M13.5 3.25 L9.5 8.5 V13" />
+    <path d="M3 4h10" />
+    <path d="M6 4V2.5h4V4" />
+    <path d="M4.5 4l.6 9a.8.8 0 0 0 .8.75h4.2a.8.8 0 0 0 .8-.75L11.5 4" />
+    <path d="M6.8 6.8v4.2M9.2 6.8v4.2" />
   </svg>
 </template>
 
 <script setup lang="ts">
 withDefaults(
   defineProps<{ size?: number | string; strokeWidth?: number | string }>(),
-  { size: 16, strokeWidth: 1.4 },
+  { size: 20, strokeWidth: 1.6 },
 )
 </script>

@@ -6,7 +6,6 @@ import { ONBOARDING_SYSTEM_PROMPT } from '../../src/routes/onboardingPrompt.js'
 const emptyContext = {
   memories: [],
   frequentlyAccepted: [],
-  frequentlySkipped: [],
   doneToday: [],
 }
 
@@ -20,9 +19,10 @@ describe('CREATIVITY_GUIDANCE', () => {
 })
 
 describe('chat system prompt (buildSystemPrompt)', () => {
-  it('includes the shared creativity guidance', () => {
+  it('folds creativity guidance into the adjustment case rather than embedding the full block', () => {
     const prompt = buildSystemPrompt({ messageCount: 1, userContext: emptyContext })
-    expect(prompt).toContain(CREATIVITY_GUIDANCE)
+    expect(prompt).not.toContain(CREATIVITY_GUIDANCE)
+    expect(prompt).toContain("don't reach for novel or out-of-the-box ideas")
   })
 
   it('no longer instructs the model to be creative / think outside the box', () => {
