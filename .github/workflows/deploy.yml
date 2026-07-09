@@ -95,10 +95,14 @@ jobs:
           set -euo pipefail
           echo "==> Deploying $IMAGE_TAG to production"
           cd ~/unwind
-          echo "==> Pulling latest compose file"
+          echo "==> Syncing repo to origin/main"
+          # Hard-reset to the remote tip instead of fast-forwarding: a deploy
+          # checkout is a disposable mirror of origin/main with no local work to
+          # preserve, and reset --hard survives history rewrites (a plain
+          # ff-only pull aborts when main has been force-pushed).
           git fetch origin main
-          git checkout main
-          git pull --ff-only origin main
+          git checkout -f main
+          git reset --hard origin/main
           echo "==> Pulling new images from GHCR"
           docker compose -f docker-compose.production.yml pull
           echo "==> Running migrations"
