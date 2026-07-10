@@ -116,7 +116,7 @@ describe('useActivities', () => {
 
       // Assert
       expect(updated.categories).toEqual(['Heart'])
-      expect(activities.value[0].title).toBe('Nieuw')
+      expect(activities.value[0]!.title).toBe('Nieuw')
     })
 
     it('should remove an activity from the list when deleted', async () => {
@@ -192,12 +192,12 @@ describe('useActivities', () => {
       resetActivitiesState()
       const { activities, suggest } = useActivities()
       const chosen = {
-        // @ts-expect-error partial test activity
         id: '1',
         source: 'base',
         min_stress_level: 1,
         max_stress_level: 5,
       }
+      // @ts-expect-error partial test activity
       activities.value = [chosen]
       // @ts-expect-error partial test activity
       vi.mocked(pickWeighted).mockReturnValue(chosen)

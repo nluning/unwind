@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import type { ComponentPublicInstance } from 'vue'
 import OnboardingOptionPills from '../../src/components/OnboardingOptionPills.vue'
 
 // shallowMount stubs the pill child, so we drive it through the contract this
@@ -23,10 +24,10 @@ describe('OnboardingOptionPills', () => {
       })
 
       // Assert
-      const pills = wrapper.findAllComponents('[data-test="pill"]')
+      const pills = wrapper.findAllComponents<ComponentPublicInstance>('[data-test="pill"]')
       expect(pills).toHaveLength(2)
-      expect(pills[0].text()).toBe('Thuis')
-      expect(pills[1].text()).toBe('Buiten')
+      expect(pills[0]!.text()).toBe('Thuis')
+      expect(pills[1]!.text()).toBe('Buiten')
     })
 
     it('should mark the pill matching the current value as selected', () => {
@@ -36,9 +37,11 @@ describe('OnboardingOptionPills', () => {
       })
 
       // Assert
-      const pills = wrapper.findAllComponents('[data-test="pill"]')
-      expect(pills[0].props('selected')).toBe(false)
-      expect(pills[1].props('selected')).toBe(true)
+      const pills = wrapper.findAllComponents<ComponentPublicInstance<{ selected: boolean }>>(
+        '[data-test="pill"]',
+      )
+      expect(pills[0]!.props('selected')).toBe(false)
+      expect(pills[1]!.props('selected')).toBe(true)
     })
 
     it('should emit the tapped option value via update:modelValue', () => {
@@ -48,7 +51,7 @@ describe('OnboardingOptionPills', () => {
       })
 
       // Act
-      wrapper.findAllComponents('[data-test="pill"]')[1].vm.$emit('click')
+      wrapper.findAllComponents<ComponentPublicInstance>('[data-test="pill"]')[1]!.vm.$emit('click')
 
       // Assert
       expect(wrapper.emitted('update:modelValue')).toEqual([['outside']])

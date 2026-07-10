@@ -287,7 +287,13 @@ A bare `vi.mock` with no factory auto-resolves this file. Override per test
 with the factory:
 
 ```typescript
-import { useActivities, makeUseActivitiesMock } from '../../src/composables/useActivities'
+// The composable comes from the real path — vi.mock() redirects it to the mock
+// at runtime, and this is the handle you drive with vi.mocked(useActivities).
+import { useActivities } from '../../src/composables/useActivities'
+// The factory is test-only infra, so import it from where it actually lives.
+// (Importing it from the real path would fail type-checking — it isn't a real
+// export of the source, only of the __mocks__ module.)
+import { makeUseActivitiesMock } from '../../src/composables/__mocks__/useActivities'
 import { ref } from 'vue'
 
 vi.mock('../../src/composables/useActivities')
@@ -295,6 +301,9 @@ vi.mock('../../src/composables/useActivities')
 // default works out of the box; override one field when a test needs it:
 vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ loaded: ref(false) }))
 ```
+
+Tests are type-checked (`tests/**/*` is in `tsconfig.vitest.json`), so the
+factory import must resolve honestly — hence the split above.
 
 Promote a composable to `__mocks__` only once it's reused — one mocked in a
 single spec can stay inline.

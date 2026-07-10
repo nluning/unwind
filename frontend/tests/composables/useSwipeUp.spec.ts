@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { useSwipeUp } from './useSwipeUp.js'
+import { useSwipeUp } from '../../src/composables/useSwipeUp'
 
 function touchStart(clientX: number, clientY: number): TouchEvent {
   return { touches: [{ clientX, clientY }] } as unknown as TouchEvent
