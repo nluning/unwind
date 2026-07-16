@@ -145,6 +145,10 @@ neutral icons — without centering them.
           call sites are unchanged (diff review, not just tests)
         - [ ] No remaining references to `useSwipeUp` anywhere in
           `frontend/src`
+        - [ ] AC #8: diff review confirms `useCardSwipe.ts` and
+          `ActivityCard.vue` bind only `touchstart`/`touchmove`/`touchend`
+          — no `mousedown`/`pointerdown`/`dragstart` or similar was
+          introduced
     - **Success:** Dragging or tapping accept/skip produces the same
       outcome either way, with live tilt/stamp feedback during the drag;
       swipe-up-to-open-sheet still works and never cross-fires with the new
@@ -161,6 +165,9 @@ neutral icons — without centering them.
            right, next suggestion (or accepted screen) appears.
         2. Drag left past the threshold → same, mirrored (VOLGENDE stamp,
            skip).
+        2a. Drag partway (below threshold) and hold → tilt and stamp
+            opacity are visibly proportional to how far you've dragged, not
+            all-or-nothing.
         3. Drag partway and release below threshold → card springs back to
            center, no state change.
         4. Swipe up on the card → action sheet opens, exactly as before.

@@ -306,7 +306,11 @@ button {
   color: var(--uw-ink);
 }
 
-/* Actions — Chrome B: inline verbs, no button rectangles */
+/* Actions — shared inline text+icon link style, reused across many pages
+   (SuggestionAccepted's "Terug", OnboardingStepActions' "Verder", chat/list
+   action rows, etc). Keep this generic — ActivityCard's swipe buttons have
+   their own dedicated `.uw-swipe-actions__*` classes below instead of
+   overloading these. */
 .uw-actions {
   display: flex;
   align-items: center;
@@ -329,6 +333,94 @@ button {
 
 .uw-actions__primary   { gap: 10px; color: var(--uw-ink); }
 .uw-actions__secondary { gap:  8px; color: var(--uw-ink-soft); }
+
+/* Swipe-card actions — icon-only circular buttons, skip (left) / accept
+   (right) slots. Sized up from an earlier 40px pass since dropping the
+   caption label left them looking undersized on their own. */
+.uw-swipe-actions__accept,
+.uw-swipe-actions__skip {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.uw-swipe-actions__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uw-swipe-actions__accept .uw-swipe-actions__icon {
+  background: var(--uw-primary);
+  color: var(--uw-primary-fg);
+}
+.uw-swipe-actions__skip .uw-swipe-actions__icon {
+  background: transparent;
+  color: var(--uw-ink-mute);
+}
+
+/* Swipe card — live drag position/rotation is set inline (dragX/rotation
+   from useCardSwipe), so it tracks the finger with zero lag. `--settling`
+   applies once the finger lifts below the commit threshold (springs back to
+   center). `--exiting-*` applies once committed: a snappier, more linear
+   ease-in so the fly-off reads as a flick rather than a soft, rounded glide.
+   `uw-card-pop` runs once on mount only (a CSS animation, not a transition,
+   so it never fires on prop updates to an already-mounted node) — paired
+   with SuggestPage.vue keying ActivityCard by activity id, so the next
+   suggestion pops in fresh after the previous card has fully exited, instead
+   of reusing the outgoing card's slide transform. */
+.uw-swipe-card {
+  position: relative;
+  animation: uw-card-pop 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes uw-card-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.uw-swipe-card--settling {
+  transition: transform 220ms ease-out;
+}
+
+.uw-swipe-card--exiting-accept,
+.uw-swipe-card--exiting-skip {
+  transition: transform 200ms cubic-bezier(0.5, 0, 1, 0.5), opacity 200ms linear;
+  opacity: 0;
+}
+
+.uw-swipe-stamp {
+  position: absolute;
+  top: 24px;
+  padding: 10px;
+  border: 3px solid currentColor;
+  border-radius: 999px;
+  display: inline-flex;
+  pointer-events: none;
+}
+
+.uw-swipe-stamp--accept {
+  right: 24px;
+  color: var(--uw-primary);
+  transform: rotate(-12deg);
+}
+
+.uw-swipe-stamp--skip {
+  left: 24px;
+  color: var(--uw-ink-mute);
+  transform: rotate(12deg);
+}
 
 /* Text-only button — used for skip / cancel / inline retry. */
 .uw-text-button {
