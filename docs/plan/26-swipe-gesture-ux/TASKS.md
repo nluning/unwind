@@ -4,9 +4,10 @@
 
 ### Phase 26: Swipe gesture UX (2 tasks)
 
-**Goal:** Bind swipe direction independently of button position, give the
-drag live visual feedback, and replace the directional button pair with a
-neutral icon-only pair.
+**Goal:** Swap the button pair (accept right, skip left) so it agrees with
+the swipe convention, bind swipe direction independently of button position
+on top of that, give the drag live visual feedback, and restyle the pair as
+neutral icons — without centering them.
 
 **Phase Context:**
 
@@ -25,8 +26,10 @@ neutral icon-only pair.
     - **Context:**
         - **Why:** Swipe gestures carry a learned right=accept/left=reject
           convention (dating apps) that's the reverse of the current
-          left=accept/right=skip button layout; this task decouples the two
-          and makes the buttons stop claiming a side. See PLAN.md Context.
+          left=accept/right=skip button layout; this task swaps the buttons
+          to match (accept right, skip left), decouples swipe from button
+          position on top of that, and makes the buttons stop claiming a
+          side visually (icon-only, no arrow). See PLAN.md Context.
         - **Architecture:** New `useCardSwipe` composable (deadzone + axis
           lock, exported pure helpers for the lock/threshold decisions,
           mirrors the shape of the composable it replaces) owns all touch
@@ -68,12 +71,17 @@ neutral icon-only pair.
           - A vertical-locked gesture must never also read as a horizontal
             commit, and vice versa — this is the whole point of the axis
             lock; test both directions explicitly.
-          - Keep the accept-left / skip-right DOM order (cosmetic now, not
-            directional) so existing users see minimal visual disruption.
+          - Swap the DOM order: skip (✕) now renders in the left slot,
+            accept (✓) in the right slot. The two slots themselves
+            (`.uw-actions`'s `space-between` layout) stay exactly where
+            they are — do not center the pair.
+          - No mouse/pointer event handlers anywhere in `useCardSwipe` or
+            `ActivityCard` — the drag gesture must be unreachable from a
+            desktop mouse (AC #8); only `touchstart`/`touchmove`/`touchend`.
     - **Scope:** `useCardSwipe.ts` (+ spec), `CloseIcon.vue`, rewritten
       `ActivityCard.vue` (+ spec), `SuggestPage.vue` wiring change,
       `base.css` redesign; delete `useSwipeUp.ts` + its spec.
-    - **Acceptance Criteria:** AC #1, #2, #3, #4, #5, #6, #7 (see PLAN.md)
+    - **Acceptance Criteria:** AC #1, #2, #3, #4, #5, #6, #7, #8 (see PLAN.md)
     - **Touches:**
       - `frontend/src/composables/useCardSwipe.ts` (new)
       - `frontend/src/composables/useCardSwipe.spec.ts` (new)
@@ -140,7 +148,9 @@ neutral icon-only pair.
     - **Success:** Dragging or tapping accept/skip produces the same
       outcome either way, with live tilt/stamp feedback during the drag;
       swipe-up-to-open-sheet still works and never cross-fires with the new
-      horizontal gesture; buttons are icon-only and centered.
+      horizontal gesture; buttons are icon-only, in their original two
+      slots but swapped (skip left, accept right); the drag gesture is
+      unreachable from a desktop mouse.
 
 - [ ] **26.2** Manual verification
     - Note: CI runs the full automated suite on the PR — this task covers
@@ -164,6 +174,12 @@ neutral icon-only pair.
         8. Confirm both buttons read correctly with a screen reader
            (aria-label), and the caption text under each icon is legible in
            both light and dark theme variants.
-        9. Confirm `ActivityActionSheet` flows (Meer van dit / Dit niet meer
-           voorstellen / Chat hierover) still work unchanged after the
-           `ActivityCard` rewrite.
+        9. Confirm the buttons render skip (✕) in the left slot and accept
+           (✓) in the right slot — swapped from before — and that the pair
+           is still edge-anchored (not centered).
+        10. On a desktop browser with a mouse and no touch emulation,
+            click-and-drag the card left/right → nothing happens (no tilt,
+            no stamp, no commit); only clicking the buttons works.
+        11. Confirm `ActivityActionSheet` flows (Meer van dit / Dit niet meer
+            voorstellen / Chat hierover) still work unchanged after the
+            `ActivityCard` rewrite.
