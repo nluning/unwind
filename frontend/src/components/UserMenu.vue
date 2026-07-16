@@ -56,11 +56,15 @@
             class="h-px bg-uw-border-soft my-2 mx-3"
           />
           <section class="px-3 py-1 flex flex-col gap-1">
+            <p v-if="group.heading" class="text-xs text-uw-ink-mute px-3 pt-1 pb-1">
+              {{ $t(group.heading) }}
+            </p>
             <router-link
-              v-for="link in group"
+              v-for="link in group.links"
               :key="link.label"
               :to="link.to"
-              class="block w-full px-3 py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
+              class="block w-full py-2 rounded-lg text-sm text-uw-ink-soft no-underline transition-colors hover:text-uw-ink"
+              :class="group.heading ? 'pl-6 pr-3' : 'px-3'"
               active-class="!text-uw-ink !font-medium"
               @click="open = false"
             >
@@ -115,17 +119,24 @@ const themes: { id: ColorScheme; swatch: string }[] = [
   { id: 'playful', swatch: '#3d7a4a' },
 ]
 
-const menuGroups: { to: RouteLocationRaw; label: string }[][] = [
-  [
-    { to: '/activities',     label: 'jouwActiviteiten.viewList' },
-    { to: '/activities/new', label: 'jouwActiviteiten.selfAdd' },
-  ],
-  [
-    { to: '/quick-suggest',     label: 'jouwActiviteiten.quickSuggest' },
-    { to: '/suggest-from-list', label: 'jouwActiviteiten.fromList' },
-  ],
-  [
-    { to: '/account', label: 'menu.account' },
-  ],
+const menuGroups: { heading?: string; links: { to: RouteLocationRaw; label: string }[] }[] = [
+  {
+    links: [
+      { to: '/activities',     label: 'jouwActiviteiten.viewList' },
+      { to: '/activities/new', label: 'jouwActiviteiten.selfAdd' },
+    ],
+  },
+  {
+    heading: 'menu.aiSuggestions',
+    links: [
+      { to: '/quick-suggest',     label: 'jouwActiviteiten.quickSuggest' },
+      { to: '/suggest-from-list', label: 'jouwActiviteiten.fromList' },
+    ],
+  },
+  {
+    links: [
+      { to: '/account', label: 'menu.account' },
+    ],
+  },
 ]
 </script>

@@ -131,8 +131,9 @@ function handleDeleteTap() {
   }
 }
 
-// Swipe-down on the grabber closes the sheet. Local (not useSwipeUp, which is
-// upward-only) and scoped to the grabber so it never competes with list scroll.
+// Swipe-down on the grabber closes the sheet. Local (not useCardSwipe, whose
+// vertical branch is upward-only) and scoped to the grabber so it never
+// competes with list scroll.
 const CLOSE_THRESHOLD = 40
 let grabberStartY = 0
 
