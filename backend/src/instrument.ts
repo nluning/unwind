@@ -10,7 +10,7 @@ if (process.env.SENTRY_DSN) {
     tracesSampleRate: 0.1,
     integrations: [
       Sentry.onUncaughtExceptionIntegration(),
-      Sentry.onUnhandledRejectionIntegration({ mode: 'fatal' }),
+      Sentry.onUnhandledRejectionIntegration({ mode: 'strict' }),
     ],
   })
 }
