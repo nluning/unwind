@@ -7,9 +7,11 @@
 
 ## Goal
 
-Fix the mobile swipe-vs-button mismatch on Verras-me (`SuggestPage`) by binding
-swipe direction independently of button layout, giving the drag live visual
-feedback, and redesigning the buttons so they no longer claim a side.
+Fix the mobile swipe-vs-button mismatch on Verras-me (`SuggestPage`) by
+swapping the buttons so accept sits on the right and skip on the left
+(matching the swipe convention), binding swipe direction independently of
+button layout on top of that, giving the drag live visual feedback, and
+restyling the buttons to neutral icons — without centering them.
 
 ## Context
 
@@ -18,19 +20,24 @@ Raised as a UX issue: `ActivityCard` puts `Doen` (accept) on the left and
 invites swiping, and swipe gestures carry a learned convention from
 dating-app UIs (swipe right = accept, swipe left = reject) that's the reverse
 of this layout. A prior conversation produced four candidate fixes; this plan
-implements three of them together:
+now implements all four together:
 
-1. **Decouple swipe from button position** — bind the drag gesture
-   independently: right = accept, left = skip, regardless of where the
-   buttons sit.
-2. **Drop directionality from the buttons** — replace the left/right
-   accept/skip pair with two icon-only circular buttons.
-3. **In-motion feedback** — the card tilts and a colored DOEN/VOLGENDE stamp
+1. **Swap the buttons** — accept (✓) moves to the right slot, skip (✕)
+   moves to the left slot. This alone already fixes the mismatch
+   positionally.
+2. **Decouple swipe from button position** — bind the drag gesture
+   independently too: right = accept, left = skip. With the swap above,
+   this now reinforces the button layout instead of being the only fix for
+   a layout that still contradicted it.
+3. **Drop directionality from the buttons** — restyle the pair as icon-only
+   circular buttons (✕ / ✓) instead of icon+text with a directional arrow
+   icon.
+4. **In-motion feedback** — the card tilts and a colored DOEN/VOLGENDE stamp
    fades in during the drag, so the gesture teaches itself live.
 
-(The fourth candidate — swapping which side each button sits on — is
-explicitly rejected; it doesn't fix the swipe mismatch and would force
-existing users to relearn button positions for no gain.)
+The two slots (left, right) stay exactly where they are today — not
+centered as a pair. Only which icon sits in which slot changes (per #1) and
+how each button looks (per #3).
 
 ## Key Design Decisions
 
@@ -42,8 +49,8 @@ existing users to relearn button positions for no gain.)
 | Icon pair: ✕ skip / ✓ accept, small caption underneath each | Reuses `CheckIcon.vue` unchanged (matches the current accept badge exactly); one new `CloseIcon.vue` | Confirmed this session; `frontend/src/components/icons/CheckIcon.vue` |
 | Stamp/caption copy reuses `activity.accept` / `activity.skip` i18n keys, uppercased via CSS | No new i18n keys needed | `frontend/src/locales/nl.json:12-13` |
 | Exit-emit timing keyed off `transitionend`, not a hardcoded `setTimeout` | Avoids duplicating the CSS transition duration as a magic number in JS and CSS | New pattern — no existing precedent, flagged as a deliberate choice |
-| Touch-only gesture, no mouse-drag emulation | Matches `useSwipeUp.ts`'s existing scope; desktop already has working buttons | `frontend/src/composables/useSwipeUp.ts` |
-| Order in the button pair stays accept-left / skip-right | Minimizes visual disruption for existing users; the order is now cosmetic, not directional, since swipe is bound independently | Current `ActivityCard.vue` DOM order |
+| Touch-only gesture (`touchstart`/`touchmove`/`touchend`), never bound to mouse/pointer events | Swiping must not be available on desktop — desktop browsers don't fire touch events for mouse input, so the drag path never activates there; matches `useSwipeUp.ts`'s existing touch-only scope. Desktop keeps the buttons as its only input | `frontend/src/composables/useSwipeUp.ts`; confirmed this session |
+| Accept moves to the right slot, skip moves to the left slot (swapped from today) | Confirmed this session — makes the button layout agree with the swipe convention (right = accept) instead of relying only on decoupled binding to paper over a layout that still contradicted it. The two slots themselves stay put, not centered — only the assignment within them changes | Current `.uw-actions` CSS (`space-between`, edge-anchored, unchanged) |
 
 ## Approach
 
@@ -92,10 +99,12 @@ Same shape/props contract as `CheckIcon.vue` (`size`, `strokeWidth` props,
 - Renders two stamp overlays (`DOEN` / `VOLGENDE`, existing i18n keys
   uppercased in CSS), each bound to `dragProgress` × `dragIntent`.
 - Replaces the `.uw-actions__primary` / `.uw-actions__secondary` pair with
-  two icon-only circular buttons (✕ / ✓), each with a small
-  caption underneath and an `aria-label` from the existing
-  `activity.skip` / `activity.accept` strings. Click handlers call the same
-  `commit('skip' | 'accept')` the drag path uses.
+  two icon-only circular buttons in the same two slots as today (not
+  centered) — skip (✕) now in the left slot, accept (✓) in the right slot
+  (swapped from today's DOM order), each with a small caption underneath
+  and an `aria-label` from the existing `activity.skip` / `activity.accept`
+  strings. Click handlers call the same `commit('skip' | 'accept')` the
+  drag path uses.
 - Listens for the CSS exit transition's `transitionend` on the card root
   when `isExiting` is true, and emits `accept` / `skip` at that point (not
   before) — keeps the existing event contract with `SuggestPage.vue`
@@ -123,12 +132,15 @@ Same shape/props contract as `CheckIcon.vue` (`size`, `strokeWidth` props,
 
 ## Scope
 
-- **In scope:** items 1, 3, 4 from the original UX conversation (decouple
-  swipe from buttons; live drag feedback; icon-only non-directional
-  buttons); replacing `useSwipeUp` with the unified `useCardSwipe`.
+- **In scope:** all four items from the original UX conversation — swap
+  which slot accept/skip sit in; decouple swipe direction from button
+  position; icon-only non-directional buttons (same two slots, not
+  centered); live drag feedback; replacing `useSwipeUp` with the unified
+  `useCardSwipe`.
 - **Out of scope:**
-  - Item 2 (swap which side each button sits on) — rejected.
-  - Mouse-drag emulation on desktop — buttons remain the desktop path.
+  - Mouse-drag emulation on desktop — buttons remain the desktop path
+    (swiping is not available on desktop; see AC #8 and the touch-only
+    design decision above).
   - Changing the vertical swipe-up-to-open-sheet threshold or feel — kept
     identical to today.
   - Haptic feedback (Vibration API) on commit.
@@ -144,10 +156,11 @@ Same shape/props contract as `CheckIcon.vue` (`size`, `strokeWidth` props,
 | 1 | Dragging the card right past the commit threshold accepts the activity, same outcome as tapping ✓ | On `/suggest` (mobile viewport), drag right → card flies off right → next suggestion or accepted screen shows |
 | 2 | Dragging the card left past the commit threshold skips, same outcome as tapping ✕ | Drag left → card flies off left → next suggestion shows |
 | 3 | Mid-drag, the card visibly tilts and a colored DOEN/VOLGENDE stamp fades in proportional to drag distance, before commit | Partial drag shows partial tilt + partial stamp opacity, no state change yet; release below threshold springs the card back to center |
-| 4 | Buttons are icon-only (✕ / ✓) with a caption, centered as a neutral pair, each with a correct `aria-label` | Inspect DOM on `/suggest`; screen-reader label present; buttons render centered, not edge-anchored |
+| 4 | Buttons are icon-only (✕ / ✓) with a caption, in the same two slots as today (not centered) — skip (✕) in the left slot, accept (✓) in the right slot, swapped from before | Inspect DOM on `/suggest`; screen-reader label present; skip renders left, accept renders right; buttons stay edge-anchored, not centered |
 | 5 | Swiping up (or tapping the handle) still opens the action sheet exactly as before; horizontal drag and vertical swipe never both fire | Swipe up on the card → sheet opens; a horizontal drag does not also open the sheet; a vertical swipe does not also trigger accept/skip |
 | 6 | Clicking ✓/✕ on desktop plays the same fly-off exit animation as a completed drag before advancing | Click ✓ → card animates off right → then next suggestion / accepted screen |
 | 7 | No regressions to existing flow or sheet logic | `useSuggestionFlow` accept/skip logic (usage-event logging, module flow state) unchanged; `ActivityActionSheet` actions (Meer van dit / Dit niet meer / Chat) unaffected |
+| 8 | Swiping/dragging is not available on desktop — only touch input can trigger the drag gesture; mouse users interact via the buttons only | On a desktop browser with a mouse (no touch emulation), click-dragging the card does nothing (no tilt, no stamp, no commit); the buttons still work normally |
 
 ## Testing Strategy
 
@@ -165,7 +178,9 @@ Per the `/test` skill: test behavior, not implementation.
   upward swipe.
 - **Manual only:** the actual drag physics/feel (tilt amount, stamp
   timing, fly-off animation) — not meaningfully unit-testable, covered by
-  the manual verification task.
+  the manual verification task. Same for AC #8 (desktop safety) — there's
+  no mouse/pointer handler to simulate a false-positive against, so this is
+  verified by hands-on testing with a mouse, not an automated test.
 
 ## Risks
 

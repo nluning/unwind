@@ -124,13 +124,14 @@
     "close": "Sluiten",
     "theme": "Thema",
     "hint": "Hier kun je je lijst beheren, nieuwe ideeën toevoegen en een account aanmaken.",
-    "account": "Account"
+    "account": "Account",
+    "aiSuggestions": "Suggesties door AI"
   },
   "jouwActiviteiten": {
-    "viewList": "Bekijk mijn lijst",
-    "selfAdd": "Zelf iets toevoegen",
-    "quickSuggest": "Drie vragen, één idee",
-    "fromList": "Ideeën op basis van mijn lijst"
+    "viewList": "Mijn lijst",
+    "selfAdd": "Toevoegen",
+    "quickSuggest": "Voor hier en nu",
+    "fromList": "Laat mijn lijst groeien"
   },
   "quickSuggest": {
     "locationQuestion": "Waar ontspan je nu het liefst?",

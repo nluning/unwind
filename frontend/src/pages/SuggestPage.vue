@@ -29,13 +29,13 @@
         <div
           v-else-if="current"
           class="flex-1 flex flex-col"
-          @touchstart="onTouchStart"
-          @touchend="onTouchEnd"
         >
           <ActivityCard
+            :key="current.id"
             :activity="current"
             @accept="handleAccept"
             @skip="handleSkip"
+            @open-sheet="openSheet"
           />
 
           <!-- Inconspicuous handle: swipe up anywhere on the card, or tap this,
@@ -77,7 +77,6 @@ import {
   suggestFilterStressState,
   suggestFilterCategoriesState,
 } from '../composables/useSuggestionFlow.js'
-import { useSwipeUp } from '../composables/useSwipeUp.js'
 import { setChatSeed } from '../composables/useChat.js'
 import ActivityCard from '../components/ActivityCard.vue'
 import ActivityActionSheet from '../components/ActivityActionSheet.vue'
@@ -160,8 +159,6 @@ function handleChat() {
   setChatSeed(activity)
   router.push('/chat')
 }
-
-const { onTouchStart, onTouchEnd } = useSwipeUp(openSheet)
 
 // Decoupled from auth state on purpose: unwind-device-id is already set by
 // the time SuggestPage mounts, so it can't distinguish "first ever open"
