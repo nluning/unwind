@@ -8,5 +8,9 @@ if (process.env.SENTRY_DSN) {
     release: process.env.SENTRY_RELEASE,
     sendDefaultPii: false,
     tracesSampleRate: 0.1,
+    integrations: [
+      Sentry.onUncaughtExceptionIntegration(),
+      Sentry.onUnhandledRejectionIntegration({ mode: 'strict' }),
+    ],
   })
 }
