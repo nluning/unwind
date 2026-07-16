@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/vue'
 import router from '../router/index.js'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -15,33 +16,43 @@ export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const headers: Record<string, string> = { ...(options.headers as Record<string, string>) }
-  if (options.body != null && headers['Content-Type'] == null) {
-    headers['Content-Type'] = 'application/json'
-  }
-
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers,
-  })
-
-  if (response.status === 401) {
-    if (localStorage.getItem('unwind-user')) {
-      localStorage.removeItem('unwind-user')
-      router.push({ name: 'login' })
+  try {
+    const headers: Record<string, string> = { ...(options.headers as Record<string, string>) }
+    if (options.body != null && headers['Content-Type'] == null) {
+      headers['Content-Type'] = 'application/json'
     }
-    throw new ApiError(401, null)
-  }
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => null)
-    throw new ApiError(response.status, body)
-  }
+    const response = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers,
+    })
 
-  if (response.status === 204) {
-    return undefined as T
-  }
+    if (response.status === 401) {
+      if (localStorage.getItem('unwind-user')) {
+        localStorage.removeItem('unwind-user')
+        router.push({ name: 'login' })
+      }
+      throw new ApiError(401, null)
+    }
 
-  return response.json() as Promise<T>
+    if (!response.ok) {
+      const body = await response.json().catch(() => null)
+      throw new ApiError(response.status, body)
+    }
+
+    if (response.status === 204) {
+      return undefined as T
+    }
+
+    return await response.json() as T
+  } catch (err) {
+    // 401 (session expired -> redirect to login) and 429 (rate limit reached)
+    // are expected, user-facing states, not bugs — don't report them.
+    const isExpected = err instanceof ApiError && (err.status === 401 || err.status === 429)
+    if (!isExpected) {
+      Sentry.captureException(err, { tags: { endpoint: path, method: options.method ?? 'GET' } })
+    }
+    throw err
+  }
 }
