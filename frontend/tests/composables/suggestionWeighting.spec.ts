@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { computeWeight, pickWeighted, MIN_WEIGHT } from '../../src/composables/suggestionWeighting'
+import type { Activity } from '../../src/types/activity'
 
 describe('suggestionWeighting', () => {
   describe('computeWeight', () => {
@@ -49,7 +50,7 @@ describe('suggestionWeighting', () => {
 
       // Act
       // @ts-expect-error partial test activity
-      const baseItem = { id: 'base-item', source: 'base', times_accepted: 0, times_skipped: 0 }
+      const baseItem: Activity = { id: 'base-item', source: 'base', times_accepted: 0, times_skipped: 0 }
       const forNewUser = computeWeight(baseItem, context(0))
       const forEngagedUser = computeWeight(baseItem, context(40)) // 10 / (10 + 40)
 
@@ -61,8 +62,8 @@ describe('suggestionWeighting', () => {
 
     it('should not fade the user’s own activities as the pool grows', () => {
       // Arrange & Act
-      const ownItem = {
-        // @ts-expect-error partial test activity
+      // @ts-expect-error partial test activity
+      const ownItem: Activity = {
         id: 'own-item',
         source: 'user',
         times_accepted: 0,
@@ -77,8 +78,8 @@ describe('suggestionWeighting', () => {
     it('should penalize a just-accepted activity harder than a re-suggested one, without stacking', () => {
       // Arrange — 'done' is both suggested and accepted this session; accept wins
       // (÷10), it does not stack with the suggested penalty (which would be ÷30).
-      const activity = {
-        // @ts-expect-error partial test activity
+      // @ts-expect-error partial test activity
+      const activity: Activity = {
         id: 'done',
         source: 'user',
         times_accepted: 0,
@@ -119,7 +120,7 @@ describe('suggestionWeighting', () => {
 
     it('should pick deterministically given an injected random', () => {
       // Arrange — two equal-weight candidates split the [0, total) range in half.
-      const candidates = [
+      const candidates: Activity[] = [
         // @ts-expect-error partial test activity
         { id: 'first', source: 'user', times_accepted: 0, times_skipped: 0 },
         // @ts-expect-error partial test activity

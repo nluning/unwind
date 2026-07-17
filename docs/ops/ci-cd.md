@@ -223,7 +223,6 @@ Day-to-day local development still uses the regular dev setup
 | `Error response from daemon: pull access denied` on `docker compose pull` | GHCR package is private. Make it public (Profile → Packages → settings → Change visibility), or set up auth on the server side. |
 | `manifest unknown` on `docker compose pull` | The `:latest` tag doesn't exist yet, or the image namespace is wrong. Check `ghcr.io/nluning/unwind-{backend,frontend}` in the Packages tab. |
 | `npm run lint:check` fails on the CI side but passes locally | Local was running `npm run lint` (with `--fix`); CI doesn't auto-fix. Run `npm run lint:check` locally to reproduce, then commit the fix. |
-| Frontend CI test step exits 1 with "no test files found" | Missing `--passWithNoTests`. Check `vitest run` invocation in `ci.yml`. |
 | Backend `npm test` fails with `Invalid CORS origin option` in CI | `FRONTEND_URL` not set in the job env. CORS plugin rejects undefined. |
 | Deploy logs stop after "Container ... Created" for migration, `up -d` never runs | `docker compose run` consumed stdin from the `bash -s` heredoc. Fixed 2026-05-12 by adding `-T </dev/null` to the run command. If it regresses, check that no command in the heredoc inherits stdin. |
 | Migration step times out | DB container slow to come up under load, or a migration script is hung. SSH to server, look at `docker compose logs db backend`. |
