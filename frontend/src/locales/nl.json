@@ -241,7 +241,6 @@
       "duration": "Duur (minuten)",
       "stressRange": "Stressniveau (min – max)",
       "categories": "Categorieën",
-      "categoriesRequired": "Kies minstens één categorie.",
       "stressOrder": "Minimum moet kleiner of gelijk zijn aan maximum.",
       "saveError": "Kon niet opslaan. Probeer opnieuw."
     }

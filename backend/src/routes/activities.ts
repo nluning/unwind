@@ -69,14 +69,14 @@ async function activityRoutes(fastify: FastifyInstance) {
     const postBodySchema = {
         body: {
             type: 'object',
-            required: ['title', 'suggested_duration', 'min_stress_level', 'max_stress_level', 'category_ids'],
+            required: ['title', 'suggested_duration', 'min_stress_level', 'max_stress_level'],
             properties: {
                 title: { type: 'string' },
                 description: { type: 'string' },
                 suggested_duration: { type: 'integer', minimum: 1 },
                 min_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
                 max_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
-                category_ids: { type: 'array', items: { type: 'integer' }, minItems: 1 },
+                category_ids: { type: 'array', items: { type: 'integer' } },
                 // Provenance. Defaults to 'user' (self-add); the AI routes pass
                 // 'ai' when saving a generated suggestion. 'base' is reserved for
                 // the seed library and not acceptable from a user request.
@@ -85,7 +85,7 @@ async function activityRoutes(fastify: FastifyInstance) {
         }
     } as const
 
-    fastify.post<{ Body: { title: string; description?: string; suggested_duration: number; min_stress_level: number; max_stress_level: number; category_ids: number[]; source?: 'user' | 'ai' } }>
+    fastify.post<{ Body: { title: string; description?: string; suggested_duration: number; min_stress_level: number; max_stress_level: number; category_ids?: number[]; source?: 'user' | 'ai' } }>
                 ('/activities', { schema: postBodySchema, preHandler: requireAuth }, async (request, reply) => {
                     const { title, description, suggested_duration, min_stress_level, max_stress_level, category_ids, source } = request.body
                     const userId = request.user!.id
@@ -99,7 +99,7 @@ async function activityRoutes(fastify: FastifyInstance) {
 
                     const activity = result.rows[0]
 
-                    for (const categoryId of category_ids) {
+                    for (const categoryId of category_ids ?? []) {
                         await fastify.pg.query(
                             'INSERT INTO activity_categories (activity_id, category_id) VALUES ($1, $2)',
                             [activity.id, categoryId]
@@ -119,7 +119,7 @@ async function activityRoutes(fastify: FastifyInstance) {
                 suggested_duration: { type: 'integer', minimum: 1 },
                 min_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
                 max_stress_level: { type: 'integer', minimum: 1, maximum: 5 },
-                category_ids: { type: 'array', items: { type: 'integer' }, minItems: 1 },
+                category_ids: { type: 'array', items: { type: 'integer' } },
             },
         }
     } as const
