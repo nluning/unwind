@@ -1,32 +1,13 @@
-// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import type { Activity } from '../types/activity.js'
-import SuggestionList from './SuggestionList.vue'
-import { api } from '../api/client.js'
-
-vi.mock('../api/client.js', () => ({ api: vi.fn(() => Promise.resolve()) }))
+import SuggestionList from '../../src/components/SuggestionList.vue'
+import { api } from '../../src/api/client'
 
 const stubT = { global: { mocks: { $t: (key: string) => key } } }
 
 const oneSuggestion = [
   { title: 'Lees een boek', description: 'Een half uur fictie', category: 'Head', duration_minutes: 30 },
 ]
-
-function createdActivity(): Activity {
-  return {
-    id: 'created-1',
-    title: 'Lees een boek',
-    description: 'Een half uur fictie',
-    suggested_duration: 30,
-    min_stress_level: 1,
-    max_stress_level: 5,
-    source: 'ai',
-    times_accepted: 0,
-    times_skipped: 0,
-    categories: ['Head'],
-  }
-}
 
 describe('SuggestionList', () => {
   it('should show the full details of each suggestion', () => {
@@ -43,7 +24,7 @@ describe('SuggestionList', () => {
 
   it('should keep the "added" confirmation and offer "Doen" once a suggestion is added', async () => {
     // Arrange
-    const save = vi.fn().mockResolvedValue(createdActivity())
+    const save = vi.fn().mockResolvedValue({ id: 'created-1', title: 'Lees een boek' })
     const wrapper = mount(SuggestionList, {
       props: { suggestions: oneSuggestion, save },
       ...stubT,
@@ -61,8 +42,12 @@ describe('SuggestionList', () => {
 
   it('should confirm and log when the user does the added activity', async () => {
     // Arrange
+    vi.mocked(api).mockResolvedValueOnce(undefined)
     const wrapper = mount(SuggestionList, {
-      props: { suggestions: oneSuggestion, save: vi.fn().mockResolvedValue(createdActivity()) },
+      props: {
+        suggestions: oneSuggestion,
+        save: vi.fn().mockResolvedValue({ id: 'created-1', title: 'Lees een boek' }),
+      },
       ...stubT,
     })
     await wrapper.find('button').trigger('click') // add to list

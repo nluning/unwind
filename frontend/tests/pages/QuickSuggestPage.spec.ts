@@ -176,7 +176,7 @@ describe('QuickSuggestPage', () => {
     expect(wrapper.text()).toContain('Even wandelen')
 
     // Act
-    await wrapper.find('.uw-actions__secondary').trigger('click')
+    await wrapper.find('[data-test="save"]').trigger('click')
 
     // Assert
     expect(save).toHaveBeenCalledWith(suggestion)
@@ -191,7 +191,7 @@ describe('QuickSuggestPage', () => {
     await pick(wrapper, 'no_preference')
 
     // Act
-    await wrapper.find('.uw-actions__primary').trigger('click')
+    await wrapper.find('[data-test="do-now"]').trigger('click')
 
     // Assert
     expect(wrapper.findComponent(SuggestionAccepted).exists()).toBe(true)
@@ -206,7 +206,7 @@ describe('QuickSuggestPage', () => {
     await pick(wrapper, 'no_preference')
 
     // Act
-    await wrapper.find('.uw-text-button').trigger('click')
+    await wrapper.find('[data-test="regenerate"]').trigger('click')
 
     // Assert
     expect(answers.generate).toHaveBeenLastCalledWith(

@@ -45,7 +45,7 @@ describe('SuggestFromListPage', () => {
     const wrapper = mountPage()
 
     // Act
-    await wrapper.find('.uw-actions__primary').trigger('click')
+    await wrapper.find('[data-test="generate"]').trigger('click')
 
     // Assert
     expect(list.generate).toHaveBeenCalledOnce()
@@ -93,7 +93,7 @@ describe('SuggestFromListPage', () => {
     expect(wrapper.findComponent(SuggestionList).props('suggestions')).toEqual(suggestions)
 
     // Act
-    await wrapper.find('.uw-text-button').trigger('click')
+    await wrapper.find('[data-test="regenerate"]').trigger('click')
 
     // Assert
     expect(list.generate).toHaveBeenCalledOnce()

@@ -16,38 +16,36 @@ const i18n = createI18n({
 const translate = (key: string, named: Record<string, unknown>) => i18n.global.t(key, named)
 
 describe('OnboardingStepHeader', () => {
-  describe('OnboardingStepHeader', () => {
-    it('should show the question counter, defaulting the total, alongside the title', () => {
-      // Arrange & Act — no `total` prop, so the default of 5 should apply
-      const wrapper = shallowMount(OnboardingStepHeader, {
-        props: { questionNumber: 1, title: 'Waar ben je nu?' },
-        global: { mocks: { $t: translate } },
-      })
-
-      // Assert
-      expect(wrapper.text()).toContain('Vraag 1 van 5')
-      expect(wrapper.text()).toContain('Waar ben je nu?')
+  it('should show the question counter, defaulting the total, alongside the title', () => {
+    // Arrange & Act — no `total` prop, so the default of 5 should apply
+    const wrapper = shallowMount(OnboardingStepHeader, {
+      props: { questionNumber: 1, title: 'Waar ben je nu?' },
+      global: { mocks: { $t: translate } },
     })
 
-    it('should show a hint when the hint slot is provided', () => {
-      // Arrange & Act
-      const wrapper = shallowMount(OnboardingStepHeader, {
-        props: { questionNumber: 1, title: 'Waar ben je nu?' },
-        slots: { hint: 'Kies er meerdere' },
-      })
+    // Assert
+    expect(wrapper.text()).toContain('Vraag 1 van 5')
+    expect(wrapper.text()).toContain('Waar ben je nu?')
+  })
 
-      // Assert
-      expect(wrapper.find('[data-test="hint"]').text()).toBe('Kies er meerdere')
+  it('should show a hint when the hint slot is provided', () => {
+    // Arrange & Act
+    const wrapper = shallowMount(OnboardingStepHeader, {
+      props: { questionNumber: 1, title: 'Waar ben je nu?' },
+      slots: { hint: 'Kies er meerdere' },
     })
 
-    it('should omit the hint element when no hint slot is given', () => {
-      // Arrange & Act
-      const wrapper = shallowMount(OnboardingStepHeader, {
-        props: { questionNumber: 1, title: 'Waar ben je nu?' },
-      })
+    // Assert
+    expect(wrapper.find('[data-test="hint"]').text()).toBe('Kies er meerdere')
+  })
 
-      // Assert
-      expect(wrapper.find('[data-test="hint"]').exists()).toBe(false)
+  it('should omit the hint element when no hint slot is given', () => {
+    // Arrange & Act
+    const wrapper = shallowMount(OnboardingStepHeader, {
+      props: { questionNumber: 1, title: 'Waar ben je nu?' },
     })
+
+    // Assert
+    expect(wrapper.find('[data-test="hint"]').exists()).toBe(false)
   })
 })

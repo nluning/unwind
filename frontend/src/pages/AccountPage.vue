@@ -72,6 +72,7 @@
             </button>
             <button
               type="button"
+              data-test="memory-disable-confirm"
               class="uw-text-button"
               :style="{ color: 'var(--uw-danger, #b4412a)' }"
               :disabled="toggleBusy"
@@ -162,6 +163,7 @@
         <button
           v-if="user?.email"
           type="button"
+          data-test="logout"
           class="self-start uw-text-button"
           @click="handleLogout"
         >

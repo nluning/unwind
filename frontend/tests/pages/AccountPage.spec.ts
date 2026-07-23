@@ -122,7 +122,7 @@ describe('AccountPage', () => {
     expect(wrapper.text()).toContain('account.memoryDisableWarning')
 
     // Act
-    await wrapper.find('[style*="danger"]').trigger('click')
+    await wrapper.find('[data-test="memory-disable-confirm"]').trigger('click')
 
     // Assert
     expect(setMemoryEnabled).toHaveBeenCalledWith(false)
@@ -194,7 +194,7 @@ describe('AccountPage', () => {
     const wrapper = mountPage()
 
     // Act
-    await wrapper.findAll('button.uw-text-button')[0]!.trigger('click')
+    await wrapper.find('[data-test="logout"]').trigger('click')
 
     // Assert
     expect(logout).toHaveBeenCalledOnce()

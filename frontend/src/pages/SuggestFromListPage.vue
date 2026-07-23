@@ -8,7 +8,7 @@
     <template v-if="!hasResult && !loading && !failed">
       <p class="uw-body">{{ $t('suggestFromList.intro') }}</p>
       <div class="mt-auto mb-12 px-[22px] flex justify-end">
-        <button class="uw-actions__primary" @click="handleGenerate">
+        <button data-test="generate" class="uw-actions__primary" @click="handleGenerate">
           {{ $t('suggestFromList.generate') }}
         </button>
       </div>
@@ -30,7 +30,7 @@
       />
 
       <div class="px-6 pb-8 flex justify-center">
-        <button class="uw-text-button text-sm" @click="handleGenerate">
+        <button data-test="regenerate" class="uw-text-button text-sm" @click="handleGenerate">
           {{ $t('suggestFromList.regenerate') }}
         </button>
       </div>

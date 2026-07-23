@@ -5,43 +5,41 @@ import ConfirmDeleteButton from '../../src/components/ConfirmDeleteButton.vue'
 // Two-step button: the first click arms it (swaps to the confirm label) and only
 // the second click emits `confirm`, so a stray tap can't delete anything.
 describe('ConfirmDeleteButton', () => {
-  describe('ConfirmDeleteButton', () => {
-    it('should show the resting label before any click', () => {
-      // Arrange & Act
-      const wrapper = shallowMount(ConfirmDeleteButton, {
-        props: { label: 'Verwijderen', confirmLabel: 'Zeker weten?' },
-      })
-
-      // Assert
-      expect(wrapper.text()).toBe('Verwijderen')
+  it('should show the resting label before any click', () => {
+    // Arrange & Act
+    const wrapper = shallowMount(ConfirmDeleteButton, {
+      props: { label: 'Verwijderen', confirmLabel: 'Zeker weten?' },
     })
 
-    it('should arm with the confirm label on the first click without confirming', async () => {
-      // Arrange
-      const wrapper = shallowMount(ConfirmDeleteButton, {
-        props: { label: 'Verwijderen', confirmLabel: 'Zeker weten?' },
-      })
+    // Assert
+    expect(wrapper.text()).toBe('Verwijderen')
+  })
 
-      // Act
-      await wrapper.find('button').trigger('click')
-
-      // Assert
-      expect(wrapper.text()).toBe('Zeker weten?')
-      expect(wrapper.emitted('confirm')).toBeUndefined()
+  it('should arm with the confirm label on the first click without confirming', async () => {
+    // Arrange
+    const wrapper = shallowMount(ConfirmDeleteButton, {
+      props: { label: 'Verwijderen', confirmLabel: 'Zeker weten?' },
     })
 
-    it('should emit confirm on the second click', async () => {
-      // Arrange
-      const wrapper = shallowMount(ConfirmDeleteButton, {
-        props: { label: 'Verwijderen', confirmLabel: 'Zeker weten?' },
-      })
+    // Act
+    await wrapper.find('button').trigger('click')
 
-      // Act
-      await wrapper.find('button').trigger('click')
-      await wrapper.find('button').trigger('click')
+    // Assert
+    expect(wrapper.text()).toBe('Zeker weten?')
+    expect(wrapper.emitted('confirm')).toBeUndefined()
+  })
 
-      // Assert
-      expect(wrapper.emitted('confirm')).toHaveLength(1)
+  it('should emit confirm on the second click', async () => {
+    // Arrange
+    const wrapper = shallowMount(ConfirmDeleteButton, {
+      props: { label: 'Verwijderen', confirmLabel: 'Zeker weten?' },
     })
+
+    // Act
+    await wrapper.find('button').trigger('click')
+    await wrapper.find('button').trigger('click')
+
+    // Assert
+    expect(wrapper.emitted('confirm')).toHaveLength(1)
   })
 })
