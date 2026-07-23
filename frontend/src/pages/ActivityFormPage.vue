@@ -2,7 +2,7 @@
   <PageShell>
     <PageHeader />
 
-    <p class="uw-prompt">{{ heading }}</p>
+    <p class="uw-prompt">{{ $t(headingKey) }}</p>
 
     <StateLoading v-if="!ready" />
 
@@ -82,7 +82,7 @@
         class="text-sm"
         :style="{ color: 'var(--uw-danger, #b4412a)' }"
       >
-        {{ formError }}
+        {{ $t(formError) }}
       </p>
 
       <div class="mt-auto flex items-center justify-between gap-4">
@@ -109,7 +109,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import {
   useActivities,
   CATEGORY_ID_MAP,
@@ -121,7 +120,6 @@ import TextField from '../components/TextField.vue'
 import ToggleButton from '../components/ToggleButton.vue'
 import StateLoading from '../components/StateLoading.vue'
 
-const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -137,8 +135,8 @@ const {
 const activityId = computed(() =>
   typeof route.params.id === 'string' ? route.params.id : null
 )
-const heading = computed(() =>
-  activityId.value ? t('activitiesList.editHeading') : t('activitiesList.newButton')
+const headingKey = computed(() =>
+  activityId.value ? 'activitiesList.editHeading' : 'activitiesList.newButton'
 )
 
 const ready = ref(false)
@@ -198,11 +196,11 @@ function goToList() {
 
 async function handleSave() {
   if (form.category_ids.length === 0) {
-    formError.value = t('activitiesList.form.categoriesRequired')
+    formError.value = 'activitiesList.form.categoriesRequired'
     return
   }
   if (form.min_stress_level > form.max_stress_level) {
-    formError.value = t('activitiesList.form.stressOrder')
+    formError.value = 'activitiesList.form.stressOrder'
     return
   }
 
@@ -216,7 +214,7 @@ async function handleSave() {
     }
     goToList()
   } catch {
-    formError.value = t('activitiesList.form.saveError')
+    formError.value = 'activitiesList.form.saveError'
   } finally {
     saving.value = false
   }

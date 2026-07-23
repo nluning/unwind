@@ -163,11 +163,11 @@ const visited = ref(new Set<number>())
 const isRevisit = computed(() => visited.value.has(step.value))
 
 const currentQuestion = computed(() => {
-  const q = QUESTIONS[step.value - 1]!
+  const question = QUESTIONS[step.value - 1]!
   return {
-    key: q.key,
-    title: q.title,
-    options: q.options.map((option) => ({ value: option.value, label: t(option.label) })),
+    key: question.key,
+    title: question.title,
+    options: question.options.map((option) => ({ value: option.value, label: t(option.label) })),
   }
 })
 

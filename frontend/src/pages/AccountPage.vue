@@ -132,7 +132,7 @@
                 class="text-sm m-0"
                 :style="{ color: 'var(--uw-danger, #b4412a)' }"
               >
-                {{ addError }}
+                {{ $t(addError) }}
               </p>
               <button
                 type="submit"
@@ -190,7 +190,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { useAuth } from '../composables/useAuth.js'
 import { useMemories } from '../composables/useMemories.js'
 import PageShell from '../components/PageShell.vue'
@@ -200,7 +199,6 @@ import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
 
 const router = useRouter()
-const { t } = useI18n()
 const { user, fetchMe, setMemoryEnabled, logout, deleteAccount } = useAuth()
 const {
   memories,
@@ -265,7 +263,7 @@ async function handleAdd() {
     await addMemory(trimmed)
     newMemory.value = ''
   } catch {
-    addError.value = t('account.memoryAddError')
+    addError.value = 'account.memoryAddError'
   } finally {
     adding.value = false
   }
