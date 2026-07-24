@@ -56,7 +56,10 @@ export function useActivities() {
 
   function filterByIncludedCategories(includedCategories: string[], source: Activity[] = activities.value): Activity[] {
     return source.filter(
-      (activity) => activity.categories.some((cat) => includedCategories.includes(cat))
+      // Uncategorized activities have nothing to match against, so they'd
+      // always fail `.some(...)` and vanish from every category filter.
+      // Treat "no category" as "not excluded by this filter" instead.
+      (activity) => activity.categories.length === 0 || activity.categories.some((cat) => includedCategories.includes(cat))
     )
   }
 
