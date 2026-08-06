@@ -1,7 +1,7 @@
 <template>
   <div
     ref="menuRef"
-    class="fixed top-[18px] right-[22px] z-20"
+    class="uw-corner-menu"
   >
     <button
       class="uw-menu-btn"

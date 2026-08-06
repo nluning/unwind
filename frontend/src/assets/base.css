@@ -262,6 +262,39 @@ button {
   cursor: pointer;
 }
 
+/* Fixed corner chrome (home, hamburger, filter, menu hint) is positioned
+   from the viewport edge on mobile, where `.uw-frame` fills the width and
+   the two coincide. On wide screens `.uw-frame` stays mobile-width and
+   centers, so above `--uw-frame-desktop-breakpoint` these switch to being
+   offset from the frame's edge instead — keeping the home button under the
+   wordmark and the hamburger/filter mirrored to it, rather than stranded in
+   the actual viewport corners. */
+.uw-corner-home,
+.uw-corner-menu,
+.uw-corner-filter,
+.uw-corner-menu-hint {
+  position: fixed;
+}
+
+.uw-corner-home   { top: 18px; left: 22px; z-index: 20; }
+.uw-corner-menu   { top: 18px; right: 22px; z-index: 20; }
+.uw-corner-filter { top: 18px; right: 70px; z-index: 20; }
+.uw-corner-menu-hint { top: 62px; right: 16px; z-index: 30; }
+
+@media (min-width: 768px) {
+  /* Half of `.uw-frame`'s max-width (28rem) — the frame's left/right edge
+     once it centers instead of filling the viewport. */
+  .uw-corner-home   { left: calc(50% - 14rem + 22px); }
+  .uw-corner-menu   { right: calc(50% - 14rem + 22px); }
+  .uw-corner-filter { right: calc(50% - 14rem + 70px); }
+  .uw-corner-menu-hint { right: calc(50% - 14rem + 16px); }
+
+  /* The glow blob is tuned for the frame filling a phone-width viewport;
+     on a wide screen it just floats oddly in the middle, disconnected from
+     the centered content column. */
+  .uw-screen__glow { display: none; }
+}
+
 /* Prompt + title + body + chips */
 .uw-prompt {
   font-family: var(--uw-font-serif);

@@ -1,7 +1,7 @@
 <template>
   <div
     ref="filterRef"
-    class="fixed top-[18px] right-[70px] z-20"
+    class="uw-corner-filter"
   >
     <button
       class="uw-menu-btn"

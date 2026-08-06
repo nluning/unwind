@@ -2,7 +2,7 @@
   <div
     role="status"
     aria-live="polite"
-    class="fixed top-[62px] right-[16px] z-30 pointer-events-none w-[230px] rounded-[18px] rounded-tr-[6px] flex items-start gap-2 px-3.5 py-2.5"
+    class="uw-corner-menu-hint pointer-events-none w-[230px] rounded-[18px] rounded-tr-[6px] flex items-start gap-2 px-3.5 py-2.5"
     :style="{
       background: 'var(--uw-card, rgba(255,255,255,0.96))',
       boxShadow: '0 10px 30px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06)',
