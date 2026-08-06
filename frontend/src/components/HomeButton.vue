@@ -1,6 +1,6 @@
 <template>
   <button
-    class="uw-home-btn fixed top-[18px] left-[22px] z-20"
+    class="uw-home-btn uw-corner-home"
     :aria-label="$t('nav.suggest')"
     @click="goHome"
   >

@@ -33,6 +33,7 @@
     "@types/pg": "^8.18.0",
     "@unocss/preset-web-fonts": "^66.6.7",
     "@vitejs/plugin-vue": "^6.0.4",
+    "@vitest/coverage-v8": "^4.1.9",
     "@vitest/eslint-plugin": "^1.6.9",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/test-utils": "^2.4.6",

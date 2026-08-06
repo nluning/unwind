@@ -41,7 +41,7 @@
       <CloseIcon :size="28" :stroke-width="3" />
     </span>
 
-    <div class="uw-actions mt-auto">
+    <div class="uw-swipe-actions mt-auto">
       <button
         class="uw-swipe-actions__skip"
         :aria-label="$t('activity.skip')"

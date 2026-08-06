@@ -3,6 +3,7 @@
     <ToggleButton
       v-for="option in options"
       :key="option.value"
+      data-test="pill"
       :selected="option.value === modelValue"
       @click="$emit('update:modelValue', option.value)"
     >
