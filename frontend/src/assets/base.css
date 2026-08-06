@@ -336,7 +336,17 @@ button {
 
 /* Swipe-card actions — icon-only circular buttons, skip (left) / accept
    (right) slots. Sized up from an earlier 40px pass since dropping the
-   caption label left them looking undersized on their own. */
+   caption label left them looking undersized on their own. Centered as a
+   pair (unlike the shared `.uw-actions` space-between row) since there's
+   no third element on the row to balance against. */
+.uw-swipe-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 0 22px;
+}
+
 .uw-swipe-actions__accept,
 .uw-swipe-actions__skip {
   display: inline-flex;
