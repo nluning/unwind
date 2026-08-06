@@ -1,11 +1,12 @@
 <template>
   <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
-    <button class="uw-text-button" @click="$emit('back')">
+    <button class="uw-text-button" data-test="back" @click="$emit('back')">
       {{ $t('onboarding.back') }}
     </button>
     <button
       v-if="showContinue"
       class="uw-actions__primary"
+      data-test="continue"
       @click="$emit('continue')"
     >
       {{ $t('onboarding.continue') }}

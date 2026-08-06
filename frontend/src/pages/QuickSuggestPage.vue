@@ -66,13 +66,14 @@
         </div>
 
         <div class="uw-actions mt-auto mb-2">
-          <button class="uw-actions__primary" @click="phase = 'doing'">
+          <button data-test="do-now" class="uw-actions__primary" @click="phase = 'doing'">
             <span class="uw-badge" aria-hidden="true"><CheckIcon /></span>
             {{ $t('quickSuggest.doNow') }}
           </button>
 
           <button
             v-if="!saved"
+            data-test="save"
             class="uw-actions__secondary"
             :disabled="saving"
             @click="handleSave"
@@ -86,7 +87,7 @@
       </div>
 
       <div class="px-6 pb-8 flex justify-center">
-        <button class="uw-text-button text-sm" @click="runGenerate">
+        <button data-test="regenerate" class="uw-text-button text-sm" @click="runGenerate">
           {{ $t('quickSuggest.regenerate') }}
         </button>
       </div>
@@ -163,11 +164,11 @@ const visited = ref(new Set<number>())
 const isRevisit = computed(() => visited.value.has(step.value))
 
 const currentQuestion = computed(() => {
-  const q = QUESTIONS[step.value - 1]!
+  const question = QUESTIONS[step.value - 1]!
   return {
-    key: q.key,
-    title: q.title,
-    options: q.options.map((option) => ({ value: option.value, label: t(option.label) })),
+    key: question.key,
+    title: question.title,
+    options: question.options.map((option) => ({ value: option.value, label: t(option.label) })),
   }
 })
 

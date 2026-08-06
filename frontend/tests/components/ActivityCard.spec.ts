@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import type { Activity } from '../types/activity.js'
-import ActivityCard from './ActivityCard.vue'
+import type { Activity } from '../../src/types/activity'
+import ActivityCard from '../../src/components/ActivityCard.vue'
 
-vi.mock('../composables/useActivityTranslation.js', () => ({
+vi.mock('../../src/composables/useActivityTranslation', () => ({
   useActivityTranslation: () => ({
     titleFor: (activity: Activity) => activity.title,
     descriptionFor: (activity: Activity) => activity.description,
