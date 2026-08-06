@@ -1,72 +1,105 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
+import type { Activity } from '../../src/types/activity'
 import ActivityCard from '../../src/components/ActivityCard.vue'
 
-// Translation is its own unit (useActivityTranslation.spec.ts). The shared mock
-// passes the activity's own title/description straight through. $t is stubbed
-// globally in tests/setup.ts.
-vi.mock('../../src/composables/useActivityTranslation')
+vi.mock('../../src/composables/useActivityTranslation', () => ({
+  useActivityTranslation: () => ({
+    titleFor: (activity: Activity) => activity.title,
+    descriptionFor: (activity: Activity) => activity.description,
+  }),
+}))
+
+const stubT = { global: { mocks: { $t: (key: string) => key } } }
+
+function walkActivity(): Activity {
+  return {
+    id: '1',
+    title: 'Ga een rondje lopen',
+    description: 'Geen bestemming, gewoon lopen.',
+    suggested_duration: 15,
+    min_stress_level: 1,
+    max_stress_level: 5,
+    source: 'user',
+    times_accepted: 0,
+    times_skipped: 0,
+    categories: ['Hands'],
+  }
+}
 
 describe('ActivityCard', () => {
-  it('should show the activity title and description', () => {
-    // Arrange & Act
-    const wrapper = shallowMount(ActivityCard, {
-      props: {
-        // @ts-expect-error partial test activity — only the rendered fields matter
-        activity: {
-          title: 'Even een rondje wandelen',
-          description: 'Geen bestemming, gewoon lopen.',
-        },
-      },
-    })
-
-    // Assert
-    expect(wrapper.text()).toContain('Even een rondje wandelen')
-    expect(wrapper.text()).toContain('Geen bestemming, gewoon lopen.')
-  })
-
-  it('should let the parent handle accepting the activity', async () => {
+  it("should let the parent handle acceptance once the accept button's exit animation finishes", async () => {
     // Arrange
-    const wrapper = shallowMount(ActivityCard, {
-      props: {
-        // @ts-expect-error partial test activity — only the rendered fields matter
-        activity: { title: 'Even een rondje wandelen' },
-      },
-    })
+    const wrapper = shallowMount(ActivityCard, { props: { activity: walkActivity() }, ...stubT })
 
     // Act
-    await wrapper.find('[data-test="accept"]').trigger('click')
+    await wrapper.get('[aria-label="activity.accept"]').trigger('click')
+    await wrapper.trigger('transitionend')
 
     // Assert
     expect(wrapper.emitted('accept')).toHaveLength(1)
   })
 
-  it('should let the parent handle skipping the activity', async () => {
+  it("should let the parent handle skipping once the skip button's exit animation finishes", async () => {
     // Arrange
-    const wrapper = shallowMount(ActivityCard, {
-      props: {
-        // @ts-expect-error partial test activity — only the rendered fields matter
-        activity: { title: 'Even een rondje wandelen' },
-      },
-    })
+    const wrapper = shallowMount(ActivityCard, { props: { activity: walkActivity() }, ...stubT })
 
     // Act
-    await wrapper.find('[data-test="skip"]').trigger('click')
+    await wrapper.get('[aria-label="activity.skip"]').trigger('click')
+    await wrapper.trigger('transitionend')
 
     // Assert
     expect(wrapper.emitted('skip')).toHaveLength(1)
   })
 
-  it('should hide the description when the activity has none', () => {
+  it('should expose correct Dutch labels for screen readers on both buttons', () => {
     // Arrange & Act
-    const wrapper = shallowMount(ActivityCard, {
-      props: {
-        // @ts-expect-error partial test activity — only the rendered fields matter
-        activity: { title: 'Even een rondje wandelen' },
-      },
-    })
+    const wrapper = shallowMount(ActivityCard, { props: { activity: walkActivity() }, ...stubT })
 
     // Assert
-    expect(wrapper.find('[data-test="description"]').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="activity.skip"]').exists()).toBe(true)
+    expect(wrapper.find('[aria-label="activity.accept"]').exists()).toBe(true)
+  })
+
+  it("should let the parent handle acceptance once a completed right-drag's exit animation finishes", async () => {
+    // Arrange
+    const wrapper = shallowMount(ActivityCard, { props: { activity: walkActivity() }, ...stubT })
+
+    // Act
+    await wrapper.trigger('touchstart', { touches: [{ clientX: 100, clientY: 300 }] })
+    await wrapper.trigger('touchmove', { touches: [{ clientX: 260, clientY: 300 }] })
+    await wrapper.trigger('touchend', { changedTouches: [{ clientX: 260, clientY: 300 }] })
+    await wrapper.trigger('transitionend')
+
+    // Assert
+    expect(wrapper.emitted('accept')).toHaveLength(1)
+  })
+
+  it("should let the parent handle skipping once a completed left-drag's exit animation finishes", async () => {
+    // Arrange
+    const wrapper = shallowMount(ActivityCard, { props: { activity: walkActivity() }, ...stubT })
+
+    // Act
+    await wrapper.trigger('touchstart', { touches: [{ clientX: 260, clientY: 300 }] })
+    await wrapper.trigger('touchmove', { touches: [{ clientX: 100, clientY: 300 }] })
+    await wrapper.trigger('touchend', { changedTouches: [{ clientX: 100, clientY: 300 }] })
+    await wrapper.trigger('transitionend')
+
+    // Assert
+    expect(wrapper.emitted('skip')).toHaveLength(1)
+  })
+
+  it('should let the parent open the action sheet on an upward swipe', async () => {
+    // Arrange
+    const wrapper = shallowMount(ActivityCard, { props: { activity: walkActivity() }, ...stubT })
+
+    // Act
+    await wrapper.trigger('touchstart', { touches: [{ clientX: 100, clientY: 300 }] })
+    await wrapper.trigger('touchmove', { touches: [{ clientX: 100, clientY: 220 }] })
+    await wrapper.trigger('touchend', { changedTouches: [{ clientX: 100, clientY: 220 }] })
+
+    // Assert
+    expect(wrapper.emitted('open-sheet')).toHaveLength(1)
   })
 })

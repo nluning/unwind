@@ -14,7 +14,7 @@ export interface GeneratedActivity {
 
 export const SUGGEST_FROM_LIST_SYSTEM_PROMPT = `You suggest relaxing activities for Unwind, an app that helps people find relaxing activities when they can't switch off.
 
-You receive a snapshot of one user — the activities they have added themselves, the ones they pick most often, and what the app knows about them — as structured data. You do NOT have a conversation and you NEVER ask questions. You reply with JSON only.
+You receive a snapshot of one user — the activities they have added themselves (don't suggest these again but do use the information to get to know what the user likes), the ones they pick most often, and what the app knows about them — as structured data. You do NOT have a conversation and you NEVER ask questions. You reply with JSON only.
 
 Generate exactly ${SUGGESTION_COUNT} NEW activities calibrated to this user, as a JSON array.
 
@@ -71,7 +71,7 @@ export function buildSuggestFromListUserMessage(context: SuggestFromListContext)
     }
 
     if (context.addedActivities.length > 0) {
-        lines.push(`Activiteiten die de gebruiker zelf heeft toegevoegd: ${context.addedActivities.join(', ')}`)
+        lines.push(`Activiteiten die de gebruiker zelf heeft toegevoegd (stel deze niet opnieuw voor): ${context.addedActivities.join(', ')}`)
     }
     if (context.frequentlyAccepted.length > 0) {
         lines.push(`Kiest het vaakst: ${context.frequentlyAccepted.join(', ')}`)

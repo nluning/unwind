@@ -1,4 +1,5 @@
 import type { FastifyError, FastifyReply, FastifyRequest, FastifyInstance } from 'fastify'
+import * as Sentry from '@sentry/node'
 
 interface AnthropicLikeError extends Error {
   status?: number
@@ -16,6 +17,12 @@ export function registerErrorHandler(fastify: FastifyInstance) {
     }
     if (upstream.status === 503 || upstream.status === 529) {
       fastify.log.error({ err: error }, 'Anthropic upstream error')
+      Sentry.captureException(error)
+      return reply.code(503).send({ error: 'AI service is temporarily unavailable.' })
+    }
+    if (upstream.status === 400 && /credit balance/i.test(error.message)) {
+      fastify.log.error({ err: error }, 'Anthropic credit balance exhausted')
+      Sentry.captureException(error, { tags: { anthropic_error: 'credit_balance' } })
       return reply.code(503).send({ error: 'AI service is temporarily unavailable.' })
     }
 
@@ -32,6 +39,7 @@ export function registerErrorHandler(fastify: FastifyInstance) {
     }
 
     fastify.log.error({ err: error }, 'Unhandled error')
+    Sentry.captureException(error)
     return reply.code(500).send({ error: 'Internal server error.' })
   })
 }

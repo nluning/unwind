@@ -195,10 +195,6 @@ function goToList() {
 }
 
 async function handleSave() {
-  if (form.category_ids.length === 0) {
-    formError.value = 'activitiesList.form.categoriesRequired'
-    return
-  }
   if (form.min_stress_level > form.max_stress_level) {
     formError.value = 'activitiesList.form.stressOrder'
     return

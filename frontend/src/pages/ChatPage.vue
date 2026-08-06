@@ -130,7 +130,7 @@
           v-model="inputText"
           :placeholder="$t('chat.placeholder')"
           :disabled="isStreaming"
-          class="flex-1 bg-transparent border-0 outline-none text-sm text-uw-ink placeholder:text-uw-ink-mute"
+          class="flex-1 bg-transparent border-0 outline-none text-[16px] text-uw-ink placeholder:text-uw-ink-mute"
           autocomplete="off"
         />
         <button

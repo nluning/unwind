@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import * as Sentry from '@sentry/vue'
 import type { Activity } from '../types/activity.js'
 
 export interface ChatMessage {
@@ -102,7 +103,8 @@ export function useChat() {
           }
         }
       }
-    } catch {
+    } catch (err) {
+      Sentry.captureException(err, { tags: { endpoint: '/chat/stream' } })
       error.value = 'Er ging iets mis. Probeer het opnieuw.'
     } finally {
       isStreaming.value = false

@@ -99,25 +99,6 @@ describe('ActivityFormPage', () => {
     expect(replace).toHaveBeenCalledWith('/activities')
   })
 
-  it('should require at least one category before saving', async () => {
-    // Arrange
-    mockRoute()
-    const createActivity = vi.fn()
-    vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ createActivity }))
-    vi.mocked(useRouter).mockReturnValue({
-      push: vi.fn(),
-      replace: vi.fn(),
-    } as unknown as ReturnType<typeof useRouter>)
-    const wrapper = await mountPage()
-
-    // Act
-    await wrapper.find('form').trigger('submit')
-
-    // Assert
-    expect(createActivity).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('activitiesList.form.categoriesRequired')
-  })
-
   it('should require the stress range to be in order before saving', async () => {
     // Arrange
     mockRoute()

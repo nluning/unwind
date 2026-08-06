@@ -1,15 +1,10 @@
 # Unwind
 
 Activity suggestion app for brains that struggle to switch off.
-Suggests relaxation activities tailored to the user through four modes:
-random suggestion, stress-filtered, counterbalance-based, and AI-guided
-conversation.
 
 **Live demo:** [unwind.nu](https://unwind.nu) — Dutch-only UI.
 
-> A portfolio project, built in the open. The author is on holiday through
-> mid-June 2026; if the live demo misbehaves, please open an issue and I'll
-> address it on my return.
+> A portfolio project, built in the open. 
 
 ## What this project demonstrates
 
@@ -122,11 +117,6 @@ priority, not by how easy they'd be to fix:
   test container (correct call — see CLAUDE.md), but route coverage is gappy
   and there are no tests for the streaming chat endpoint or the SSE error
   paths.
-- **Sentry doesn't capture caught backend errors.** Errors thrown by the
-  Anthropic SDK inside `try/catch` are logged via Pino but never reach
-  Sentry, so upstream incidents go silent. Needs an explicit
-  `Sentry.captureException()` in the chat + onboarding catch blocks, or a
-  Pino → Sentry transport.
 - **Chat error messages collapse all upstream errors into one string.**
   The SSE error event surfaces `"AI service is temporarily unavailable"` for
   anything that isn't a 429 — including billing, auth, or 4xx errors that
