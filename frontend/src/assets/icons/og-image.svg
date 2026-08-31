@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+<title>Unwind</title>
+<defs>
+<linearGradient id="uwGround" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#e4ecec"></stop>
+<stop offset="0.62" stop-color="#c9dbdc"></stop>
+<stop offset="1" stop-color="#9fb9be"></stop>
+</linearGradient>
+<radialGradient id="uwCore" gradientUnits="userSpaceOnUse" cx="352" cy="430" r="270">
+<stop offset="0" stop-color="#3f6670"></stop>
+<stop offset="0.45" stop-color="#3f6670" stop-opacity="0.72"></stop>
+<stop offset="1" stop-color="#1a2a2e"></stop>
+</radialGradient>
+</defs>
+<rect width="1200" height="630" fill="url(#uwGround)"></rect>
+<g transform="translate(285 0) scale(0.615234375)">
+<g transform="translate(-4.5 41.3) scale(0.9891)">
+<path d="M 352.0 430.0 C 346.1 455.7, 349.0 485.5, 362.4 512.6 C 375.7 539.7, 399.5 563.8, 430.3 578.1 C 461.1 592.5, 498.7 596.8, 535.4 588.0 C 572.2 579.1, 607.7 557.0, 633.4 524.3 C 659.1 491.6, 674.6 448.5, 674.6 403.1 C 674.5 357.7, 658.8 310.3, 628.4 271.6 C 598.0 232.9, 553.0 203.1, 501.5 190.4 C 450.0 177.7, 392.3 182.2, 340.3 205.4 C 288.4 228.6, 242.7 270.4, 214.1 324.0 C 185.5 377.6, 174.4 442.6, 185.4 506.3 C 196.3 569.9, 229.4 631.6, 279.9 677.8 C 330.3 723.9, 398.0 754.1, 470.0 760.0 C 629.5 773.0, 710.0 774.0, 870.0 774.0" fill="none" stroke="url(#uwCore)" stroke-width="70" stroke-linecap="round"></path>
+</g>
+</g>
+</svg>
