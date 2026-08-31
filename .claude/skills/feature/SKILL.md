@@ -61,6 +61,11 @@ Review the diff yourself — correctness, security, conventions (CLAUDE.md +
 relevant ADRs), and anything privacy-sensitive. Present findings to Noor.
 **Wait** — this is a review gate, not a rubber stamp.
 
+Tests passing is necessary, not sufficient — separately confirm the diff
+actually does what the ticket/plan asked for. A green suite only proves the
+code does what the tests assume it does; check that against the real
+acceptance criteria before calling it done.
+
 This is a code review, not the `/review` learning flow — don't quiz Noor.
 
 ## Phase 6 — Adjust

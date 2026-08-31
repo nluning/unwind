@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs grep:*)",
       "Bash(npx vitest:*)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(npm run *)"
     ]
   },
   "outputStyle": "default"

@@ -27,7 +27,7 @@ description: Testing patterns for Vue frontend components and composables using 
 ## Core Philosophy
 
 **Test behavior, not implementation.** Every test should answer "Why does this
-feature exist?" not "What does the code do?"
+feature/logic exist?" not "What does the code do?"
 
 ### The Behavioral Testing Mindset
 
@@ -109,21 +109,20 @@ it('should display activity duration', ...)
 
 // GOOD: one test for the card's content
 it('should show complete activity information', () => {
-    // Arrange
-    const activity = {
-        title: 'Ga een rondje lopen',
-        description: 'Geen bestemming, gewoon lopen.',
-        suggested_duration: 15,
-        categories: ['Hands'],
-    }
-
-    // Act
-    const wrapper = shallowMount(ActivityCard, { props: { activity } })
+    // Arrange & Act
+    const wrapper = shallowMount(ActivityCard, {
+        props: {
+            // @ts-expect-error partial test activity — only the rendered fields matter
+            activity: {
+                title: 'Ga een rondje lopen',
+                description: 'Geen bestemming, gewoon lopen.',
+            },
+        },
+    })
 
     // Assert
     expect(wrapper.text()).toContain('Ga een rondje lopen')
-    expect(wrapper.text()).toContain('15')
-    expect(wrapper.text()).toContain('Handen')
+    expect(wrapper.text()).toContain('Geen bestemming, gewoon lopen.')
 })
 ```
 
@@ -155,6 +154,9 @@ frontend/
 │   ├── components/
 │   │   └── ActivityCard.vue
 │   ├── composables/
+│   │   ├── __mocks__/
+│   │   │   ├── useActivities.ts
+│   │   │   └── useAuth.ts
 │   │   ├── useActivities.ts
 │   │   ├── useAuth.ts
 │   │   └── useSuggestionFlow.ts
@@ -187,80 +189,147 @@ frontend/
 ### Framework
 
 - **Vitest** with **Vue Test Utils**
-- `shallowMount` by default — only use `mount` when testing slot content or
-  child component interaction
+- `shallowMount` by default.
+
+### Coverage
+
+`vitest run --coverage` uses the v8 provider. `__mocks__` files are excluded as
+test infra (`coverage.exclude` in `vite.config.ts`). Stubbed leaf components
+(e.g. `components/icons/`) read 0% because `shallowMount` never renders them —
+exclude them rather than chasing their coverage.
 
 ---
 
 ## Mock Organization
 
-Unwind has a simple architecture — keep mocks simple too. Two levels:
+Three levels, from global to local.
 
-### 1. Setup file (shared mocks)
+### 1. Setup file (global)
 
-`frontend/tests/setup.ts` — global config and mocks used across all tests:
+`frontend/tests/setup.ts` runs before every test file. It holds the RouterLink
+stub and the api-client safety net so no test can reach the network:
 
 ```typescript
 import { config } from '@vue/test-utils'
 import { vi } from 'vitest'
 
-// Stub router-link globally
 config.global.stubs = {
     RouterLink: true,
 }
 
-// Mock the API client — almost every test needs this
+// $t passthrough so components render without the i18n plugin; specs that need
+// real translations install the plugin per-mount.
+config.global.mocks = {
+    $t: (key: string) => key,
+}
+
 vi.mock('../src/api/client', () => ({
     api: vi.fn(),
+    // Keep ApiError a real class — useSuggestFromAnswers, useSuggestFromList,
+    // and LoginPage do `instanceof ApiError`, which crashes if it's undefined.
+    ApiError: class ApiError extends Error {
+        constructor(
+            public status: number,
+            public body: unknown,
+        ) {
+            super(`API error ${status}`)
+        }
+    },
 }))
 ```
 
-### 2. Inline mocks (per test file)
+This mock is a **safety net, not a per-test tool**. Composable specs that drive
+a response import `api` and set it (see below). Component specs usually mock the
+composable and never reach `api` — the exceptions are `LoginPage` and
+`OnboardingPage`, which call `api` directly.
 
-Mock composables and modules at the top of each test file:
+### 2. Shared composable mocks (`__mocks__`)
 
-```typescript
-vi.mock('../../src/composables/useActivities')
-vi.mock('../../src/composables/useAuth')
-```
-
-**No `__mocks__` directories needed** — the codebase is small enough that
-inline mocks are clear and maintainable.
-
-### Mocking Composables
-
-Composables return objects with refs and functions. Mock them by returning the
-same shape:
+`useActivities` and `useAuth` are imported across most pages and have large
+return shapes; re-declaring them inline in every spec invites drift. Give each
+heavily-reused composable one mock in a `__mocks__` folder beside the source,
+exporting both an auto-mock default and a factory for overrides:
 
 ```typescript
-import { vi } from 'vitest'
+// src/composables/__mocks__/useActivities.ts
 import { ref, computed } from 'vue'
+import { vi } from 'vitest'
+import type { Activity, useActivities as Real } from '../useActivities'
 
-vi.mock('../../src/composables/useActivities', () => ({
-    useActivities: () => ({
-        activities: ref([]),
+export function makeUseActivitiesMock(
+    overrides: Partial<ReturnType<typeof Real>> = {},
+): ReturnType<typeof Real> {
+    return {
+        activities: ref<Activity[]>([]),
         loaded: ref(true),
+        error: ref(false),
         isEmpty: computed(() => false),
         fetchActivities: vi.fn(),
+        createActivity: vi.fn(),
+        updateActivity: vi.fn(),
+        deleteActivity: vi.fn(),
         filterByStress: vi.fn(() => []),
         filterByExcludedCategories: vi.fn(() => []),
         suggest: vi.fn(() => null),
         markAccepted: vi.fn(),
         resetSession: vi.fn(),
-        createActivity: vi.fn(),
-    }),
-}))
+        ...overrides,
+    }
+}
+
+export const useActivities = vi.fn(makeUseActivitiesMock)
 ```
 
-### Mocking the API Client
+Typing the factory against `ReturnType<typeof Real>` makes drift loud: add a
+field to the real composable and vue-tsc fails until the mock matches.
+
+A bare `vi.mock` with no factory auto-resolves this file. Override per test
+with the factory:
 
 ```typescript
-import { vi } from 'vitest'
+// The composable comes from the real path — vi.mock() redirects it to the mock
+// at runtime, and this is the handle you drive with vi.mocked(useActivities).
+import { useActivities } from '../../src/composables/useActivities'
+// The factory is test-only infra, so import it from where it actually lives.
+// (Importing it from the real path would fail type-checking — it isn't a real
+// export of the source, only of the __mocks__ module.)
+import { makeUseActivitiesMock } from '../../src/composables/__mocks__/useActivities'
+import { ref } from 'vue'
+
+vi.mock('../../src/composables/useActivities')
+
+// default works out of the box; override one field when a test needs it:
+vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ loaded: ref(false) }))
+```
+
+Tests are type-checked (`tests/**/*` is in `tsconfig.vitest.json`), so the
+factory import must resolve honestly — hence the split above.
+
+Promote a composable to `__mocks__` only once it's reused — one mocked in a
+single spec can stay inline.
+
+### 3. Inline mocks (per test file)
+
+For a composable used in only one or two specs, mock inline at the top of the
+file:
+
+```typescript
+vi.mock('../../src/composables/useChat')
+```
+
+### Mocking the API Client (composable specs)
+
+```typescript
 import { api } from '../../src/api/client'
 
 // In a test:
 vi.mocked(api).mockResolvedValueOnce([{ id: '1', title: 'Walk' }])
 ```
+
+### Chat uses fetch directly, not the api client
+
+`useChat` streams over SSE and calls `fetch` directly, so the api-client mock
+does nothing for it. Mock `global.fetch` (and the stream reader) in chat specs.
 
 ---
 
@@ -268,9 +337,17 @@ vi.mocked(api).mockResolvedValueOnce([{ id: '1', title: 'Walk' }])
 
 - **One Act/Assert per test** — split multiple interactions into separate tests
 - **Always use explicit AAA comments** — `// Arrange`, `// Act`, `// Assert`
-- **Clear mocks inline** — use `mockClear()` in Arrange, not in `beforeEach`
-- **No shared test variables** — write everything inline per test (no
-  `defaultProps`, factory functions, etc.)
+- **Clear mocks inline** — use `mockClear()` after assert, not in `beforeEach`
+- **No shared test *data*** — write props, fixtures, and expected values inline
+  per test (no `defaultProps`, no data factories like `makeActivity`). Include
+  only the fields the test exercises and suppress the missing-field type error
+  with `// @ts-expect-error partial test activity` — it keeps the object minimal
+  and fails loudly if those fields ever stop being required. Dependency *mocks*
+  are the exception: shared mock factories live in `__mocks__` (see Mock
+  Organization) because they're infrastructure, not the subject under test.
+- **Select with `data-test`, not CSS classes** — styling classes
+  (`.uw-actions__primary`) change with restyles; `[data-test="accept"]` is a
+  stable hook tied to intent.
 - **No `wrapper.vm` access** — test rendered output, not internal state
 - **Prefer `mockReturnValue` over `mockImplementation`** — use
   `mockImplementation` only when return value depends on arguments
@@ -282,27 +359,48 @@ vi.mocked(api).mockResolvedValueOnce([{ id: '1', title: 'Walk' }])
 
 ## Test Structure
 
+### One outer `describe` per file
+
+Always wrap a file's contents in a single top-level `describe` named for the
+module under test (the source file, e.g. `parseActivity`). Nest a `describe` per
+exported unit inside it. This makes it obvious at a glance — in the file and in
+the reporter output — that the whole module is covered, and keeps multi-export
+files (a util file with several functions) from reading as a flat pile of
+`it`s.
+
+```typescript
+// parseActivity.spec.ts — outer describe names the module
+describe('parseActivity', () => {
+    describe('parseMessage', () => {
+        it('should extract a fenced json activity block', () => { /* ... */ })
+    })
+
+    describe('toCreatePayload', () => {
+        it('should map pipe-separated categories to their ids', () => { /* ... */ })
+    })
+})
+```
+
+A single-export file still gets the outer describe (named for the module),
+even though it has only one inner block — consistency over saving a line.
+
+### AAA inside every test
+
 Every test uses AAA (Arrange-Act-Assert) with explicit comments:
 
 ```typescript
 describe('ActivityCard', () => {
     it('should let parent handle accept action', () => {
         // Arrange
-        const activity = {
-            id: '1',
-            title: 'Walk',
-            description: null,
-            suggested_duration: 15,
-            min_stress_level: 1,
-            max_stress_level: 5,
-            source: 'base' as const,
-            times_skipped: 0,
-            categories: ['Hands'],
-        }
-        const wrapper = shallowMount(ActivityCard, { props: { activity } })
+        const wrapper = shallowMount(ActivityCard, {
+            props: {
+                // @ts-expect-error partial test activity — only the rendered fields matter
+                activity: { title: 'Walk' },
+            },
+        })
 
         // Act
-        wrapper.find('.btn-accept').trigger('click')
+        wrapper.find('[data-test="accept"]').trigger('click')
 
         // Assert
         expect(wrapper.emitted('accept')).toHaveLength(1)
@@ -322,11 +420,9 @@ beforeEach(() => {
 it('should fetch activities on mount', async () => {
     // Arrange
     const mockFetch = vi.fn()
-    vi.mocked(useActivities).mockReturnValue({
-        ...defaultActivitiesReturn,
-        fetchActivities: mockFetch,
-        loaded: ref(false),
-    })
+    vi.mocked(useActivities).mockReturnValue(
+        makeUseActivitiesMock({ fetchActivities: mockFetch, loaded: ref(false) }),
+    )
 
     // Act
     shallowMount(SuggestPage)
@@ -383,12 +479,12 @@ describe('useActivities', () => {
 
 ### Composables that call the API
 
-Mock the API client, not the composable:
+The api client is already mocked globally (`tests/setup.ts`) — don't re-`vi.mock`
+it here (a bare re-mock drops the real `ApiError`). Just import `api` and set its
+return value:
 
 ```typescript
 import { api } from '../../src/api/client'
-
-vi.mock('../../src/api/client')
 
 it('should populate activities from API', async () => {
     // Arrange
@@ -423,35 +519,111 @@ it('should show stress level selector before suggestions', () => {
     const wrapper = shallowMount(StressPage)
 
     // Assert
-    expect(wrapper.findAll('.stress-btn')).toHaveLength(5)
+    expect(wrapper.findAll('[data-test="stress-level"]')).toHaveLength(5)
 })
 ```
+
+### Interacting with a stubbed child (shallowMount)
+
+`shallowMount` replaces child components with stubs, so *how you drive a child
+interaction depends on whether the child declares the emit* — and you should do
+it without importing the child, so the test stays tied to the parent's
+behaviour, not to which component fulfils it. Locate the stub by a `data-test`
+hook on the child in the parent template, not `findComponent(Child)`.
+
+**Child declares the emit** → fire it as a component event with `.vm.$emit()`.
+A native `.trigger('click')` on the stub does nothing, because the parent's
+`@click` is a *component-event* listener, not a native one:
+
+```typescript
+// OnboardingOptionPills renders <ToggleButton data-test="pill" @click="...">,
+// and ToggleButton has defineEmits<{ click: [] }>(). Drive + inspect via the hook:
+const pills = wrapper.findAllComponents('[data-test="pill"]')
+expect(pills[1].props('selected')).toBe(true)   // assert a prop passed in
+pills[1].vm.$emit('click')                       // fire the declared emit out
+```
+
+**Child does NOT declare the emit** → the `@click` falls through as a native
+listener on the stub root, so `.trigger('click')` works:
+
+```typescript
+// StateError renders <TextButton @click="emit('retry')">, and TextButton has
+// no emits — so the listener is native and a DOM click reaches it:
+await wrapper.findComponent(TextButton).trigger('click')
+```
+
+**Asserting slotted content passed to a stub** → stubs don't render their slots
+by default, so content you pass into a child (e.g. `<ToggleButton>{{ label }}`)
+is absent from the output. Turn on `renderStubDefaultSlot` for that mount to
+assert it without un-stubbing the child:
+
+```typescript
+const wrapper = shallowMount(OnboardingOptionPills, {
+    props: { options, modelValue: '' },
+    global: { renderStubDefaultSlot: true },
+})
+expect(wrapper.findAllComponents('[data-test="pill"]')[0].text()).toBe('Thuis')
+```
+
+Reach for `mount` only when the child's *rendered DOM* is the thing under test;
+for a thin wrapper, the techniques above keep the unit isolated.
 
 ### i18n in Tests
 
-Mount with the i18n plugin or mock `$t`:
+`$t` is stubbed to a passthrough globally in `tests/setup.ts`, so component
+specs render without any per-test i18n wiring — assert on `data-test` hooks and
+mocked composable output, not on Dutch copy.
+
+Install the real plugin **only** when the unit under test *is* the translation —
+e.g. a composable-level spec like `useActivityTranslation.spec.ts` that needs
+real `useI18n()` lookups. Use a small controlled `messages` set, not the real
+`nl.json`, so the test checks lookup logic rather than copy:
 
 ```typescript
 import { createI18n } from 'vue-i18n'
-import nl from '../../src/locales/nl.json'
 
 const i18n = createI18n({
+    legacy: false,
     locale: 'nl',
-    messages: { nl },
+    messages: { nl: { activities: { 'even-wandelen': { title: 'Wandel even' } } } },
 })
 
-const wrapper = shallowMount(Component, {
-    global: { plugins: [i18n] },
-})
+mount(Host, { global: { plugins: [i18n] } })
 ```
 
-Or for simpler tests, stub the translation:
+#### Real i18n: which technique depends on how the component reads it
 
-```typescript
-config.global.mocks = {
-    $t: (key: string) => key,
-}
-```
+The global `$t` passthrough only shadows the **template-global `$t`** — not the
+composition `t` from `useI18n()`. So when a spec genuinely needs real
+translations, the technique is dictated by how the component consumes them:
+
+- **Component uses `const { t } = useI18n()`** → install the plugin with
+  `global: { plugins: [i18n] }`. `useI18n().t` reads the injected instance
+  directly, so the passthrough is irrelevant (the `useActivityTranslation` way,
+  above).
+- **Component uses the template `$t`** → installing the plugin is **not enough**:
+  VTU layers `config.global.mocks.$t` on top of the plugin and the mock wins, so
+  `$t('x')` still returns the raw key `'x'`. Override that one key with a real
+  translator instead (there's no per-mount way to *delete* a global mock):
+
+  ```typescript
+  const i18n = createI18n({
+      legacy: false,
+      locale: 'nl',
+      messages: { nl: { onboarding: { questionOf: 'Vraag {n} van {total}' } } },
+  })
+  const translate = (key: string, named: Record<string, unknown>) =>
+      i18n.global.t(key, named)
+
+  shallowMount(OnboardingStepHeader, {
+      props: { questionNumber: 1, title: 'Waar ben je nu?' },
+      global: { mocks: { $t: translate } }, // overrides the passthrough for this mount
+  })
+  // asserting 'Vraag 1 van 5' proves n + the total default both flow through
+  ```
+
+  Don't reshape the component to use `useI18n()` just to make the test easier —
+  the template `$t` is idiomatic.
 
 ---
 
@@ -465,9 +637,9 @@ expect(wrapper.emitted('skip')).toHaveLength(1)
 // Text content
 expect(wrapper.text()).toContain('Geen activiteiten gevonden')
 
-// Element existence
-expect(wrapper.find('.activity-card').exists()).toBe(true)
-expect(wrapper.find('.empty-state').exists()).toBe(false)
+// Element existence (select via data-test, not styling classes)
+expect(wrapper.find('[data-test="activity-card"]').exists()).toBe(true)
+expect(wrapper.find('[data-test="empty-state"]').exists()).toBe(false)
 
 // Mock calls
 expect(vi.mocked(api)).toHaveBeenCalledWith('/activities')
@@ -512,7 +684,7 @@ Do NOT flag these as issues — they are **intentional conventions**:
 | Do NOT suggest | Why it's intentional |
 |----------------|---------------------|
 | Extracting repeated setup to `beforeEach` | Tests must be self-contained — no shared state |
-| Shared helpers or factory functions | Each test walks through all steps inline |
+| Extracting inline test *data* to a factory | Test data is inline by design; only dependency *mocks* use factories, in `__mocks__` |
 | `describe.each` for similar tests | Fully written-out tests preferred over parameterized suites |
 | Reducing "duplication" across tests | Readability and independence over DRY |
 
@@ -530,11 +702,12 @@ Do NOT flag these as issues — they are **intentional conventions**:
 
 Before finalizing tests:
 
+- [ ] File wrapped in one outer `describe` named for the module
 - [ ] All `it()` descriptions start with "should"
 - [ ] Test names describe user requirements, not implementation
 - [ ] 3-6 tests per component/composable
 - [ ] No tests for "renders X" or "calls Y"
 - [ ] Tests would survive a refactor
 - [ ] AAA comments in every test
-- [ ] `npm run test` passes (if frontend test script exists)
-- [ ] TypeScript compiles (`npx vue-tsc --noEmit`)
+- [ ] `npm run test:unit` passes
+- [ ] TypeScript compiles (`npm run type-check`)
