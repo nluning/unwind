@@ -121,23 +121,10 @@ new memories, write files to `.claude/` and update `.claude/MEMORY.md`.
 
 ## AI collaboration workflow
 
-AI writes code in small, reviewable chunks (a migration, a route, a composable
-— not a whole feature). Each chunk is reviewed before moving on using three
-question types:
-
-- **Why** — tests conceptual understanding ("Why hash the session token before
-  storing it?")
-- **What if** — tests consequence awareness ("What happens if you remove the
-  `httpOnly` flag?")
-- **Trace** — tests end-to-end reasoning ("Walk through what happens from
-  login request to cookie being set.")
-
-Wrong answers are signal, not failure — they identify gaps to fill before
-moving on. When a pattern repeats later, I write it independently before
-seeing the AI version, to verify retention.
-
-See `docs/plan/08-review-based-learning.md` for the full methodology and
-session logs.
+The chunk-by-chunk review-based learning flow (Why/What if/Trace questions
+after each chunk) is discontinued — don't apply it. The methodology and
+session logs are kept at `docs/plan/08-review-based-learning.md` for possible
+future reference only; it's not an active instruction.
 
 ### Principles for AI
 
