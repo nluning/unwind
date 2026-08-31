@@ -109,10 +109,6 @@ What's deferred or in progress is in the roadmap below.
 Honest but incomplete list of what's known to be incomplete. Items are ordered roughly by
 priority, not by how easy they'd be to fix:
 
-- **Frontend test coverage — currently zero.** Backend has 7 test files
-  covering auth, activities, memory, rate limiting, and onboarding parsing,
-  but the Vue side has no Vitest/component tests yet. Highest-priority next
-  chunk.
 - **Backend test coverage — partial.** Integration tests hit a real Postgres
   test container (correct call — see CLAUDE.md), but route coverage is gappy
   and there are no tests for the streaming chat endpoint or the SSE error
