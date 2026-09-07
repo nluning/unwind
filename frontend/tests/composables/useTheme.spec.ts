@@ -17,19 +17,4 @@ describe('useTheme', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('warm')
     expect(localStorage.getItem('unwind-color-scheme')).toBe('warm')
   })
-
-  it('should toggle between dark and light, mirroring it onto the document', async () => {
-    // Arrange
-    const { mode, toggleMode } = useTheme()
-    mode.value = 'dark'
-    await nextTick()
-
-    // Act
-    toggleMode()
-    await nextTick()
-
-    // Assert
-    expect(mode.value).toBe('light')
-    expect(document.documentElement.getAttribute('data-mode')).toBe('light')
-  })
 })

@@ -11,6 +11,7 @@ describe('ToggleButton', () => {
 
     // Assert
     expect(wrapper.text()).toContain('Thuis')
+    expect(wrapper.attributes('aria-pressed')).toBe('false')
   })
 
   it('should apply the active styling when selected', () => {
@@ -22,6 +23,7 @@ describe('ToggleButton', () => {
 
     // Assert
     expect(wrapper.classes()).toContain('bg-uw-primary')
+    expect(wrapper.attributes('aria-pressed')).toBe('true')
   })
 
   it('should apply the compact styling at the small size', () => {

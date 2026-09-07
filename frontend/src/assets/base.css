@@ -39,7 +39,8 @@ button {
 
 /* =========================================================================
    Horizon tokens — new design system (Home redesign).
-   Namespaced `--uw-*`. Light palettes only — dark deferred.
+   Namespaced `--uw-*`. Three colour themes (calm/warm/playful) — no
+   separate light/dark mode.
    ========================================================================= */
 
 :root,
@@ -494,6 +495,19 @@ button {
   transition: border-color 0.15s ease;
 }
 .uw-input:focus { border-color: var(--uw-primary); }
+
+/* Everything interactive is a real <button>, so this one rule covers
+   keyboard focus app-wide. */
+button:focus-visible {
+  outline: 2px solid var(--uw-primary);
+  outline-offset: 2px;
+}
+
+/* Dialog containers get focus() on open only to move the AT/keyboard
+   cursor and enable Escape — not a control, so no ring needed here. */
+[role="dialog"]:focus {
+  outline: none;
+}
 
 .uw-badge {
   width: 40px;

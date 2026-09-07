@@ -43,8 +43,8 @@ Other modes are in development.
 When a user first opens the app, there are about 30 activities available. There is 
 an option to add your own activities.
 
-The UI is Dutch-only. Dark mode is the default. There are 6 theme variants
-(calm/warm/playful x dark/light).
+The UI is Dutch-only. There are 3 colour theme variants (calm/warm/playful),
+no separate light/dark mode.
 
 The app is a PWA designed for mobile use. The target audience is neurodivergent
 people, but not exclusively.

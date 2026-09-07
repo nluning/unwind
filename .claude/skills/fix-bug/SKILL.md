@@ -216,6 +216,9 @@ Once picked, write a one-liner into **Chosen Approach**.
 - **Run the affected suite** (`npx vitest run` in the touched
   `backend/`/`frontend/` dir) plus type-check (`tsc --noEmit` /
   `npm run type-check`) before declaring done.
+- **If the fix touches frontend UI**, check it against **`/accessibility`**
+  before declaring done — a bug fix is not exempt from the same a11y bar as
+  new code.
 
 Update BUG.md as you go: fill in **Fix**, set Status to `Fixing`, then
 `Verified` only after Phase 7 passes.

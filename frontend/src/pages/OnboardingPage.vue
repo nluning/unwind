@@ -168,16 +168,16 @@
         class="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center"
       >
         <span class="spinner" />
-        <p class="uw-body !pt-0 !max-w-none">
+        <h1 class="uw-body !pt-0 !max-w-none">
           {{ $t('onboarding.generating') }}
-        </p>
+        </h1>
       </div>
 
       <!-- Step 8 — done -->
       <template v-else-if="step === 8">
-        <h2 class="uw-title pt-[72px] max-w-[280px]">
+        <h1 class="uw-title pt-[72px] max-w-[280px]">
           {{ $t('onboarding.doneHeading') }}
-        </h2>
+        </h1>
         <p class="uw-body">
           {{ $t('onboarding.done', { count: generatedCount }) }}
         </p>

@@ -2,6 +2,15 @@
   <PageShell>
       <PageHeader back @back="goBack" />
 
+      <!-- Announced once per completed reply, not per streamed token. -->
+      <p
+        role="status"
+        aria-live="polite"
+        class="sr-only"
+      >
+        {{ liveAnnouncement }}
+      </p>
+
       <!-- Persistent context: the activity this chat is about. Stays put once
            the conversation starts. -->
       <div
@@ -202,6 +211,8 @@ function handleSend() {
   sendMessage(text, undefined, seedContext.value)
 }
 
+const liveAnnouncement = ref('')
+
 const accepted = ref(false)
 
 function handleAccept() {
@@ -240,6 +251,11 @@ watch(messages, scrollToBottom, { deep: true })
 watch(isStreaming, (streaming) => {
   if (!streaming) {
     nextTick(() => inputElement.value?.focus())
+
+    const last = parsedMessages.value[parsedMessages.value.length - 1]
+    if (last?.role === 'assistant') {
+      liveAnnouncement.value = last.textBefore || last.textAfter || ''
+    }
   }
 })
 </script>

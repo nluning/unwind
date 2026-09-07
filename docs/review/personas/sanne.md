@@ -35,7 +35,8 @@
 - Text that's too small or too dense
 
 ## What she'd value
-- The dark mode default — she'd notice and appreciate this
+- The moody, low-brightness default look, with no light-mode toggle to
+  fumble with — she'd notice and appreciate this
 - One suggestion at a time (not a list to browse)
 - A calm, quiet visual design that doesn't demand attention
 - Being able to skip without guilt or friction

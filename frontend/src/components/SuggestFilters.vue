@@ -4,6 +4,7 @@
     class="uw-corner-filter"
   >
     <button
+      ref="filterBtnRef"
       class="uw-menu-btn"
       :style="
         isFiltering
@@ -53,7 +54,7 @@
       </section>
 
       <div class="mt-5 flex justify-end">
-        <TextButton @click="open = false">{{ $t('filter.done') }}</TextButton>
+        <TextButton @click="closeFilters">{{ $t('filter.done') }}</TextButton>
       </div>
     </div>
   </div>
@@ -82,6 +83,7 @@ const isFiltering = computed(
 
 const open = ref(false)
 const filterRef = ref<HTMLElement | null>(null)
+const filterBtnRef = ref<HTMLElement | null>(null)
 
 function toggleCategory(category: string) {
   if (selectedCategories.value.includes(category)) {
@@ -98,17 +100,28 @@ function clearFilters() {
   selectedCategories.value = []
 }
 
+function closeFilters() {
+  open.value = false
+  filterBtnRef.value?.focus()
+}
+
 function handleClickOutside(event: MouseEvent) {
   if (filterRef.value && !filterRef.value.contains(event.target as Node)) {
     open.value = false
   }
 }
 
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && open.value) closeFilters()
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
