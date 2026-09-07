@@ -55,11 +55,16 @@ edge cases, and the states a component renders. Run the suite before the review
 gate. If Noor explicitly decides to skip tests for a given feature, note it and
 move on.
 
+For any new or changed frontend UI (components, pages, composables with
+templates), follow the **`/accessibility`** skill — WCAG basics plus this
+app's neurodivergence-specific design considerations.
+
 ## Phase 5 — Code review ▸
 
 Review the diff yourself — correctness, security, conventions (CLAUDE.md +
-relevant ADRs), and anything privacy-sensitive. Present findings to Noor.
-**Wait** — this is a review gate, not a rubber stamp.
+relevant ADRs), accessibility for any frontend diff (per **`/accessibility`**),
+and anything privacy-sensitive. Present findings to Noor. **Wait** — this is a
+review gate, not a rubber stamp.
 
 Tests passing is necessary, not sufficient — separately confirm the diff
 actually does what the ticket/plan asked for. A green suite only proves the

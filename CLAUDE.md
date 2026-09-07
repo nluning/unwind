@@ -25,9 +25,9 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 
 **Stage 6 — Deployment (complete).** App live at https://unwind.nu with full CI/CD via GitHub Actions: push to `main` triggers tests → builds + pushes images to GHCR → SSH-deploys to the Hetzner VPS (compose pull, migrate, up -d). Branching: `development` → PR → protected `main`.
 Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
-themes, loading/error states). Six theme variants (calm/warm/playful × dark/light)
-with `useTheme` composable. Dark mode default. `LinkButton` shared component.
-Mobile-first styling still deferred.
+themes, loading/error states). Three colour themes (calm/warm/playful) with
+`useTheme` composable — no separate light/dark mode. `LinkButton` shared
+component. Mobile-first styling still deferred.
 
 Stage 5 (all 12 chunks done):
 - Mode 4 chat: `POST /chat` + `/chat/stream` with auth, Anthropic SDK (Haiku),

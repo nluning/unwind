@@ -3,11 +3,11 @@
     <span class="font-serif text-[17px] text-uw-ink-mute">
       {{ $t('onboarding.questionOf', { n: questionNumber, total }) }}
     </span>
-    <h2
+    <h1
       class="font-serif text-[28px] leading-[1.22] tracking-[-0.4px] text-uw-ink"
     >
       {{ title }}
-    </h2>
+    </h1>
     <span v-if="$slots.hint" data-test="hint" class="text-[13px] text-uw-ink-mute">
       <slot name="hint" />
     </span>

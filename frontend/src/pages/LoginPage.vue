@@ -2,7 +2,7 @@
   <PageShell>
       <PageHeader />
 
-      <main class="flex-1 flex flex-col justify-center px-[26px] pb-12 gap-6">
+      <div class="flex-1 flex flex-col justify-center px-[26px] pb-12 gap-6">
         <h1 class="font-serif text-2xl tracking-tight text-uw-ink m-0">
           {{ headingText }}
         </h1>
@@ -75,7 +75,7 @@
         >
           {{ $t('privacy.link') }}
         </router-link>
-      </main>
+      </div>
   </PageShell>
 </template>
 

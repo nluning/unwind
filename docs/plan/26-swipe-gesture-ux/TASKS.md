@@ -180,7 +180,7 @@ neutral icons — without centering them.
            careful mostly-horizontal drag never also opens the sheet.
         8. Confirm both buttons read correctly with a screen reader
            (aria-label), and the caption text under each icon is legible in
-           both light and dark theme variants.
+           all three colour theme variants.
         9. Confirm the buttons render skip (✕) in the left slot and accept
            (✓) in the right slot — swapped from before — and that the pair
            is still edge-anchored (not centered).
