@@ -1,6 +1,9 @@
 # Stale app after deploy (iOS home-screen) — fix plan
 
-**Status: NOT STARTED.** Logged 2026-06-15 from a debugging session. Scoped, not yet built.
+**Status: DONE (2026-09-07).** Logged 2026-06-15 from a debugging session,
+scoped but left unbuilt until a deploy actually surfaced it again — see
+`docs/bugs/stale-index-html-cache/BUG.md`. The nginx change below shipped
+as designed.
 
 ## The symptom
 
