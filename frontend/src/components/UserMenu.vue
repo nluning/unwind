@@ -4,6 +4,7 @@
     class="uw-corner-menu"
   >
     <button
+      ref="menuBtnRef"
       class="uw-menu-btn"
       :aria-label="$t('menu.label')"
       :aria-expanded="open"
@@ -33,17 +34,6 @@
             :aria-pressed="colorScheme === preset.id"
             @click="setColorScheme(preset.id)"
           />
-          <template v-if="enableLightMode">
-            <div class="w-px h-[18px] bg-uw-border-soft mx-1" />
-            <button
-              class="w-[22px] h-[22px] rounded-[11px] border border-uw-border bg-transparent text-uw-ink-soft inline-flex items-center justify-center p-0 cursor-pointer"
-              :aria-label="$t(mode === 'dark' ? 'theme.light' : 'theme.dark')"
-              :aria-pressed="mode === 'dark'"
-              @click="toggleMode"
-            >
-              <MoonIcon />
-            </button>
-          </template>
         </div>
       </div>
 
@@ -83,20 +73,22 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useTheme, type ColorScheme } from '../composables/useTheme.js'
 import { useWelcome } from '../composables/useWelcome.js'
 import MenuLinesIcon from './icons/MenuLinesIcon.vue'
-import MoonIcon from './icons/MoonIcon.vue'
 
-const { colorScheme, setColorScheme, mode, toggleMode } = useTheme()
+const { colorScheme, setColorScheme } = useTheme()
 const { dismissMenuHint } = useWelcome()
-
-// Flip to true once light-mode `--uw-*` overrides exist in base.css.
-const enableLightMode = false
 
 const open = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
+const menuBtnRef = ref<HTMLElement | null>(null)
 
 function toggleMenu() {
   open.value = !open.value
   if (open.value) dismissMenuHint()
+}
+
+function closeMenu() {
+  open.value = false
+  menuBtnRef.value?.focus()
 }
 
 function handleClickOutside(event: MouseEvent) {
@@ -105,12 +97,18 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && open.value) closeMenu()
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 const themes: { id: ColorScheme; swatch: string }[] = [

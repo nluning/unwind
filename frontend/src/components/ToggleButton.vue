@@ -8,6 +8,7 @@
         ? 'bg-uw-primary text-uw-primary-fg border-transparent'
         : 'bg-transparent text-uw-ink border-uw-border',
     ]"
+    :aria-pressed="selected"
     @click="emit('click')"
   >
     <slot />

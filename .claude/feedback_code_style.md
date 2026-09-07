@@ -24,4 +24,4 @@ Keep comments minimal — remove explanatory comments unless genuinely essential
 
 **Why:** Noor finds explanatory comment noise clutters the code; the codebase trends comment-heavy and she's steering it leaner.
 
-**How to apply:** In new code, only comment non-obvious rationale or hazards. When editing existing files, trim redundant explanatory comments you come across.
+**How to apply:** In new code, only comment non-obvious rationale or hazards. When editing existing files, trim redundant explanatory comments you come across. When a comment does survive that bar, keep it short — one line where possible, not a multi-sentence paragraph explaining the reasoning at length.

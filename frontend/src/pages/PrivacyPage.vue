@@ -2,7 +2,7 @@
   <PageShell>
     <PageHeader back @back="router.back()" />
 
-    <main class="flex flex-col px-[26px] py-8 gap-6">
+    <div class="flex flex-col px-[26px] py-8 gap-6">
       <h1 class="font-serif text-2xl tracking-tight text-uw-ink m-0">
         {{ $t('privacy.heading') }}
       </h1>
@@ -51,7 +51,7 @@
       >
         &larr; {{ $t('privacy.back') }}
       </router-link>
-    </main>
+    </div>
   </PageShell>
 </template>
 

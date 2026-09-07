@@ -12,6 +12,8 @@
               modelValue === level,
           },
         ]"
+        :aria-pressed="modelValue === level"
+        :aria-label="$t('stress.level', { n: level })"
         @click="select(level)"
       >
         {{ level }}

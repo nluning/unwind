@@ -214,9 +214,7 @@
   "theme": {
     "calm": "Rustig",
     "warm": "Warm",
-    "playful": "Speels",
-    "dark": "Donkere modus",
-    "light": "Lichte modus"
+    "playful": "Speels"
   },
   "categories": {
     "Head": "Hoofd",

@@ -3,8 +3,8 @@
     <div class="uw-screen__wash" aria-hidden="true" />
     <div class="uw-screen__glow" aria-hidden="true" />
 
-    <div class="uw-frame">
+    <main class="uw-frame">
       <slot />
-    </div>
+    </main>
   </div>
 </template>
