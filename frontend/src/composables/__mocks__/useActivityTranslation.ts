@@ -8,7 +8,7 @@ export function makeUseActivityTranslationMock(
   overrides: Partial<ReturnType<typeof Real>> = {},
 ): ReturnType<typeof Real> {
   return {
-    titleFor: (activity: Activity) => activity.title,
+    titleFor: (activity: Pick<Activity, 'title' | 'source'>) => activity.title,
     descriptionFor: (activity: Activity) => activity.description,
     ...overrides,
   }

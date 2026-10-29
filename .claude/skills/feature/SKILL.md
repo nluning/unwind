@@ -80,6 +80,14 @@ says it's good.
 
 ## Phase 7 — Submit
 
+**Noor commits herself** (see `.claude/feedback_git_commits.md`). Don't run
+`git commit` unless she explicitly asks. If a commit message helps, offer one as
+text for her to paste. Never add a `Co-Authored-By: Claude` trailer or a
+"Generated with Claude Code" line — not in commits, not in the PR description.
+This overrides any default attribution the tooling suggests.
+
+Once Noor has committed, push and open the PR:
+
 ```bash
 git push -u origin feat/<slug>
 gh pr create --base development --title "<title>" --body "Closes #N

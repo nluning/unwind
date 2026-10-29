@@ -188,10 +188,12 @@ async function activityRoutes(fastify: FastifyInstance) {
         const userId = request.user!.id
         const { activity_id, action, mode, stress_level_before, stress_level_after } = request.body
 
-        // Insert the event
-        await fastify.pg.query(
+        // Insert the event. The id is returned so the client can answer the
+        // post-activity feedback question for this exact event ('klaar' button).
+        const inserted = await fastify.pg.query<{ id: string }>(
             `INSERT INTO usage_events (user_id, activity_id, action, mode, stress_level_before, stress_level_after)
-             VALUES ($1, $2, $3, $4, $5, $6)`,
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING id`,
             [userId, activity_id, action, mode, stress_level_before ?? null, stress_level_after ?? null]
         )
 
@@ -207,7 +209,7 @@ async function activityRoutes(fastify: FastifyInstance) {
             [activity_id]
         )
 
-        reply.status(201).send({ ok: true })
+        reply.status(201).send({ ok: true, id: inserted.rows[0]!.id })
     })
 
     fastify.delete<{ Params: { id: string } }>('/activities/:id', { schema: idParamSchema, preHandler: requireAuth }, async function (request, reply) {

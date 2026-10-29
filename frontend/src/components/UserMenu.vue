@@ -133,6 +133,7 @@ const menuGroups: { heading?: string; links: { to: RouteLocationRaw; label: stri
   },
   {
     links: [
+      { to: '/stats',   label: 'menu.stats' },
       { to: '/account', label: 'menu.account' },
     ],
   },

@@ -7,6 +7,10 @@ import {
   useSuggestionFlow,
   resetSuggestionFlowState,
 } from '../../src/composables/useSuggestionFlow'
+import {
+  usePostActivityFeedback,
+  resetPostActivityFeedback,
+} from '../../src/composables/usePostActivityFeedback'
 import type { Activity } from '../../src/types/activity'
 
 vi.mock('../../src/composables/useActivities')
@@ -70,6 +74,7 @@ describe('useSuggestionFlow', () => {
   it('should show the confirmation and stop offering a suggestion once accepted', () => {
     // Arrange
     resetSuggestionFlowState()
+    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
     const suggest = vi.fn().mockReturnValue({ id: 'picked' })
     vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
     const activities: Activity[] = [
@@ -90,6 +95,7 @@ describe('useSuggestionFlow', () => {
   it('should record an accepted activity as a usage event', () => {
     // Arrange
     resetSuggestionFlowState()
+    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
     const suggest = vi.fn().mockReturnValue({ id: 'picked' })
     vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
     const activities: Activity[] = [
@@ -107,6 +113,64 @@ describe('useSuggestionFlow', () => {
       method: 'POST',
       body: JSON.stringify({ activity_id: 'picked', action: 'accepted', mode: 'mode2' }),
     })
+  })
+
+  it('should let the user say they are done with the activity they just accepted', async () => {
+    // Arrange
+    resetSuggestionFlowState()
+    resetPostActivityFeedback()
+    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
+    const suggest = vi.fn().mockReturnValue({ id: 'picked', title: 'Walk', source: 'base' })
+    vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
+    const activities: Activity[] = [
+      // @ts-expect-error partial test activity — the flow only reads id
+      { id: 'picked' },
+    ]
+    const pool = computed(() => activities)
+    const { handleAccept } = useSuggestionFlow({ mode: 'mode2', pool })
+    const { target, openForLastAccepted } = usePostActivityFeedback()
+    handleAccept()
+
+    // Act
+    await openForLastAccepted()
+
+    // Assert
+    expect(target.value).toEqual({
+      eventId: 'event-1',
+      activity: { id: 'picked', title: 'Walk', source: 'base' },
+    })
+  })
+
+  it('should move on to the next suggestion once the feedback question has been answered', async () => {
+    // Arrange
+    resetSuggestionFlowState()
+    resetPostActivityFeedback()
+    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' }) // accept
+    vi.mocked(api).mockResolvedValueOnce({ ok: true }) // answer
+    const suggest = vi
+      .fn()
+      .mockReturnValueOnce({ id: 'picked', title: 'Walk', source: 'base' })
+      .mockReturnValue({ id: 'next-up' })
+    vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
+    const activities: Activity[] = [
+      // @ts-expect-error partial test activity — the flow only reads id
+      { id: 'picked' },
+    ]
+    const pool = computed(() => activities)
+    // mode4 is unused elsewhere in this file: instances created in earlier tests
+    // are never unmounted, so their watchers would also react to this answer.
+    const { current, accepted, handleAccept } = useSuggestionFlow({ mode: 'mode4', pool })
+    const { openForLastAccepted, answer } = usePostActivityFeedback()
+    handleAccept()
+    await openForLastAccepted()
+
+    // Act
+    answer('better')
+    await nextTick()
+
+    // Assert — the 'tot zo' confirmation is gone and a fresh suggestion is shown
+    expect(accepted.value).toBe(false)
+    expect(current.value?.id).toBe('next-up')
   })
 
   it('should record a skipped activity as a usage event', () => {
