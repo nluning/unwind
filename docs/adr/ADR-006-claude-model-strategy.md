@@ -100,3 +100,17 @@ recurring cost driver, stays on Haiku.
 - `CLAUDE.md` — onboarding description
 
 Model identifier: `claude-sonnet-4-6`.
+
+## Addendum — 2026-10-29: onboarding removed
+
+The onboarding flow this ADR was originally about no longer exists (plan 28):
+it stopped being a gate in ADR-012, lost its last UI entry point in plan 20,
+and the code was then deleted. The "Files changed" list above, the per-account
+3-attempt onboarding limit and the one-off cost estimate describe code that has
+been removed.
+
+The Sonnet decision carries over unchanged to the flows that replaced it:
+`POST /activities/suggest-from-answers` ("Voor hier en nu", one activity) and
+`POST /activities/suggest-from-list` (`SUGGESTION_COUNT` activities) both call
+`claude-sonnet-4-6`, each limited to 10 requests/day per user. The Dutch-quality
+reasoning above still applies; Mode 4 chat (Haiku) is retired.

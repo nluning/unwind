@@ -4,8 +4,8 @@ import { nextTick, ref } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import QuickSuggestPage from '../../src/pages/QuickSuggestPage.vue'
-import OnboardingOptionPills from '../../src/components/OnboardingOptionPills.vue'
-import StepActions from '../../src/components/OnboardingStepActions.vue'
+import OptionPills from '../../src/components/OptionPills.vue'
+import StepActions from '../../src/components/StepActions.vue'
 import StateLoading from '../../src/components/StateLoading.vue'
 import StateError from '../../src/components/StateError.vue'
 import SuggestionAccepted from '../../src/components/SuggestionAccepted.vue'
@@ -67,7 +67,7 @@ function mockAnswers(overrides: Partial<ReturnType<typeof useSuggestFromAnswers>
 }
 
 async function pick(wrapper: ReturnType<typeof mountPage>, value: string) {
-  await wrapper.findComponent(OnboardingOptionPills).vm.$emit('update:modelValue', value)
+  await wrapper.findComponent(OptionPills).vm.$emit('update:modelValue', value)
 }
 
 // Five phases (questions/loading/failed/result/doing) plus revisit-vs-first-pass
@@ -98,7 +98,7 @@ describe('QuickSuggestPage', () => {
     await pick(wrapper, 'outdoor')
 
     // Assert
-    expect(wrapper.findComponent(OnboardingOptionPills).exists()).toBe(true)
+    expect(wrapper.findComponent(OptionPills).exists()).toBe(true)
     expect(wrapper.findComponent(StepActions).props('showContinue')).toBe(true)
   })
 

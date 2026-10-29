@@ -75,8 +75,6 @@ locally doesn't appear in Sentry until it's shipped through the normal
   not Sentry — deliberate, to avoid flooding Sentry with one event per
   Docker `HEALTHCHECK` poll during a real outage. If the DB actually goes
   down, that already surfaces through every other route's error path.
-- `backend/src/routes/onboarding.ts` is dead code (unregistered in `app.ts`)
-  and isn't held to the same standard.
 
 ## Anthropic-specific checks
 

@@ -221,7 +221,7 @@ const addError = ref('')
 
 onMounted(async () => {
   // Refresh /me so the toggle and memory list reflect server truth
-  // (e.g. after onboarding flipped memory_enabled in another flow).
+  // (e.g. memory_enabled changed from another tab or device).
   // The module-level `user` ref otherwise keeps whatever state was
   // loaded at app boot.
   await fetchMe()

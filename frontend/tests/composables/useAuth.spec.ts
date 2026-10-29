@@ -28,7 +28,7 @@ describe('useAuth', () => {
       onboarding_completed_at: '2026-01-01',
       memory_enabled: false,
     })
-    const { user, isLoggedIn, isAnonymous, needsOnboarding, login } = useAuth()
+    const { user, isLoggedIn, isAnonymous, login } = useAuth()
 
     // Act
     await login('a@b.nl', 'secret')
@@ -41,7 +41,6 @@ describe('useAuth', () => {
     expect(user.value?.id).toBe('u1')
     expect(isLoggedIn.value).toBe(true)
     expect(isAnonymous.value).toBe(false)
-    expect(needsOnboarding.value).toBe(false)
     expect(localStorage.getItem('unwind-user')).toBe('true')
   })
 
@@ -67,7 +66,7 @@ describe('useAuth', () => {
     expect(user.value?.id).toBe('r1')
   })
 
-  it('should treat a fetched email-less user as anonymous and needing onboarding', async () => {
+  it('should treat a fetched email-less user as anonymous', async () => {
     // Arrange
     reset()
     vi.mocked(api).mockResolvedValueOnce({
@@ -76,7 +75,7 @@ describe('useAuth', () => {
       onboarding_completed_at: null,
       memory_enabled: false,
     })
-    const { user, isAnonymous, needsOnboarding, fetchMe } = useAuth()
+    const { user, isAnonymous, fetchMe } = useAuth()
 
     // Act
     await fetchMe()
@@ -84,7 +83,6 @@ describe('useAuth', () => {
     // Assert
     expect(user.value?.id).toBe('u2')
     expect(isAnonymous.value).toBe(true)
-    expect(needsOnboarding.value).toBe(true)
     expect(localStorage.getItem('unwind-user')).toBe('true')
   })
 

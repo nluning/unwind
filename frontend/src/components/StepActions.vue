@@ -1,7 +1,7 @@
 <template>
   <div class="mt-auto mb-12 px-[22px] flex items-center justify-between">
     <button class="uw-text-button" data-test="back" @click="$emit('back')">
-      {{ $t('onboarding.back') }}
+      {{ $t('steps.back') }}
     </button>
     <button
       v-if="showContinue"
@@ -9,7 +9,7 @@
       data-test="continue"
       @click="$emit('continue')"
     >
-      {{ $t('onboarding.continue') }}
+      {{ $t('steps.continue') }}
       <span class="uw-badge">
         <ForwardIcon />
       </span>

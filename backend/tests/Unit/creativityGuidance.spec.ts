@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { CREATIVITY_GUIDANCE } from '../../src/routes/creativityGuidance.js'
 import { buildSystemPrompt } from '../../src/routes/buildSystemPrompt.js'
-import { ONBOARDING_SYSTEM_PROMPT } from '../../src/routes/onboardingPrompt.js'
+import { SUGGEST_FROM_ANSWERS_SYSTEM_PROMPT } from '../../src/routes/suggestFromAnswersPrompt.js'
+import { SUGGEST_FROM_LIST_SYSTEM_PROMPT } from '../../src/routes/suggestFromListPrompt.js'
 
 const emptyContext = {
   memories: [],
@@ -32,17 +33,16 @@ describe('chat system prompt (buildSystemPrompt)', () => {
   })
 })
 
-describe('onboarding system prompt', () => {
+describe.each([
+  ['suggest-from-answers', SUGGEST_FROM_ANSWERS_SYSTEM_PROMPT],
+  ['suggest-from-list', SUGGEST_FROM_LIST_SYSTEM_PROMPT],
+])('%s system prompt', (_name, prompt) => {
   it('includes the shared creativity guidance', () => {
-    expect(ONBOARDING_SYSTEM_PROMPT).toContain(CREATIVITY_GUIDANCE)
+    expect(prompt).toContain(CREATIVITY_GUIDANCE)
   })
 
-  it('drops the old "fresh, surprising" / "be creative" directives', () => {
-    expect(ONBOARDING_SYSTEM_PROMPT).not.toContain('fresh, surprising')
-    expect(ONBOARDING_SYSTEM_PROMPT).not.toContain('Be creative and specific')
-  })
-
-  it('keeps the batch tilt toward familiar/easy-to-start', () => {
-    expect(ONBOARDING_SYSTEM_PROMPT).toContain('familiar and easy to start')
+  it('does not use the old "fresh, surprising" / "be creative" directives', () => {
+    expect(prompt).not.toContain('fresh, surprising')
+    expect(prompt).not.toContain('Be creative and specific')
   })
 })

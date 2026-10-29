@@ -164,7 +164,7 @@ async function chatRoutes(fastify: FastifyInstance) {
                 // resolves normally and neither the Fastify error handler nor
                 // Sentry.setupFastifyErrorHandler sees the error — capture it
                 // explicitly before writing the SSE error event. (Same pattern as
-                // the parse-failure branches in generate.ts / onboarding.ts.)
+                // the parse-failure branches in generate.ts.)
                 if (err?.status === 429) {
                     reply.raw.write(`data: ${JSON.stringify({ type: 'error', error: 'AI service is busy. Try again in a moment.' })}\n\n`)
                 } else {

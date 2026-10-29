@@ -341,7 +341,7 @@ button {
 }
 
 /* Actions — shared inline text+icon link style, reused across many pages
-   (SuggestionAccepted's "Terug", OnboardingStepActions' "Verder", chat/list
+   (SuggestionAccepted's "Terug", StepActions' "Volgende", chat/list
    action rows, etc). Keep this generic — ActivityCard's swipe buttons have
    their own dedicated `.uw-swipe-actions__*` classes below instead of
    overloading these. */

@@ -37,15 +37,16 @@ Stage 5 (all 12 chunks done):
 - `useChat` composable, ChatPage.vue with streaming, auto-scroll, reset
 - `parseActivity.ts`: JSON extraction, save-to-list button in chat UI
 - Memory system: `user_memories` table, CRUD + batch endpoints, `memory_enabled`
-  consent flag (default false, opt-in via onboarding)
-- Onboarding: tappable form (setting/social/interests), Claude generates 10-15
-  personalized activities + 3-5 user memories in one API call, batch-inserted
-  in a single transaction. Decision: form over conversation (review panel showed
-  typing is a dealbreaker for depleted users). Uses Sonnet (reverted from Haiku
-  2026-04-23 — Dutch quality of generated activities was stilted; see ADR-006).
+  consent flag (default false, opt-in, toggled on the account page)
+- Onboarding (tappable form → Claude generates a starter list + memories): built
+  here, later made opt-in (ADR-012) and **removed 2026-10-29** (plan 28). Its
+  lessons live on: form over conversation (review panel showed typing is a
+  dealbreaker for depleted users) and Sonnet for generated Dutch activities
+  (see ADR-006). The shared question components now serve "Voor hier en nu".
 - Rate limiting: `api_usage` table, 70 chat requests/day (≈7 conversations),
-  3 onboarding attempts total. `createRateLimiter` middleware factory.
-- Tests: memory CRUD, rate limiting, onboarding response parsing
+  10/day each for `suggest_from_list` and `suggest_from_answers`.
+  `createRateLimiter` middleware factory.
+- Tests: memory CRUD, rate limiting
 - First user review panel run: `docs/review/reports/001-general-concept.md`
 
 Stage 6 progress (see `docs/plan/10-deployment-plan.md` for the plan and
@@ -101,7 +102,7 @@ read the relevant ADR first.** Summary:
 - Vue 3 + Fastify + PostgreSQL + Claude API
 - PWA, offline-first for modes 1-3
 - Raw SQL (no ORM) — intentional; direct control over queries
-- Claude Haiku for Mode 4 chat, Sonnet for onboarding
+- Claude Haiku for Mode 4 chat (retired), Sonnet for AI activity generation (`suggest-from-answers` / `suggest-from-list`)
 - Docker on VPS, incremental deployment from Stage 0
 
 ## Memory

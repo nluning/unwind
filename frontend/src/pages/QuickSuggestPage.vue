@@ -14,13 +14,13 @@
         />
       </div>
 
-      <OnboardingStepHeader
+      <QuestionStepHeader
         :question-number="step"
         :total="QUESTION_COUNT"
         :title="$t(currentQuestion.title)"
       />
 
-      <OnboardingOptionPills
+      <OptionPills
         :options="currentQuestion.options"
         :model-value="answers[currentQuestion.key]"
         class="mt-8"
@@ -103,9 +103,9 @@ import { useSuggestFromAnswers, type QuickAnswers } from '../composables/useSugg
 import type { AiActivity } from '../utils/parseActivity.js'
 import PageShell from '../components/PageShell.vue'
 import PageHeader from '../components/PageHeader.vue'
-import OnboardingStepHeader from '../components/OnboardingStepHeader.vue'
-import OnboardingOptionPills from '../components/OnboardingOptionPills.vue'
-import StepActions from '../components/OnboardingStepActions.vue'
+import QuestionStepHeader from '../components/QuestionStepHeader.vue'
+import OptionPills from '../components/OptionPills.vue'
+import StepActions from '../components/StepActions.vue'
 import StateLoading from '../components/StateLoading.vue'
 import StateError from '../components/StateError.vue'
 import StateMessage from '../components/StateMessage.vue'
@@ -158,7 +158,7 @@ const phase = ref<'questions' | 'loading' | 'failed' | 'result' | 'doing'>('ques
 const step = ref(1)
 const answers = ref<Record<QuestionKey, AnswerValue>>({ location: '', social: '', energy: '' })
 
-// First-pass auto-advance, like onboarding: on a question already visited
+// First-pass auto-advance: on a question already visited
 // (back-navigation) a pick just updates the value and the user taps Volgende.
 const visited = ref(new Set<number>())
 const isRevisit = computed(() => visited.value.has(step.value))

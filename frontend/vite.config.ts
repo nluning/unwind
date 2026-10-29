@@ -56,7 +56,6 @@ export default defineConfig({
         // they read 0%; testing them is no value (see issue #91, test skill).
         'src/components/icons/**',
         'src/pages/ChatPage.vue',
-        'src/pages/OnboardingPage.vue',
         'src/composables/useChat.ts',
       ],
     },
