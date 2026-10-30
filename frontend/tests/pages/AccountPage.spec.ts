@@ -28,7 +28,6 @@ function mockAuth(overrides: Partial<ReturnType<typeof useAuth>> = {}) {
     }),
     isLoggedIn: ref(true),
     isAnonymous: ref(true),
-    needsOnboarding: ref(false),
     initialize: vi.fn(async () => {}),
     fetchMe: vi.fn(async () => {}),
     login: vi.fn(async () => {}),

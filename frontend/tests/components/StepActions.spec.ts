@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
-import OnboardingStepActions from '../../src/components/OnboardingStepActions.vue'
+import StepActions from '../../src/components/StepActions.vue'
 
-describe('OnboardingStepActions', () => {
+describe('StepActions', () => {
   it('should let the parent handle going back', async () => {
     // Arrange
-    const wrapper = shallowMount(OnboardingStepActions, {
+    const wrapper = shallowMount(StepActions, {
       props: { showContinue: true },
     })
 
@@ -18,7 +18,7 @@ describe('OnboardingStepActions', () => {
 
   it('should let the parent handle continuing', async () => {
     // Arrange
-    const wrapper = shallowMount(OnboardingStepActions, {
+    const wrapper = shallowMount(StepActions, {
       props: { showContinue: true },
     })
 
@@ -31,7 +31,7 @@ describe('OnboardingStepActions', () => {
 
   it('should hide the continue button until the step is complete', () => {
     // Arrange & Act
-    const wrapper = shallowMount(OnboardingStepActions, {
+    const wrapper = shallowMount(StepActions, {
       props: { showContinue: false },
     })
 

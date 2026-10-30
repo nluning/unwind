@@ -10,7 +10,6 @@ import feedbackRoutes from './routes/feedback.js'
 import generateRoutes from './routes/generate.js'
 import healthRoutes from './routes/health.js'
 import memoryRoutes from './routes/memory.js'
-import onboardingRoutes from './routes/onboarding.js'
 import { registerErrorHandler } from './errorHandler.js'
 
   export async function buildApp() {
@@ -39,7 +38,6 @@ import { registerErrorHandler } from './errorHandler.js'
     await fastify.register(feedbackRoutes)
     await fastify.register(generateRoutes)
     await fastify.register(memoryRoutes)
-    await fastify.register(onboardingRoutes)
 
     return fastify
   }

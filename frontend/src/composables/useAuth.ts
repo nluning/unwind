@@ -40,22 +40,12 @@ function setSentryUser(authedUser: User | null) {
 export function useAuth() {
   const isLoggedIn = computed(() => user.value !== null)
   const isAnonymous = computed(() => user.value !== null && user.value.email === null)
-  // Falsy check (not `=== null`) so a missing field also counts as "needs
-  // onboarding" — the safer default if any future auth path forgets to
-  // include onboarding_completed_at in the response.
-  const needsOnboarding = computed(
-    () => user.value !== null && !user.value.onboarding_completed_at
-  )
 
   async function fetchMe() {
     try {
       user.value = await api<User>('/me')
       localStorage.setItem('unwind-user', 'true')
       setSentryUser(user.value)
-      // TODO (plan/16-onboarding-user-scope.md, Phase 2.4): clean up the
-      // legacy browser-scoped onboarding flag from users' localStorage:
-      //   localStorage.removeItem('unwind-onboarding-done')
-      // Keep for one release cycle after deploy, then delete this TODO.
     } catch {
       if (localStorage.getItem(EXPLICIT_LOGOUT_KEY)) {
         user.value = null
@@ -170,7 +160,6 @@ export function useAuth() {
     user,
     isLoggedIn,
     isAnonymous,
-    needsOnboarding,
     initialize,
     fetchMe,
     login,

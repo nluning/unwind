@@ -18,7 +18,6 @@ const { target, answer, dismiss } = usePostActivityFeedback()
 const showChrome = computed(
   () =>
     route.meta.public !== true &&
-    route.meta.onboarding !== true &&
     isWelcomed.value
 )
 const showHome = computed(

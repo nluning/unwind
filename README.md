@@ -31,8 +31,9 @@ are visible:
   factory. See [ADR-006](docs/adr/ADR-006-claude-model-strategy.md). An
   earlier SSE-streaming chat mode and a conversational onboarding flow were
   built and shipped, then retired once user-review evidence (see below)
-  favoured a device-first, no-onboarding entry — the code is still in the
-  repo but unreachable from the UI; see [ADR-012](docs/adr/ADR-012-device-first-auth.md).
+  favoured a device-first, no-onboarding entry — the chat code is still in the
+  repo but unreachable from the UI, the onboarding code has since been deleted;
+  see [ADR-012](docs/adr/ADR-012-device-first-auth.md).
 - **A persona-based AI review panel as a stand-in for real users** — with no
   live user base yet, UX and product decisions are pressure-tested against 8
   neurodivergent-user personas and 3 expert lenses (clinical psychology,
@@ -122,8 +123,8 @@ What works end-to-end:
 
 An earlier AI chat mode and conversational onboarding flow (with per-request
 memory injection) were built and worked, but were retired in favour of the
-above device-first flow; the code remains in the repo, unreachable from the
-UI.
+above device-first flow. The chat code remains in the repo, unreachable from
+the UI; the onboarding code has since been removed.
 
 What's deferred or in progress is in the roadmap below.
 
@@ -169,7 +170,8 @@ decisions:
 
 - **Onboarding became a tappable form, not a conversation** — the panel
   flagged free-text input as a dealbreaker for users in a depleted/shutdown
-  state.
+  state. (The onboarding flow itself was later removed; the tappable question
+  pattern now powers "Voor hier en nu".)
 - **The login-wall-first entry point was scrapped** for the current
   device-first anonymous flow, after 6 of 7 personas independently flagged
   that the up-front navigation choice itself induced decision stress — see

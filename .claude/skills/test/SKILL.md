@@ -240,8 +240,8 @@ vi.mock('../src/api/client', () => ({
 
 This mock is a **safety net, not a per-test tool**. Composable specs that drive
 a response import `api` and set it (see below). Component specs usually mock the
-composable and never reach `api` — the exceptions are `LoginPage` and
-`OnboardingPage`, which call `api` directly.
+composable and never reach `api` — the exception is `LoginPage`,
+which calls `api` directly.
 
 ### 2. Shared composable mocks (`__mocks__`)
 
@@ -536,7 +536,7 @@ A native `.trigger('click')` on the stub does nothing, because the parent's
 `@click` is a *component-event* listener, not a native one:
 
 ```typescript
-// OnboardingOptionPills renders <ToggleButton data-test="pill" @click="...">,
+// OptionPills renders <ToggleButton data-test="pill" @click="...">,
 // and ToggleButton has defineEmits<{ click: [] }>(). Drive + inspect via the hook:
 const pills = wrapper.findAllComponents('[data-test="pill"]')
 expect(pills[1].props('selected')).toBe(true)   // assert a prop passed in
@@ -558,7 +558,7 @@ is absent from the output. Turn on `renderStubDefaultSlot` for that mount to
 assert it without un-stubbing the child:
 
 ```typescript
-const wrapper = shallowMount(OnboardingOptionPills, {
+const wrapper = shallowMount(OptionPills, {
     props: { options, modelValue: '' },
     global: { renderStubDefaultSlot: true },
 })
@@ -610,12 +610,12 @@ translations, the technique is dictated by how the component consumes them:
   const i18n = createI18n({
       legacy: false,
       locale: 'nl',
-      messages: { nl: { onboarding: { questionOf: 'Vraag {n} van {total}' } } },
+      messages: { nl: { steps: { questionOf: 'Vraag {n} van {total}' } } },
   })
   const translate = (key: string, named: Record<string, unknown>) =>
       i18n.global.t(key, named)
 
-  shallowMount(OnboardingStepHeader, {
+  shallowMount(QuestionStepHeader, {
       props: { questionNumber: 1, title: 'Waar ben je nu?' },
       global: { mocks: { $t: translate } }, // overrides the passthrough for this mount
   })

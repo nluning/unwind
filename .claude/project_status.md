@@ -12,9 +12,9 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Mode 4 chat with SSE streaming, system prompt with per-request user context
 - Memory system: `user_memories` table, CRUD + batch endpoints, consent gate
 - `buildSystemPrompt.ts` injects memories + activity patterns into every chat
-- Onboarding: tappable form → Claude generates activities + memories in one call
-- Rate limiting: 70 chat requests/day, 3 onboarding attempts total
-- Tests for memory CRUD, rate limiting, onboarding response parsing
+- Onboarding: tappable form → Claude generates activities + memories in one call (removed 2026-10-29, plan 28)
+- Rate limiting: 70 chat requests/day (the onboarding limiter went with the feature)
+- Tests for memory CRUD, rate limiting
 - First user review panel run (7 personas, report at docs/review/reports/)
 
 **Stage 6 — Deployment (in progress, 2026-05-01):**
@@ -47,16 +47,17 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Next: Stage 6 deployment is complete. Open follow-up: GHCR retention policy for old SHA tags (no automation yet).
 
 **Error logging hardening (2026-06-15):**
-- Chat (Mode 4: `/chat` + `/chat/stream`) and onboarding (`/onboarding/generate`)
-  are now **dead code** — both files marked `// DEAD CODE` at the top. Device-first
-  auth dropped onboarding (ADR-012 / plan 17); chat retired. Left in tree with
-  explanatory comments rather than deleted.
+- Chat (Mode 4: `/chat` + `/chat/stream`) is now **dead code** — file marked
+  `// DEAD CODE` at the top; chat retired, left in tree with explanatory comments
+  rather than deleted. Onboarding (`/onboarding/generate`) was dead code too
+  (device-first auth dropped it, ADR-012 / plan 17) and was deleted 2026-10-29
+  (plan 28).
 - Phase A — live AI parse failures now reach Sentry. `Sentry.captureMessage` added
   at the two `generate.ts` parse-failure branches (suggest-from-list /
   suggest-from-answers). Those return `null` (no throw), so they were a Sentry
   blind spot — `setupFastifyErrorHandler` never sees a non-thrown failure. Stable
   message strings (clean issue grouping), `endpoint` tag, raw output (≤500 chars)
-  in `extra`. The dead chat/onboarding parse branches were left as comments
+  in `extra`. The dead chat (and then-dead onboarding) parse branches were left as comments
   documenting the same blind-spot pattern instead of being instrumented.
 - Phase B — release tracking + frontend source maps:
   - `release` = git SHA on both sides. Backend reads `SENTRY_RELEASE` (Dockerfile
@@ -90,6 +91,11 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
-- Memory consent is opt-in (default false, asked during onboarding)
-- Haiku for Mode 4 chat (acceptable Dutch quality in short guided format); Sonnet for onboarding (reverted from Haiku on 2026-04-23 — Haiku's Dutch output was stilted for the generated activity list). See ADR-006 addendum.
+- Memory consent is opt-in (default false; originally asked during onboarding, now toggled on the account page)
+- Haiku for Mode 4 chat (acceptable Dutch quality in short guided format); Sonnet for generated activities (reverted from Haiku on 2026-04-23 — Haiku's Dutch output was stilted). Onboarding was the original consumer; `suggest-from-answers` / `suggest-from-list` (both `claude-sonnet-4-6`) are today. See ADR-006 addenda.
 - Rate limiting counts API requests, not conversations (70/day ≈ 7 conversations)
+
+**Onboarding removal (2026-10-29, plan 28):**
+- Deleted `/onboarding/generate` + `/onboarding/skip`, the onboarding prompt/script/tests, `OnboardingPage.vue` + route, `needsOnboarding`, and the `onboarding` i18n namespace. It had no UI entry point since plan 20 §1.
+- Renamed the shared question components used by "Voor hier en nu": `OptionPills`, `QuestionStepHeader`, `StepActions` (i18n keys now `steps.*`).
+- **Deliberately left for a follow-up migration:** `users.onboarding_completed_at` (still in auth responses / `User` type, unread), `'onboarding'` in the `api_usage.endpoint` and `user_memories.source` CHECK constraints and the memory route enums, and the `'week'` / `'total'` windows in `createRateLimiter` (no live limiter uses them now).
