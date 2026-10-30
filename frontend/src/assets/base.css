@@ -480,6 +480,65 @@ button {
 .uw-text-button:hover { color: var(--uw-ink); }
 .uw-text-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Muted sign colours for the post-activity answers (beter / slechter), shared by
+   the question and the stats page. Dark enough for 3:1 on the light card
+   surface; always paired with a shape, never colour alone. */
+:root {
+  --uw-sign-better: #4f7a55;
+  --uw-sign-worse: #b8692f;
+}
+.uw-sign--better { color: var(--uw-sign-better); }
+.uw-sign--same   { color: var(--uw-ink-soft); }
+.uw-sign--worse  { color: var(--uw-sign-worse); }
+
+/* A row on the stats page. Sits on the light card surface (like the action
+   sheet), not the themed gradient: the orange sign would vanish on the warm
+   theme's orange gradient. */
+.uw-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--uw-border-soft);
+  border-radius: 12px;
+  background: var(--uw-card);
+}
+
+/* Feedback answer — a round pictogram button (chevron up = beter, wave =
+   hetzelfde, chevron down = slechter) in the post-activity interstitial. There
+   is no visible caption; the label lives in aria-label, like the action sheet.
+   The three circles are identical and neutral (no border, no fill colour), so
+   nothing nudges towards an answer. Only the sign is coloured, in muted tones:
+   green, neutral, orange (deliberately not red — this is not an alarm). The
+   tones are dark enough to stay above 3:1 on the neutral circle in all three
+   themes, and colour only reinforces the shape (up / level / down); it never
+   carries the meaning alone. Static, like the other anchors: no transition. */
+.uw-feedback-option {
+  --uw-sign: var(--uw-ink-soft);
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  border: 0;
+  padding: 0;
+  background: var(--uw-chip-bg);
+  color: var(--uw-sign);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.uw-feedback-option--better { --uw-sign: var(--uw-sign-better); }
+.uw-feedback-option--same   { --uw-sign: var(--uw-ink-soft); }
+.uw-feedback-option--worse  { --uw-sign: var(--uw-sign-worse); }
+.uw-feedback-option:hover {
+  background: color-mix(in srgb, var(--uw-ink) 18%, transparent);
+}
+.uw-feedback-option:focus-visible {
+  outline: 2px solid var(--uw-ink);
+  outline-offset: 3px;
+}
+
 /* Form input — used by TextField and inline paired inputs.
    font-size is pinned to 16px: iOS Safari auto-zooms the page on focus for
    any input/textarea below that, and the zoom doesn't reliably reset on blur. */

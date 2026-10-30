@@ -3,7 +3,12 @@ import { shallowMount, flushPromises } from '@vue/test-utils'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ChatPage from '../../src/pages/ChatPage.vue'
-import { useChat } from '../../src/composables/useChat'
+import { useChat, takeChatSeed } from '../../src/composables/useChat'
+import {
+  usePostActivityFeedback,
+  resetPostActivityFeedback,
+} from '../../src/composables/usePostActivityFeedback'
+import { api } from '../../src/api/client'
 
 vi.mock('../../src/composables/useChat')
 vi.mock('../../src/composables/useActivities')
@@ -60,5 +65,41 @@ describe('ChatPage', () => {
 
     // Assert
     expect(wrapper.find('[role="status"]').text()).toBe('')
+  })
+
+  it('should offer "klaar" once the user has accepted the activity', async () => {
+    // Arrange
+    resetPostActivityFeedback()
+    vi.mocked(useRouter).mockReturnValue({ back: vi.fn() } as unknown as ReturnType<typeof useRouter>)
+    mockChat()
+    // @ts-expect-error partial test activity — only the rendered fields matter
+    vi.mocked(takeChatSeed).mockReturnValue({ id: 'a1', title: 'Ga wandelen', source: 'user' })
+    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
+    const wrapper = shallowMount(ChatPage, { global: { renderStubDefaultSlot: true } })
+
+    // Act
+    await wrapper.find('[data-test="accept"]').trigger('click')
+
+    // Assert
+    expect(wrapper.find('[data-test="done"]').exists()).toBe(true)
+  })
+
+  it('should ask how it went for the accepted activity when the user taps "klaar"', async () => {
+    // Arrange
+    resetPostActivityFeedback()
+    vi.mocked(useRouter).mockReturnValue({ back: vi.fn() } as unknown as ReturnType<typeof useRouter>)
+    mockChat()
+    // @ts-expect-error partial test activity — only the rendered fields matter
+    vi.mocked(takeChatSeed).mockReturnValue({ id: 'a1', title: 'Ga wandelen', source: 'user' })
+    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
+    const wrapper = shallowMount(ChatPage, { global: { renderStubDefaultSlot: true } })
+    await wrapper.find('[data-test="accept"]').trigger('click')
+
+    // Act
+    await wrapper.find('[data-test="done"]').trigger('click')
+    await flushPromises()
+
+    // Assert
+    expect(usePostActivityFeedback().target.value?.eventId).toBe('event-1')
   })
 })

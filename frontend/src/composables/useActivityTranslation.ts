@@ -15,7 +15,7 @@ import { slugify } from '../utils/slugify.js'
 export function useActivityTranslation() {
   const { t } = useI18n()
 
-  function titleFor(activity: Activity): string {
+  function titleFor(activity: Pick<Activity, 'title' | 'source'>): string {
     if (activity.source !== 'base') return activity.title
     return t(`activities.${slugify(activity.title)}.title`, activity.title)
   }

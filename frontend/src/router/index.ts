@@ -88,6 +88,11 @@ const router = createRouter({
       component: () => import('../pages/QuickSuggestPage.vue'),
     },
     {
+      path: '/stats',
+      name: 'stats',
+      component: () => import('../pages/StatsPage.vue'),
+    },
+    {
       path: '/account',
       name: 'account',
       component: () => import('../pages/AccountPage.vue'),

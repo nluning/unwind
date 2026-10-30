@@ -18,6 +18,7 @@
     "heading": "",
     "start": "Geef me een suggestie",
     "accepted": "Tot zo.",
+    "done": "Klaar",
     "loading": "Laden...",
     "error": "Kan activiteiten niet laden.",
     "retry": "Probeer opnieuw",
@@ -28,6 +29,14 @@
       "remove": "Dit niet meer voorstellen",
       "chat": "Chat hierover"
     }
+  },
+  "feedback": {
+    "question": "Hoe voel je je nu?",
+    "after": "Na {activity}",
+    "better": "Beter",
+    "same": "Hetzelfde",
+    "worse": "Slechter",
+    "skip": "Overslaan"
   },
   "counterbalance": {
     "heading": "Balanceer je dag",
@@ -125,7 +134,23 @@
     "theme": "Thema",
     "hint": "Hier kun je je lijst beheren, nieuwe ideeën toevoegen en een account aanmaken.",
     "account": "Account",
+    "stats": "Inzichten",
     "aiSuggestions": "Suggesties door AI"
+  },
+  "stats": {
+    "heading": "Inzichten",
+    "empty": "Nog niets te zien.",
+    "error": "Kan je inzichten niet laden.",
+    "best": "Werkt goed",
+    "worst": "Werkt minder",
+    "showMore": "Meer laten zien",
+    "showLess": "Minder laten zien",
+    "count": "{n}× {outcome}",
+    "outcomes": {
+      "better": "beter",
+      "same": "hetzelfde",
+      "worse": "slechter"
+    }
   },
   "jouwActiviteiten": {
     "viewList": "Mijn lijst",
@@ -195,6 +220,7 @@
     "storeAccount": "Je account (e-mailadres of een anonieme apparaat-ID)",
     "storeActivities": "Je persoonlijke activiteitenlijst",
     "storeUsage": "Welke suggesties je accepteert of overslaat, zodat we betere suggesties kunnen doen",
+    "storeFeedback": "Hoe je je voelde na een activiteit (beter, hetzelfde of slechter). Alleen jij ziet dit in je eigen overzicht. Wij kijken hier niet naar en delen het niet met AI",
     "storeMemories": "Persoonlijke voorkeuren (\"herinneringen\") — alleen als je daar toestemming voor geeft",
     "aiHeading": "Wat we delen met AI",
     "aiExplanation": "De functies waarmee je nieuwe activiteiten laat genereren, maken gebruik van Claude, een AI-model van Anthropic. Wanneer je deze functies gebruikt, stuurt Unwind het volgende naar Anthropic:",

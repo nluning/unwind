@@ -40,6 +40,7 @@
         <button
           v-if="!accepted"
           class="uw-actions__primary self-start"
+          data-test="accept"
           @click="handleAccept"
         >
           <span class="uw-badge" aria-hidden="true">
@@ -47,12 +48,23 @@
           </span>
           {{ $t('activity.accept') }}
         </button>
-        <p
+        <div
           v-else
-          class="text-sm text-uw-primary self-start"
+          class="flex items-center gap-4 self-start"
         >
-          {{ $t('suggest.accepted') }}
-        </p>
+          <p class="text-sm text-uw-primary m-0">
+            {{ $t('suggest.accepted') }}
+          </p>
+          <button
+            v-if="canFinish"
+            type="button"
+            class="uw-text-button"
+            data-test="done"
+            @click="openForLastAccepted"
+          >
+            {{ $t('suggest.done') }}
+          </button>
+        </div>
       </div>
 
       <div
@@ -160,6 +172,7 @@ import { useRouter } from 'vue-router'
 import { useChat, takeChatSeed } from '../composables/useChat.js'
 import { useActivities } from '../composables/useActivities.js'
 import { useActivityTranslation } from '../composables/useActivityTranslation.js'
+import { usePostActivityFeedback } from '../composables/usePostActivityFeedback.js'
 import { api } from '../api/client.js'
 import { parseMessage, toCreatePayload, type AiActivity } from '../utils/parseActivity.js'
 import { renderMarkdown } from '../utils/renderMarkdown.js'
@@ -172,6 +185,7 @@ const router = useRouter()
 const { messages, isStreaming, error, sendMessage } = useChat()
 const { createActivity } = useActivities()
 const { titleFor, descriptionFor } = useActivityTranslation()
+const { canFinish, trackAccepted, openForLastAccepted } = usePostActivityFeedback()
 
 const inputText = ref('')
 const messageContainer = ref<HTMLElement | null>(null)
@@ -219,10 +233,15 @@ function handleAccept() {
   const activity = seedActivity.value
   if (!activity || accepted.value) return
   accepted.value = true
-  api('/usage-events', {
-    method: 'POST',
-    body: JSON.stringify({ activity_id: activity.id, action: 'accepted', mode: 'mode4' }),
-  }).catch(() => {})
+  // Remember the event so 'klaar' can ask how it went (a failed POST is handled
+  // inside trackAccepted).
+  trackAccepted(
+    activity,
+    api<{ id: string }>('/usage-events', {
+      method: 'POST',
+      body: JSON.stringify({ activity_id: activity.id, action: 'accepted', mode: 'mode4' }),
+    }),
+  )
 }
 
 async function handleSave(index: number, activity: AiActivity) {

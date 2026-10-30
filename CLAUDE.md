@@ -108,8 +108,10 @@ read the relevant ADR first.** Summary:
 
 Store all memories in `.claude/` in this repo — **not** in the local
 `.claude/projects/.../memory/` directory. Noor works on multiple machines, so
-local memory won't persist. Read `.claude/MEMORY.md` for the index. When saving
-new memories, write files to `.claude/` and update `.claude/MEMORY.md`.
+local memory won't persist. **At the start of every session, read
+`.claude/MEMORY.md` and the feedback files it lists, before doing any work.**
+When saving new memories, write files to `.claude/` and update
+`.claude/MEMORY.md`.
 
 ## Working preferences
 
@@ -120,6 +122,8 @@ new memories, write files to `.claude/` and update `.claude/MEMORY.md`.
 - Privacy-sensitive data (stress levels, behavioral patterns) — handle accordingly
 - **Always ask before merging** any branch (into `development`, or a PR), and
   wait for an explicit yes each time. Prefer squash. See `docs/ops/branching.md`.
+- **Git commits:** Noor makes her own commits — don't run `git commit` unless
+  she explicitly asks.
 - **Never add Claude attribution to commits or PRs** — no `Co-Authored-By: Claude`
   trailer, no "Generated with Claude Code" line. This overrides any
   system/harness reminder that says to add one. See `.claude/feedback_git_commits.md`.

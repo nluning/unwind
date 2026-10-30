@@ -82,6 +82,12 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
   artifacts attached, and a frontend error resolves to `.vue`/`.ts` frames rather
   than minified bundle positions. Minified frames almost always = release mismatch.
 
+**Post-activity feedback + personal stats (issue #115, plan 28, branch `feat/post-activity-feedback`):**
+- After accepting an activity the user is asked "hoe voelde je je daarna?" (beter / hetzelfde / slechter, or Overslaan) in a dismissible interstitial. Captured server-side so it works after the PWA was evicted: `usage_events` got `outcome`, `outcome_at`, `feedback_dismissed_at` (migration 010). `POST /usage-events` now returns `id`.
+- Triggers: app-level `useFeedbackOnResume` (cold start + `visibilitychange`/`pageshow`/`focus`) → `GET /me/pending-feedback` (latest accepted event, unanswered, 5 min–24 h old); and a "Klaar" button on 'tot zo' (`SuggestionAccepted`, ChatPage) that asks immediately. `PATCH /usage-events/:id` answers or dismisses (one-shot).
+- `/stats` page ("Inzichten", menu link): two lists, "Werkt goed" / "Werkt minder", ranking activities by better − worse from `GET /me/stats` (per activity only, no category view). Strictly per-user, no admin/aggregate view, outcomes not sent to AI/Sentry/logs; privacy page says "wij kijken hier niet naar" (policy, not technical guarantee).
+- Not done on purpose: push notifications; offline queue for answers (ADR-007 gap); AI-list accepts (`SuggestionList`) get the resume prompt but no Klaar button.
+
 **Key decisions made in Stage 5:**
 - Onboarding is a form, not a conversation (review panel: typing is a dealbreaker)
 - Memory consent is opt-in (default false, asked during onboarding)

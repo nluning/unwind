@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import * as Sentry from '@sentry/vue'
 import { api } from '../api/client.js'
 import { resetSuggestionFlowState } from './useSuggestionFlow.js'
+import { resetPostActivityFeedback } from './usePostActivityFeedback.js'
 import { resetActivitiesState } from './useActivities.js'
 import { resetMemoriesState } from './useMemories.js'
 
@@ -149,6 +150,7 @@ export function useAuth() {
     localStorage.setItem(EXPLICIT_LOGOUT_KEY, '1')
     setSentryUser(null)
     resetSuggestionFlowState()
+    resetPostActivityFeedback()
     resetActivitiesState()
     resetMemoriesState()
   }
@@ -159,6 +161,7 @@ export function useAuth() {
     localStorage.removeItem('unwind-user')
     setSentryUser(null)
     resetSuggestionFlowState()
+    resetPostActivityFeedback()
     resetActivitiesState()
     resetMemoriesState()
   }
