@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "prepare": "git config core.hooksPath .githooks"
+  },
   "dependencies": {
     "fastify-plugin": "^5.1.0"
   }

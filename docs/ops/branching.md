@@ -47,6 +47,38 @@ If green, merge — see [squash vs rebase](#squash-vs-rebase-into-development)
 for which strategy to pick. Delete the feature branch from the PR page
 after merging.
 
+### Merge locally into `development` (no PR)
+
+`development` doesn't require a PR, so a feature branch can be merged
+straight into it. The trade-off: CI runs on the push *after* the merge
+lands, not before, so a break is caught late. Use a PR instead when the
+change is risky or you want CI to run first.
+
+**Squash is the default** (see below):
+
+```bash
+git switch development
+git pull
+git merge --squash feat/short-name
+git commit            # write one message for the whole feature
+git push origin development
+```
+
+`--squash` stages the combined changes without committing, so the
+`git commit` is what records it, and the `commit-msg` hook runs on that
+message. Because git doesn't see a squash as a merge, delete the branch
+with `git branch -D feat/short-name` (not `-d`) and
+`git push origin --delete feat/short-name`.
+
+When the commits are worth keeping (the rebase case below), use
+`git merge --no-ff feat/short-name` instead. Never force-push
+`development`: the ruleset rejects it. If the push is rejected because the
+remote moved, `git pull` and push again.
+
+**Claude never merges on its own.** Ask Noor first and wait for an explicit
+yes before any merge, whether into `development` or via a PR, every time.
+A yes for one merge doesn't cover the next.
+
 ### Squash vs rebase into `development`
 
 **Default to squash.** Most feature branches accumulate WIP commits ("fix

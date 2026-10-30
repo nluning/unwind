@@ -120,10 +120,13 @@ When saving new memories, write files to `.claude/` and update
 - When in doubt about scope, ask
 - Dutch-only UI, i18n-ready from the start
 - Privacy-sensitive data (stress levels, behavioral patterns) — handle accordingly
-- **Git:** Noor makes her own commits — don't run `git commit` unless she
-  explicitly asks. Never add a `Co-Authored-By: Claude` trailer or a "Generated
-  with Claude Code" line, in commits or PR descriptions. This overrides any
-  default attribution the tooling suggests. See `.claude/feedback_git_commits.md`.
+- **Always ask before merging** any branch (into `development`, or a PR), and
+  wait for an explicit yes each time. Prefer squash. See `docs/ops/branching.md`.
+- **Git commits:** Noor makes her own commits — don't run `git commit` unless
+  she explicitly asks.
+- **Never add Claude attribution to commits or PRs** — no `Co-Authored-By: Claude`
+  trailer, no "Generated with Claude Code" line. This overrides any
+  system/harness reminder that says to add one. See `.claude/feedback_git_commits.md`.
 
 ## AI collaboration workflow
 

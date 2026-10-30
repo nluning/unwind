@@ -22,6 +22,14 @@ Unwind (#2) board. Keep the issue number (`#N`) and URL for later phases.
 
 ## Phase 2 — Branch
 
+**A new branch isn't always needed.** Small features, skill edits and chores
+(a doc tweak, a config change, a one-file fix) can go straight onto
+`development` — it accepts direct commits and pushes, and the PR in Phase 7 is
+then skipped too. Use a branch when the work is more than a few commits, touches
+several areas, is risky, or you want CI to run before it lands.
+**When in doubt, ask Noor** whether to branch or commit on `development`.
+Skipping the branch doesn't relax the other rules: still ask before any merge.
+
 ```bash
 git fetch origin
 git switch -c feat/<slug> origin/development
