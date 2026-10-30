@@ -86,6 +86,13 @@ This is a code review, not the `/review` learning flow — don't quiz Noor.
 Apply fixes from review and from Noor's feedback. Loop Phase 5 ↔ 6 until Noor
 says it's good.
 
+Once she does, before submitting, do a **superfluous-comment pass** over the
+diff (`git diff origin/development`). Remove comments that narrate what the code
+already says, restate a name, or describe the change instead of the code. Keep
+only a non-obvious *why* or a gotcha that would otherwise get re-broken (per
+`.claude/feedback_code_style.md`), and shorten survivors to one line where
+possible. Mention what you trimmed, then re-run the tests if you touched code.
+
 ## Phase 7 — Submit
 
 **Noor commits herself** (see `.claude/feedback_git_commits.md`). Don't run
