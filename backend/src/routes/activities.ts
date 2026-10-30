@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { FastifyInstance } from "fastify"
 import { requireAuth } from '../middleware/auth.js'
 
@@ -162,11 +163,21 @@ async function activityRoutes(fastify: FastifyInstance) {
             )
     // ── Usage events ──────────────────────────────────────────────
 
+    // An event logged offline reaches the server hours later. created_at lets the
+    // client say when it really happened, but a device clock can't be trusted, so
+    // the server clamps it into [now - MAX_EVENT_BACKDATE_DAYS, now]. Clamp rather
+    // than reject: a 4xx would make the client's outbox drop the event for good.
+    const MAX_EVENT_BACKDATE_DAYS = 7
+
     const usageEventSchema = {
         body: {
             type: 'object',
             required: ['activity_id', 'action', 'mode'],
             properties: {
+                // Client-generated so an event can be referenced (feedback PATCH)
+                // and retried safely before the server has ever seen it.
+                id: { type: 'string', format: 'uuid' },
+                created_at: { type: 'string', format: 'date-time' },
                 activity_id: { type: 'string', format: 'uuid' },
                 action: { type: 'string', enum: ['suggested', 'accepted', 'skipped'] },
                 mode: { type: 'string', enum: ['mode1', 'mode2', 'mode3', 'mode4'] },
@@ -178,6 +189,8 @@ async function activityRoutes(fastify: FastifyInstance) {
 
     fastify.post<{
         Body: {
+            id?: string
+            created_at?: string
             activity_id: string
             action: 'suggested' | 'accepted' | 'skipped'
             mode: 'mode1' | 'mode2' | 'mode3' | 'mode4'
@@ -186,30 +199,46 @@ async function activityRoutes(fastify: FastifyInstance) {
         }
     }>('/usage-events', { schema: usageEventSchema, preHandler: requireAuth }, async function (request, reply) {
         const userId = request.user!.id
-        const { activity_id, action, mode, stress_level_before, stress_level_after } = request.body
+        const { created_at, activity_id, action, mode, stress_level_before, stress_level_after } = request.body
+        // Old clients (and the online-only AI/chat callers) don't send an id.
+        const eventId = request.body.id ?? randomUUID()
 
-        // Insert the event. The id is returned so the client can answer the
-        // post-activity feedback question for this exact event ('klaar' button).
-        const inserted = await fastify.pg.query<{ id: string }>(
-            `INSERT INTO usage_events (user_id, activity_id, action, mode, stress_level_before, stress_level_after)
-             VALUES ($1, $2, $3, $4, $5, $6)
-             RETURNING id`,
-            [userId, activity_id, action, mode, stress_level_before ?? null, stress_level_after ?? null]
-        )
-
-        // Update the counter on the activity
         const columnMap: Record<string, string> = {
             suggested: 'times_suggested',
             accepted: 'times_accepted',
             skipped: 'times_skipped',
         }
         const column = columnMap[action]
+
+        // Idempotent: the client may send the same event more than once (an offline
+        // outbox retries until it gets an answer). ON CONFLICT (id) DO NOTHING turns
+        // a repeat into a no-op, and the counter bump is chained to the INSERT's
+        // RETURNING, so it only happens when a row was actually inserted. One
+        // statement = one atomic unit; no check-then-insert race between two tabs.
+        // `column` comes from the fixed map above, never from user input.
         await fastify.pg.query(
-            `UPDATE activities SET ${column} = ${column} + 1 WHERE id = $1`,
-            [activity_id]
+            `WITH inserted AS (
+                 INSERT INTO usage_events (id, user_id, activity_id, action, mode, stress_level_before, stress_level_after, created_at)
+                 VALUES (
+                     $1, $2, $3, $4, $5, $6, $7,
+                     GREATEST(
+                         LEAST(COALESCE($8::timestamptz, now()), now()),
+                         now() - make_interval(days => $9::int)
+                     )
+                 )
+                 ON CONFLICT (id) DO NOTHING
+                 RETURNING id, activity_id
+             )
+             UPDATE activities SET ${column} = ${column} + 1
+             WHERE id IN (SELECT activity_id FROM inserted)`,
+            [eventId, userId, activity_id, action, mode, stress_level_before ?? null, stress_level_after ?? null, created_at ?? null, MAX_EVENT_BACKDATE_DAYS]
         )
 
-        reply.status(201).send({ ok: true, id: inserted.rows[0]!.id })
+        // The id is echoed back so the client can answer the post-activity feedback
+        // question for this exact event ('klaar' button). Same answer for a fresh
+        // insert and a duplicate: a repeat is a success, and an id that collides
+        // with another user's event must not reveal that it exists.
+        reply.status(201).send({ ok: true, id: eventId })
     })
 
     fastify.delete<{ Params: { id: string } }>('/activities/:id', { schema: idParamSchema, preHandler: requireAuth }, async function (request, reply) {

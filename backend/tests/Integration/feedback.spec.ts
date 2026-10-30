@@ -105,6 +105,117 @@ describe('POST /usage-events', () => {
     const stored = await app.pg.query('SELECT id FROM usage_events WHERE id = $1', [response.json().id])
     expect(stored.rows).toHaveLength(1)
   })
+
+  describe('client-generated id (offline outbox)', () => {
+    const clientId = '3f2b8c1e-5a47-4d0e-9b6a-1c2d3e4f5a6b'
+
+    function postEvent(payload: Record<string, unknown>, asCookie = cookie) {
+      return app.inject({ method: 'POST', url: '/usage-events', headers: { cookie: asCookie }, payload })
+    }
+
+    async function timesAccepted(activityId: string): Promise<number> {
+      const result = await app.pg.query('SELECT times_accepted FROM activities WHERE id = $1', [activityId])
+      return result.rows[0].times_accepted
+    }
+
+    it('stores the event under the id the client sent and echoes it back', async () => {
+      const activity = await createTestActivity()
+
+      const response = await postEvent({ id: clientId, activity_id: activity.id, action: 'accepted', mode: 'mode1' })
+
+      expect(response.statusCode).toBe(201)
+      expect(response.json().id).toBe(clientId)
+      const stored = await app.pg.query('SELECT user_id FROM usage_events WHERE id = $1', [clientId])
+      expect(stored.rows).toHaveLength(1)
+    })
+
+    it('treats a repeat of the same event as a success and counts it once', async () => {
+      const activity = await createTestActivity()
+      const payload = { id: clientId, activity_id: activity.id, action: 'accepted', mode: 'mode1' }
+
+      const first = await postEvent(payload)
+      const second = await postEvent(payload)
+
+      expect(first.statusCode).toBe(201)
+      expect(second.statusCode).toBe(201)
+      expect(second.json().id).toBe(clientId)
+      const stored = await app.pg.query('SELECT id FROM usage_events WHERE id = $1', [clientId])
+      expect(stored.rows).toHaveLength(1)
+      expect(await timesAccepted(activity.id)).toBe(1)
+    })
+
+    it("does not touch another user's event when the id collides, and reveals nothing", async () => {
+      const activity = await createTestActivity()
+      const otherCookie = await registerUser('other@example.com')
+      await postEvent({ id: clientId, activity_id: activity.id, action: 'accepted', mode: 'mode1' }, otherCookie)
+
+      const response = await postEvent({ id: clientId, activity_id: activity.id, action: 'skipped', mode: 'mode1' })
+
+      expect(response.statusCode).toBe(201)
+      const stored = await app.pg.query('SELECT action FROM usage_events WHERE id = $1', [clientId])
+      expect(stored.rows).toHaveLength(1)
+      expect(stored.rows[0].action).toBe('accepted')
+      const skipped = await app.pg.query('SELECT times_skipped FROM activities WHERE id = $1', [activity.id])
+      expect(skipped.rows[0].times_skipped).toBe(0)
+    })
+
+    it('rejects an id that is not a uuid', async () => {
+      const activity = await createTestActivity()
+
+      const response = await postEvent({ id: 'not-a-uuid', activity_id: activity.id, action: 'accepted', mode: 'mode1' })
+
+      expect(response.statusCode).toBe(400)
+    })
+  })
+
+  describe('created_at (when it really happened)', () => {
+    async function createdAtOf(eventId: string): Promise<Date> {
+      const result = await app.pg.query('SELECT created_at FROM usage_events WHERE id = $1', [eventId])
+      return result.rows[0].created_at
+    }
+
+    function postWithCreatedAt(activityId: string, createdAt: string) {
+      return app.inject({
+        method: 'POST',
+        url: '/usage-events',
+        headers: { cookie },
+        payload: { activity_id: activityId, action: 'accepted', mode: 'mode1', created_at: createdAt },
+      })
+    }
+
+    it('keeps a plausible timestamp from the client', async () => {
+      const activity = await createTestActivity()
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+
+      const response = await postWithCreatedAt(activity.id, twoHoursAgo.toISOString())
+
+      const stored = await createdAtOf(response.json().id)
+      expect(Math.abs(stored.getTime() - twoHoursAgo.getTime())).toBeLessThan(1000)
+    })
+
+    it('clamps a timestamp in the future to now', async () => {
+      const activity = await createTestActivity()
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+      const response = await postWithCreatedAt(activity.id, tomorrow.toISOString())
+
+      const stored = await createdAtOf(response.json().id)
+      expect(stored.getTime()).toBeLessThanOrEqual(Date.now())
+    })
+
+    it('clamps a timestamp from months ago to the backdate limit instead of rejecting it', async () => {
+      const activity = await createTestActivity()
+      const longAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+
+      const response = await postWithCreatedAt(activity.id, longAgo.toISOString())
+
+      expect(response.statusCode).toBe(201)
+      const stored = await createdAtOf(response.json().id)
+      const ageInDays = (Date.now() - stored.getTime()) / (24 * 60 * 60 * 1000)
+      expect(ageInDays).toBeGreaterThan(6.9)
+      expect(ageInDays).toBeLessThan(7.1)
+    })
+  })
 })
 
 // ---------- GET /me/pending-feedback ----------
