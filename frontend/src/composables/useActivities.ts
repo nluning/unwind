@@ -3,6 +3,8 @@ import { api } from '../api/client.js'
 import type { Activity, CreateActivityPayload, UpdateActivityPayload } from '../types/activity.js'
 import { CATEGORY_ID_MAP } from '../types/activity.js'
 import { pickWeighted } from './suggestionWeighting.js'
+import { useAuth } from './useAuth.js'
+import { loadActivities, saveActivities } from '../utils/localDb.js'
 
 export type { Activity, CreateActivityPayload, UpdateActivityPayload }
 // Re-exported so existing page imports (ActivityFormPage, CounterbalancePage)
@@ -27,12 +29,36 @@ export function useActivities() {
   const sessionSuggested = ref<Set<string>>(new Set())
   const sessionAccepted = ref<Set<string>>(new Set())
 
+  // Stale-while-revalidate: show the last snapshot from IndexedDB at once, then
+  // replace it with what the server says. The request starts first so reading
+  // the snapshot never delays it.
   async function fetchActivities() {
     error.value = false
-    try {
-      activities.value = await api<Activity[]>('/activities')
+    const ownerId = useAuth().user.value?.id
+
+    const network = api<Activity[]>('/activities').then(
+      (fresh) => ({ ok: true as const, fresh }),
+      () => ({ ok: false as const }),
+    )
+
+    if (ownerId && !loaded.value) {
+      const snapshot = await loadActivities(ownerId).catch(() => null)
+      // The server may have answered while we were reading; never overwrite
+      // fresher data with the snapshot.
+      if (snapshot && !loaded.value) {
+        activities.value = snapshot
+        loaded.value = true
+      }
+    }
+
+    const result = await network
+    if (result.ok) {
+      activities.value = result.fresh
       loaded.value = true
-    } catch {
+      // Best-effort: a full or blocked store must not break the app.
+      if (ownerId) saveActivities(ownerId, result.fresh).catch(() => {})
+    } else if (!loaded.value) {
+      // A failed refresh only counts as an error when there is nothing to show.
       error.value = true
     }
   }

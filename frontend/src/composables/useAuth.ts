@@ -1,10 +1,11 @@
 import { ref, computed } from 'vue'
 import * as Sentry from '@sentry/vue'
-import { api } from '../api/client.js'
+import { api, NetworkError } from '../api/client.js'
 import { resetSuggestionFlowState } from './useSuggestionFlow.js'
 import { resetPostActivityFeedback } from './usePostActivityFeedback.js'
 import { resetActivitiesState } from './useActivities.js'
 import { resetMemoriesState } from './useMemories.js'
+import { clearLocalData } from '../utils/localDb.js'
 
 interface User {
   id: string
@@ -31,6 +32,17 @@ export function getOrCreateDeviceId(): string {
 
 export function isExplicitlyLoggedOut(): boolean {
   return !!localStorage.getItem(EXPLICIT_LOGOUT_KEY)
+}
+
+// Logout and account deletion must leave nothing of the user on the device
+// (shared phones). A failed wipe must not block the logout itself; the owner tag
+// on the snapshot still stops it being shown to a different user.
+async function wipeLocalData() {
+  try {
+    await clearLocalData()
+  } catch {
+    // storage unavailable: nothing was stored
+  }
 }
 
 function setSentryUser(authedUser: User | null) {
@@ -134,7 +146,15 @@ export function useAuth() {
   }
 
   async function logout() {
-    await api('/logout', { method: 'POST' })
+    // Logging out must work offline, or on a shared phone "log out" would leave
+    // the data on screen. The server call is best-effort: offline we can't revoke
+    // the session cookie, which then lives until it expires. Real server errors
+    // still surface.
+    try {
+      await api('/logout', { method: 'POST' })
+    } catch (logoutFailure) {
+      if (!(logoutFailure instanceof NetworkError)) throw logoutFailure
+    }
     user.value = null
     localStorage.removeItem('unwind-user')
     localStorage.setItem(EXPLICIT_LOGOUT_KEY, '1')
@@ -143,6 +163,7 @@ export function useAuth() {
     resetPostActivityFeedback()
     resetActivitiesState()
     resetMemoriesState()
+    await wipeLocalData()
   }
 
   async function deleteAccount() {
@@ -154,6 +175,7 @@ export function useAuth() {
     resetPostActivityFeedback()
     resetActivitiesState()
     resetMemoriesState()
+    await wipeLocalData()
   }
 
   return {

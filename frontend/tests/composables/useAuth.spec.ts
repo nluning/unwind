@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { api } from '../../src/api/client'
+import { api, NetworkError } from '../../src/api/client'
+import { clearLocalData } from '../../src/utils/localDb'
 import {
   useAuth,
   getOrCreateDeviceId,
@@ -10,6 +11,7 @@ vi.mock('@sentry/vue', () => ({ setUser: vi.fn() }))
 vi.mock('../../src/composables/useSuggestionFlow', () => ({ resetSuggestionFlowState: vi.fn() }))
 vi.mock('../../src/composables/useActivities', () => ({ resetActivitiesState: vi.fn() }))
 vi.mock('../../src/composables/useMemories', () => ({ resetMemoriesState: vi.fn() }))
+vi.mock('../../src/utils/localDb', () => ({ clearLocalData: vi.fn().mockResolvedValue(undefined) }))
 
 function reset() {
   const { user } = useAuth()
@@ -229,6 +231,82 @@ describe('useAuth', () => {
     expect(api).toHaveBeenCalledWith('/me', { method: 'DELETE' })
     expect(user.value).toBeNull()
     expect(localStorage.getItem('unwind-user')).toBeNull()
+  })
+
+  it('should wipe the local offline data on logout and on account deletion', async () => {
+    // Arrange
+    reset()
+    vi.mocked(clearLocalData).mockClear()
+    const { logout, deleteAccount } = useAuth()
+    vi.mocked(api).mockResolvedValue(undefined)
+
+    // Act
+    await logout()
+    await deleteAccount()
+
+    // Assert
+    expect(clearLocalData).toHaveBeenCalledTimes(2)
+  })
+
+  it('should log out and wipe local data even when the device is offline', async () => {
+    // Arrange
+    reset()
+    vi.mocked(clearLocalData).mockClear()
+    const { user, isLoggedIn, logout } = useAuth()
+    user.value = { id: 'u6', email: 'a@b.nl', onboarding_completed_at: '2026-01-01', memory_enabled: false }
+    localStorage.setItem('unwind-user', 'true')
+    vi.mocked(api).mockRejectedValueOnce(new NetworkError(new TypeError('Failed to fetch')))
+
+    // Act
+    await logout()
+
+    // Assert
+    expect(user.value).toBeNull()
+    expect(isLoggedIn.value).toBe(false)
+    expect(localStorage.getItem('unwind-user')).toBeNull()
+    expect(isExplicitlyLoggedOut()).toBe(true)
+    expect(clearLocalData).toHaveBeenCalledOnce()
+  })
+
+  it('should keep the user logged in and keep their data when the server rejects the logout', async () => {
+    // Arrange
+    reset()
+    vi.mocked(clearLocalData).mockClear()
+    const { user, logout } = useAuth()
+    user.value = { id: 'u7', email: 'a@b.nl', onboarding_completed_at: '2026-01-01', memory_enabled: false }
+    vi.mocked(api).mockRejectedValueOnce(new Error('500'))
+
+    // Act + Assert
+    await expect(logout()).rejects.toThrow('500')
+    expect(user.value).not.toBeNull()
+    expect(clearLocalData).not.toHaveBeenCalled()
+  })
+
+  it('should not delete the account or wipe local data while offline', async () => {
+    // Arrange
+    reset()
+    vi.mocked(clearLocalData).mockClear()
+    const { user, deleteAccount } = useAuth()
+    user.value = { id: 'u8', email: 'a@b.nl', onboarding_completed_at: '2026-01-01', memory_enabled: false }
+    const offline = new NetworkError(new TypeError('Failed to fetch'))
+    vi.mocked(api).mockRejectedValueOnce(offline)
+
+    // Act + Assert
+    await expect(deleteAccount()).rejects.toBe(offline)
+    expect(user.value).not.toBeNull()
+    expect(clearLocalData).not.toHaveBeenCalled()
+  })
+
+  it('should still log out when wiping the local data fails', async () => {
+    // Arrange
+    reset()
+    vi.mocked(clearLocalData).mockRejectedValueOnce(new Error('storage blocked'))
+    const { logout } = useAuth()
+    vi.mocked(api).mockResolvedValueOnce(undefined)
+
+    // Act + Assert
+    await expect(logout()).resolves.toBeUndefined()
+    expect(isExplicitlyLoggedOut()).toBe(true)
   })
 })
 

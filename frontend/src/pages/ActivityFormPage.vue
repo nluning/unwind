@@ -109,6 +109,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { NetworkError } from '../api/client.js'
 import {
   useActivities,
   CATEGORY_ID_MAP,
@@ -209,8 +210,10 @@ async function handleSave() {
       await createActivity({ ...form })
     }
     goToList()
-  } catch {
-    formError.value = 'activitiesList.form.saveError'
+  } catch (saveFailure) {
+    formError.value = saveFailure instanceof NetworkError
+      ? 'activitiesList.form.offlineError'
+      : 'activitiesList.form.saveError'
   } finally {
     saving.value = false
   }
