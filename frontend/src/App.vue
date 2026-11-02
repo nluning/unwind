@@ -9,6 +9,7 @@ import { useWelcome } from './composables/useWelcome.js'
 import { useAuth } from './composables/useAuth.js'
 import { usePostActivityFeedback, type FeedbackOutcome } from './composables/usePostActivityFeedback.js'
 import { useFeedbackOnResume } from './composables/useFeedbackOnResume.js'
+import { useOutboxSync } from './composables/useOutbox.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,6 +32,8 @@ function handleAnswer(outcome: FeedbackOutcome) {
   answer(outcome)
   if (route.name !== 'suggest') router.push({ name: 'suggest' })
 }
+
+useOutboxSync()
 
 // Only ask once there is a session, and never on login/privacy/onboarding.
 useFeedbackOnResume(

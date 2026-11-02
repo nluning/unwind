@@ -109,6 +109,17 @@ export function useActivities() {
     sessionAccepted.value.add(activityId)
   }
 
+  // Mirrors what the server does when it receives the event, so the weighting
+  // stays right while the event is still waiting in the outbox.
+  function recordLocalEvent(activityId: string, action: 'accepted' | 'skipped') {
+    const counter = action === 'accepted' ? 'times_accepted' : 'times_skipped'
+    activities.value = activities.value.map((activity) =>
+      activity.id === activityId ? { ...activity, [counter]: activity[counter] + 1 } : activity
+    )
+    const ownerId = useAuth().user.value?.id
+    if (ownerId) saveActivities(ownerId, activities.value).catch(() => {})
+  }
+
   function resetSession() {
     sessionSuggested.value = new Set()
     sessionAccepted.value = new Set()
@@ -178,6 +189,7 @@ export function useActivities() {
     filterByIncludedCategories,
     suggest,
     markAccepted,
+    recordLocalEvent,
     resetSession,
   }
 }

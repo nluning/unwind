@@ -287,6 +287,26 @@ describe('useActivities', () => {
       expect(error.value).toBe(true)
     })
 
+    it('should bump the local counter of an accepted or skipped activity and persist it', async () => {
+      // Arrange
+      const counted = [
+        { id: 'a1', times_accepted: 2, times_skipped: 0 },
+        { id: 'a2', times_accepted: 0, times_skipped: 1 },
+      ] as Activity[]
+      vi.mocked(api).mockResolvedValueOnce(counted)
+      const { activities, fetchActivities, recordLocalEvent } = useActivities()
+      await fetchActivities()
+
+      // Act
+      recordLocalEvent('a1', 'accepted')
+      recordLocalEvent('a2', 'skipped')
+
+      // Assert
+      expect(activities.value.map((activity) => [activity.times_accepted, activity.times_skipped]))
+        .toEqual([[3, 0], [0, 2]])
+      expect(saveActivities).toHaveBeenLastCalledWith('user-1', activities.value)
+    })
+
     it('should not read or write a snapshot without a signed-in user', async () => {
       // Arrange
       vi.mocked(useAuth).mockReturnValue({ user: ref(null) } as unknown as ReturnType<typeof useAuth>)

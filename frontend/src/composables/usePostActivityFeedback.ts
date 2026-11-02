@@ -1,6 +1,7 @@
 import { computed, ref, shallowRef } from 'vue'
 import { api } from '../api/client.js'
 import type { Activity } from '../types/activity.js'
+import { queueRequest } from './useOutbox.js'
 
 export type FeedbackOutcome = 'better' | 'same' | 'worse'
 
@@ -48,10 +49,15 @@ export function usePostActivityFeedback() {
   // Whether the 'klaar' button has an accepted activity to ask about.
   const canFinish = computed(() => lastAccepted.value !== null)
 
-  function trackAccepted(activity: FeedbackTarget['activity'], event: Promise<{ id: string }>) {
+  // A string when the client minted the id itself (outbox flow); a promise when
+  // the server minted it (chat, online-only).
+  function trackAccepted(activity: FeedbackTarget['activity'], event: string | Promise<{ id: string }>) {
     lastAccepted.value = {
       activity,
-      eventId: event.then((created) => created.id).catch(() => null),
+      eventId:
+        typeof event === 'string'
+          ? Promise.resolve(event)
+          : event.then((created) => created.id).catch(() => null),
     }
   }
 
@@ -86,8 +92,9 @@ export function usePostActivityFeedback() {
     }
   }
 
-  // Answering and dismissing close the question straight away; the PATCH is
-  // best-effort, like the other usage-event calls.
+  // Answering and dismissing close the question straight away. The PATCH goes
+  // through the outbox: it queues behind the POST of the same event, so the
+  // server always has the event before the feedback about it.
   function finish(body: { outcome: FeedbackOutcome } | { dismissed: true }) {
     const current = target.value
     if (!current) return
@@ -95,10 +102,7 @@ export function usePostActivityFeedback() {
     target.value = null
     lastAccepted.value = null
     if ('outcome' in body) answeredCount.value++
-    api(`/usage-events/${current.eventId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    }).catch(() => {})
+    void queueRequest('PATCH', `/usage-events/${current.eventId}`, body)
   }
 
   function answer(outcome: FeedbackOutcome) {
