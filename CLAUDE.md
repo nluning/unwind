@@ -24,6 +24,7 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 ## Project status
 
 **Stage 6 — Deployment (complete).** App live at https://unwind.nu with full CI/CD via GitHub Actions: push to `main` triggers tests → builds + pushes images to GHCR → SSH-deploys to the Hetzner VPS (compose pull, migrate, up -d). Branching: `development` → PR → protected `main`.
+**Offline mode (plan 29, issue #122, branch `feat/offline-mode`):** chunks 1-7 done (idempotent usage events, IndexedDB layer, offline-aware api client, activity snapshot, outbox, offline auth boot, PWA shell via `vite-plugin-pwa`); chunk 8 is docs/wrap-up. Scope is the "Verras me" loop only. See `docs/ops/offline-pwa.md`.
 Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
 themes, loading/error states). Three colour themes (calm/warm/playful) with
 `useTheme` composable — no separate light/dark mode. `LinkButton` shared
@@ -37,15 +38,16 @@ Stage 5 (all 12 chunks done):
 - `useChat` composable, ChatPage.vue with streaming, auto-scroll, reset
 - `parseActivity.ts`: JSON extraction, save-to-list button in chat UI
 - Memory system: `user_memories` table, CRUD + batch endpoints, `memory_enabled`
-  consent flag (default false, opt-in via onboarding)
-- Onboarding: tappable form (setting/social/interests), Claude generates 10-15
-  personalized activities + 3-5 user memories in one API call, batch-inserted
-  in a single transaction. Decision: form over conversation (review panel showed
-  typing is a dealbreaker for depleted users). Uses Sonnet (reverted from Haiku
-  2026-04-23 — Dutch quality of generated activities was stilted; see ADR-006).
+  consent flag (default false, opt-in, toggled on the account page)
+- Onboarding (tappable form → Claude generates a starter list + memories): built
+  here, later made opt-in (ADR-012) and **removed 2026-10-29** (plan 28). Its
+  lessons live on: form over conversation (review panel showed typing is a
+  dealbreaker for depleted users) and Sonnet for generated Dutch activities
+  (see ADR-006). The shared question components now serve "Voor hier en nu".
 - Rate limiting: `api_usage` table, 70 chat requests/day (≈7 conversations),
-  3 onboarding attempts total. `createRateLimiter` middleware factory.
-- Tests: memory CRUD, rate limiting, onboarding response parsing
+  10/day each for `suggest_from_list` and `suggest_from_answers`.
+  `createRateLimiter` middleware factory.
+- Tests: memory CRUD, rate limiting
 - First user review panel run: `docs/review/reports/001-general-concept.md`
 
 Stage 6 progress (see `docs/plan/10-deployment-plan.md` for the plan and
@@ -99,17 +101,19 @@ area of code it governs. **Before modifying code in an area covered by an ADR,
 read the relevant ADR first.** Summary:
 
 - Vue 3 + Fastify + PostgreSQL + Claude API
-- PWA, offline-first for modes 1-3
+- PWA, offline-first for the "Verras me" loop (ADR-007 amended)
 - Raw SQL (no ORM) — intentional; direct control over queries
-- Claude Haiku for Mode 4 chat, Sonnet for onboarding
+- Claude Haiku for Mode 4 chat (retired), Sonnet for AI activity generation (`suggest-from-answers` / `suggest-from-list`)
 - Docker on VPS, incremental deployment from Stage 0
 
 ## Memory
 
 Store all memories in `.claude/` in this repo — **not** in the local
 `.claude/projects/.../memory/` directory. Noor works on multiple machines, so
-local memory won't persist. Read `.claude/MEMORY.md` for the index. When saving
-new memories, write files to `.claude/` and update `.claude/MEMORY.md`.
+local memory won't persist. **At the start of every session, read
+`.claude/MEMORY.md` and the feedback files it lists, before doing any work.**
+When saving new memories, write files to `.claude/` and update
+`.claude/MEMORY.md`.
 
 ## Working preferences
 
@@ -118,6 +122,13 @@ new memories, write files to `.claude/` and update `.claude/MEMORY.md`.
 - When in doubt about scope, ask
 - Dutch-only UI, i18n-ready from the start
 - Privacy-sensitive data (stress levels, behavioral patterns) — handle accordingly
+- **Always ask before merging** any branch (into `development`, or a PR), and
+  wait for an explicit yes each time. Prefer squash. See `docs/ops/branching.md`.
+- **Git commits:** Noor makes her own commits — don't run `git commit` unless
+  she explicitly asks.
+- **Never add Claude attribution to commits or PRs** — no `Co-Authored-By: Claude`
+  trailer, no "Generated with Claude Code" line. This overrides any
+  system/harness reminder that says to add one. See `.claude/feedback_git_commits.md`.
 
 ## AI collaboration workflow
 

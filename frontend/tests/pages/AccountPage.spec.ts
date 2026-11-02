@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { shallowMount } from '@vue/test-utils'
+import { flushPromises, shallowMount } from '@vue/test-utils'
 import { ref } from 'vue'
+import { NetworkError } from '../../src/api/client'
 import { useRouter } from 'vue-router'
 import AccountPage from '../../src/pages/AccountPage.vue'
 import ConfirmDeleteButton from '../../src/components/ConfirmDeleteButton.vue'
@@ -28,7 +29,6 @@ function mockAuth(overrides: Partial<ReturnType<typeof useAuth>> = {}) {
     }),
     isLoggedIn: ref(true),
     isAnonymous: ref(true),
-    needsOnboarding: ref(false),
     initialize: vi.fn(async () => {}),
     fetchMe: vi.fn(async () => {}),
     login: vi.fn(async () => {}),
@@ -217,5 +217,59 @@ describe('AccountPage', () => {
     // Assert
     expect(deleteAccount).toHaveBeenCalledOnce()
     expect(push).toHaveBeenCalledWith('/login')
+  })
+
+  it('should refuse to delete the account while offline and say why', async () => {
+    // Arrange
+    const deleteAccount = vi.fn().mockRejectedValue(new NetworkError(new TypeError('Failed to fetch')))
+    mockAuth({ deleteAccount })
+    mockMemories()
+    const push = vi.fn()
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<typeof useRouter>)
+    const wrapper = mountPage()
+
+    // Act
+    wrapper.findComponent(ConfirmDeleteButton).vm.$emit('confirm')
+    await flushPromises()
+
+    // Assert
+    expect(push).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('account.deleteOffline')
+  })
+
+  it('should show a generic error when deleting fails for another reason', async () => {
+    // Arrange
+    mockAuth({ deleteAccount: vi.fn().mockRejectedValue(new Error('500')) })
+    mockMemories()
+    vi.mocked(useRouter).mockReturnValue({ push: vi.fn() } as unknown as ReturnType<typeof useRouter>)
+    const wrapper = mountPage()
+
+    // Act
+    wrapper.findComponent(ConfirmDeleteButton).vm.$emit('confirm')
+    await flushPromises()
+
+    // Assert
+    expect(wrapper.text()).toContain('account.actionError')
+    expect(wrapper.text()).not.toContain('account.deleteOffline')
+  })
+
+  it('should show a generic error and stay put when logout fails on the server', async () => {
+    // Arrange
+    mockAuth({
+      user: ref({ id: '1', email: 'noor@example.com', onboarding_completed_at: '2026-01-01', memory_enabled: false }),
+      logout: vi.fn().mockRejectedValue(new Error('500')),
+    })
+    mockMemories()
+    const push = vi.fn()
+    vi.mocked(useRouter).mockReturnValue({ push } as unknown as ReturnType<typeof useRouter>)
+    const wrapper = mountPage()
+
+    // Act
+    await wrapper.find('[data-test="logout"]').trigger('click')
+    await flushPromises()
+
+    // Assert
+    expect(push).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('account.actionError')
   })
 })

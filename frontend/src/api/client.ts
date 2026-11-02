@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/vue'
 import router from '../router/index.js'
+import { setOnline } from '../composables/useOnline.js'
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -9,6 +10,14 @@ export class ApiError extends Error {
     public body: unknown,
   ) {
     super(`API error ${status}`)
+  }
+}
+
+// No HTTP response at all (offline, DNS, dropped connection, CORS block). Distinct
+// from ApiError because callers retry a network failure later, but not a 4xx.
+export class NetworkError extends Error {
+  constructor(public cause: unknown) {
+    super('Network unavailable')
   }
 }
 
@@ -22,15 +31,26 @@ export async function api<T>(
       headers['Content-Type'] = 'application/json'
     }
 
-    const response = await fetch(`${BASE_URL}${path}`, {
-      ...options,
-      credentials: 'include',
-      headers,
-    })
+    // Only fetch() is wrapped: it rejects exactly when no response came back, so a
+    // TypeError from our own code is never mistaken for "offline".
+    let response: Response
+    try {
+      response = await fetch(`${BASE_URL}${path}`, {
+        ...options,
+        credentials: 'include',
+        headers,
+      })
+    } catch (fetchError) {
+      setOnline(false)
+      throw new NetworkError(fetchError)
+    }
+    // Any response, even a 4xx/5xx, proves the server is reachable.
+    setOnline(true)
 
     if (response.status === 401) {
       if (localStorage.getItem('unwind-user')) {
         localStorage.removeItem('unwind-user')
+        localStorage.removeItem('unwind-cached-user')
         router.push({ name: 'login' })
       }
       throw new ApiError(401, null)
@@ -47,11 +67,20 @@ export async function api<T>(
 
     return await response.json() as T
   } catch (err) {
-    // 401 (session expired -> redirect to login) and 429 (rate limit reached)
-    // are expected, user-facing states, not bugs — don't report them.
-    const isExpected = err instanceof ApiError && (err.status === 401 || err.status === 429)
+    // Not bugs, so not reported: 401, 429, and a network failure while the device
+    // says it is offline. A failure while it thinks it IS online (CORS, DNS,
+    // server down) stays reported (#57).
+    const isExpected =
+      (err instanceof ApiError && (err.status === 401 || err.status === 429)) ||
+      (err instanceof NetworkError && !navigator.onLine)
     if (!isExpected) {
-      Sentry.captureException(err, { tags: { endpoint: path, method: options.method ?? 'GET' } })
+      Sentry.captureException(err, {
+        tags: {
+          endpoint: path,
+          method: options.method ?? 'GET',
+          kind: err instanceof NetworkError ? 'network' : 'api',
+        },
+      })
     }
     throw err
   }

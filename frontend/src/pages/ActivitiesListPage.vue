@@ -19,6 +19,10 @@
 
       <!-- List -->
       <template v-else>
+        <p v-if="deleteOffline" class="text-sm px-6 mt-2" role="status">
+          {{ $t('activitiesList.deleteOffline') }}
+        </p>
+
         <div class="flex justify-end px-6 mt-2">
           <button class="uw-text-button" @click="goToCreate">
             + {{ $t('activitiesList.newButton') }}
@@ -86,7 +90,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+import { NetworkError } from '../api/client.js'
 import { useRouter } from 'vue-router'
 import { useActivities } from '../composables/useActivities.js'
 import { useActivityTranslation } from '../composables/useActivityTranslation.js'
@@ -108,6 +113,8 @@ const {
   deleteActivity,
 } = useActivities()
 
+const deleteOffline = ref(false)
+
 onMounted(async () => {
   if (!loaded.value) {
     await fetchActivities()
@@ -125,9 +132,11 @@ function goToEdit(activityId: string) {
 }
 
 async function handleDelete(activityId: string) {
+  deleteOffline.value = false
   try {
     await deleteActivity(activityId)
-  } catch {
+  } catch (deleteFailure) {
+    deleteOffline.value = deleteFailure instanceof NetworkError
     // Refetch to get the truth if the local patch was rolled back server-side.
     await fetchActivities()
   }

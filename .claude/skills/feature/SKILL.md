@@ -22,6 +22,14 @@ Unwind (#2) board. Keep the issue number (`#N`) and URL for later phases.
 
 ## Phase 2 — Branch
 
+**A new branch isn't always needed.** Small features, skill edits and chores
+(a doc tweak, a config change, a one-file fix) can go straight onto
+`development` — it accepts direct commits and pushes, and the PR in Phase 7 is
+then skipped too. Use a branch when the work is more than a few commits, touches
+several areas, is risky, or you want CI to run before it lands.
+**When in doubt, ask Noor** whether to branch or commit on `development`.
+Skipping the branch doesn't relax the other rules: still ask before any merge.
+
 ```bash
 git fetch origin
 git switch -c feat/<slug> origin/development
@@ -78,7 +86,22 @@ This is a code review, not the `/review` learning flow — don't quiz Noor.
 Apply fixes from review and from Noor's feedback. Loop Phase 5 ↔ 6 until Noor
 says it's good.
 
+Once she does, before submitting, do a **superfluous-comment pass** over the
+diff (`git diff origin/development`). Remove comments that narrate what the code
+already says, restate a name, or describe the change instead of the code. Keep
+only a non-obvious *why* or a gotcha that would otherwise get re-broken (per
+`.claude/feedback_code_style.md`), and shorten survivors to one line where
+possible. Mention what you trimmed, then re-run the tests if you touched code.
+
 ## Phase 7 — Submit
+
+**Noor commits herself** (see `.claude/feedback_git_commits.md`). Don't run
+`git commit` unless she explicitly asks. If a commit message helps, offer one as
+text for her to paste. Never add a `Co-Authored-By: Claude` trailer or a
+"Generated with Claude Code" line — not in commits, not in the PR description.
+This overrides any default attribution the tooling suggests.
+
+Once Noor has committed, push and open the PR:
 
 ```bash
 git push -u origin feat/<slug>

@@ -176,6 +176,10 @@
           :confirm-label="$t('account.deleteConfirm')"
           @confirm="handleDeleteAccount"
         />
+
+        <p v-if="accountActionError" class="text-sm" role="alert">
+          {{ $t(accountActionError) }}
+        </p>
       </section>
 
       <!-- Privacy lives here now (out of the menu, report 009) — a quiet footer link. -->
@@ -192,6 +196,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { NetworkError } from '../api/client.js'
 import { useAuth } from '../composables/useAuth.js'
 import { useMemories } from '../composables/useMemories.js'
 import PageShell from '../components/PageShell.vue'
@@ -221,7 +226,7 @@ const addError = ref('')
 
 onMounted(async () => {
   // Refresh /me so the toggle and memory list reflect server truth
-  // (e.g. after onboarding flipped memory_enabled in another flow).
+  // (e.g. memory_enabled changed from another tab or device).
   // The module-level `user` ref otherwise keeps whatever state was
   // loaded at app boot.
   await fetchMe()
@@ -279,14 +284,30 @@ async function handleDelete(memoryId: string) {
   }
 }
 
+const accountActionError = ref('')
+
+// Logout works offline (see useAuth), so only real server errors land here.
 async function handleLogout() {
-  await logout()
-  router.push('/login')
+  accountActionError.value = ''
+  try {
+    await logout()
+    router.push('/login')
+  } catch {
+    accountActionError.value = 'account.actionError'
+  }
 }
 
+// Deleting must reach the server, so offline it is refused with a clear reason.
 async function handleDeleteAccount() {
-  await deleteAccount()
-  router.push('/login')
+  accountActionError.value = ''
+  try {
+    await deleteAccount()
+    router.push('/login')
+  } catch (deleteFailure) {
+    accountActionError.value = deleteFailure instanceof NetworkError
+      ? 'account.deleteOffline'
+      : 'account.actionError'
+  }
 }
 </script>
 

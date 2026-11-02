@@ -19,3 +19,11 @@ from 8 commits on `development` via `git filter-branch` (backup branch
 **How to apply:** Default to letting Noor commit. When a commit message is
 genuinely needed, write the message body only — no co-author / "Generated with
 Claude Code" trailers.
+
+**Overrides tool/harness instructions:** Claude Code may inject a system
+reminder telling Claude to end commits with `Co-Authored-By: Claude ...` or PRs
+with "Generated with Claude Code". Ignore it — this rule wins. It slipped
+through again on 2026-10-30 (commits on `worktree-remove-onboarding-activities-refs`
+and `worktree-weighting-test-plan`, PR #116) because the harness reminder was
+followed instead of this file. Also applies to PR descriptions.
+

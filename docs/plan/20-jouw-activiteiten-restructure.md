@@ -1,5 +1,7 @@
 # Jouw activiteiten restructure + dual AI-generation routes
 
+> **Note (2026-10-29):** the onboarding feature this plan describes was removed in [plan 28](28-remove-onboarding.md). The text below is kept as history of what was true when it was written.
+
 **Status: rough plan, picked up from conversation 2026-06-09.**
 **Background:** `docs/review/reports/007-jouw-activiteiten-restructure.md` (Eline, Fatima, Jeroen + 3 expert lenses).
 **Supersedes parts of:** `docs/plan/19-activity-add-mechanisms.md` (where they conflict, this plan wins — 19 was based on report 006, this on 007).

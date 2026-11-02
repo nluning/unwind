@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import type { ComponentPublicInstance } from 'vue'
-import OnboardingOptionPills from '../../src/components/OnboardingOptionPills.vue'
+import OptionPills from '../../src/components/OptionPills.vue'
 
 // shallowMount stubs the pill child, so we drive it through the contract this
 // component depends on — `selected` in, `click` out — located via the
@@ -13,11 +13,11 @@ const options = [
   { value: 'outside', label: 'Buiten' },
 ]
 
-describe('OnboardingOptionPills', () => {
+describe('OptionPills', () => {
   it('should render a labelled pill for each option', () => {
     // Arrange & Act — renderStubDefaultSlot makes the stubbed pills render the
     // slotted label so we can assert it without un-stubbing the child.
-    const wrapper = shallowMount(OnboardingOptionPills, {
+    const wrapper = shallowMount(OptionPills, {
       props: { options, modelValue: '' },
       global: { renderStubDefaultSlot: true },
     })
@@ -31,7 +31,7 @@ describe('OnboardingOptionPills', () => {
 
   it('should mark the pill matching the current value as selected', () => {
     // Arrange & Act
-    const wrapper = shallowMount(OnboardingOptionPills, {
+    const wrapper = shallowMount(OptionPills, {
       props: { options, modelValue: 'outside' },
     })
 
@@ -45,7 +45,7 @@ describe('OnboardingOptionPills', () => {
 
   it('should emit the tapped option value via update:modelValue', () => {
     // Arrange
-    const wrapper = shallowMount(OnboardingOptionPills, {
+    const wrapper = shallowMount(OptionPills, {
       props: { options, modelValue: '' },
     })
 

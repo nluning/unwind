@@ -57,9 +57,7 @@ enough.
 - Interactive elements are real `<button>`/`<a>`/`<input>`, never a `<div>`
   with a `@click`. Unwind already does this consistently — keep it that way.
 - One `<h1>` per page/route describing the page's purpose; don't skip levels
-  (`<h1>` → `<h3>`). Known gap: onboarding step views render an `<h2>`
-  (`OnboardingStepHeader.vue`) with no `<h1>` in that state — if you touch
-  onboarding headers, fix the hierarchy rather than adding another skip.
+  (`<h1>` → `<h3>`).
 - `<nav>` for navigation groups (see `UserMenu.vue:52`), `<main>` for the
   page's primary content. Known gap: most pages don't wrap content in
   `<main>` (only `LoginPage.vue` does) — if you're touching `PageShell.vue`
@@ -89,7 +87,7 @@ reinvent:
 **Known gaps to fix wherever you touch these files** (don't leave them worse,
 and consider fixing outright if you're already in the file):
 
-- `ToggleButton.vue` — used for onboarding interests and category filters,
+- `ToggleButton.vue` — used for the quick-suggest answer pills and category filters,
   has a `selected` prop driving styling but no `aria-pressed`. Add
   `:aria-pressed="selected"` on the root button.
 - `StressLevelPicker.vue` — five numbered buttons, selection shown only via
@@ -245,11 +243,11 @@ off"). When in doubt, weigh a UI decision against these:
   introduce a one-off interaction pattern for a single screen when an
   existing pattern already does the job (e.g. don't invent a new dismiss
   gesture when the sheet-swipe-to-close pattern already exists).
-- **Low cognitive load, one thing at a time.** The onboarding flow's
-  tappable-form-over-conversation decision (see project status notes —
+- **Low cognitive load, one thing at a time.** The (since removed) onboarding
+  flow's tappable-form-over-conversation decision (see project status notes —
   typing was found to be a dealbreaker for depleted users in the review
   panel) is the model: prefer selection over free text, chunk information,
-  show progress ("Vraag 1 van 5" in `OnboardingStepHeader.vue`) rather than
+  show progress ("Vraag 1 van 5" in `QuestionStepHeader.vue`) rather than
   an undifferentiated wall of steps.
 - **Executive-function-friendly, not memory-dependent.** Don't require the
   user to remember something from a previous screen; don't make undo

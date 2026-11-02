@@ -1,5 +1,7 @@
 # Onboarding flag — from browser-scoped to user-scoped
 
+> **Note (2026-10-29):** the onboarding feature this plan describes was removed in [plan 28](28-remove-onboarding.md). The text below is kept as history of what was true when it was written.
+
 **Status: implemented on branch `onboarding-flag-to-user-scoped`, ready for
 review and merge. Two adjacent bugs surfaced during testing and were fixed
 in the same PR (see "Bug fixes that came in scope" below).**

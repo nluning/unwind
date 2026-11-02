@@ -1,7 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 
 interface RateLimitOptions {
-    endpoint: 'chat' | 'onboarding' | 'suggest_from_list' | 'suggest_from_answers'
+    endpoint: 'chat' | 'suggest_from_list' | 'suggest_from_answers'
     maxRequests: number
     window: 'day' | 'week' | 'total'
 }

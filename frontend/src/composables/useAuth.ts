@@ -1,9 +1,11 @@
 import { ref, computed } from 'vue'
 import * as Sentry from '@sentry/vue'
-import { api } from '../api/client.js'
+import { api, NetworkError } from '../api/client.js'
 import { resetSuggestionFlowState } from './useSuggestionFlow.js'
+import { resetPostActivityFeedback } from './usePostActivityFeedback.js'
 import { resetActivitiesState } from './useActivities.js'
 import { resetMemoriesState } from './useMemories.js'
+import { clearLocalData } from '../utils/localDb.js'
 
 interface User {
   id: string
@@ -32,34 +34,71 @@ export function isExplicitlyLoggedOut(): boolean {
   return !!localStorage.getItem(EXPLICIT_LOGOUT_KEY)
 }
 
+// Logout and deletion must leave nothing on the device (shared phones). A failed
+// wipe must not block logout; the owner tag still keeps the snapshot from other users.
+async function wipeLocalData() {
+  try {
+    await clearLocalData()
+  } catch {
+    // storage unavailable: nothing was stored
+  }
+}
+
 function setSentryUser(authedUser: User | null) {
   Sentry.setUser(authedUser ? { id: authedUser.id } : null)
+}
+
+// Lets the app boot with no signal: the server stays authoritative, this is only
+// the last session it confirmed. Removed on logout, deletion and a 401.
+const CACHED_USER_KEY = 'unwind-cached-user'
+
+function cacheUser(authedUser: User) {
+  localStorage.setItem(CACHED_USER_KEY, JSON.stringify(authedUser))
+}
+
+function readCachedUser(): User | null {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CACHED_USER_KEY) ?? 'null')
+    return typeof parsed?.id === 'string' ? (parsed as User) : null
+  } catch {
+    return null
+  }
+}
+
+function rememberSession(authedUser: User) {
+  user.value = authedUser
+  localStorage.setItem('unwind-user', 'true')
+  cacheUser(authedUser)
+  setSentryUser(authedUser)
+}
+
+function forgetSession() {
+  user.value = null
+  localStorage.removeItem('unwind-user')
+  localStorage.removeItem(CACHED_USER_KEY)
+  setSentryUser(null)
 }
 
 export function useAuth() {
   const isLoggedIn = computed(() => user.value !== null)
   const isAnonymous = computed(() => user.value !== null && user.value.email === null)
-  // Falsy check (not `=== null`) so a missing field also counts as "needs
-  // onboarding" — the safer default if any future auth path forgets to
-  // include onboarding_completed_at in the response.
-  const needsOnboarding = computed(
-    () => user.value !== null && !user.value.onboarding_completed_at
-  )
 
   async function fetchMe() {
     try {
-      user.value = await api<User>('/me')
-      localStorage.setItem('unwind-user', 'true')
-      setSentryUser(user.value)
-      // TODO (plan/16-onboarding-user-scope.md, Phase 2.4): clean up the
-      // legacy browser-scoped onboarding flag from users' localStorage:
-      //   localStorage.removeItem('unwind-onboarding-done')
-      // Keep for one release cycle after deploy, then delete this TODO.
-    } catch {
+      rememberSession(await api<User>('/me'))
+    } catch (fetchFailure) {
       if (localStorage.getItem(EXPLICIT_LOGOUT_KEY)) {
-        user.value = null
-        localStorage.removeItem('unwind-user')
-        setSentryUser(null)
+        forgetSession()
+        return
+      }
+      // No answer is not "no session": a device login would fail too and wrongly end
+      // it. Trust the last confirmed session; the first 401 triggers re-auth.
+      if (fetchFailure instanceof NetworkError) {
+        const cachedUser = readCachedUser()
+        if (cachedUser && localStorage.getItem('unwind-user')) {
+          user.value = cachedUser
+          setSentryUser(cachedUser)
+        }
         return
       }
       // NOTE: also fires when an email user's session expires, silently
@@ -68,9 +107,7 @@ export function useAuth() {
       try {
         await deviceLogin(getOrCreateDeviceId())
       } catch {
-        user.value = null
-        localStorage.removeItem('unwind-user')
-        setSentryUser(null)
+        forgetSession()
       }
     }
   }
@@ -85,37 +122,37 @@ export function useAuth() {
   async function login(email: string, password: string) {
     resetActivitiesState()
     resetSuggestionFlowState()
-    user.value = await api<User>('/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    localStorage.setItem('unwind-user', 'true')
+    rememberSession(
+      await api<User>('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+    )
     localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
-    setSentryUser(user.value)
   }
 
   async function register(email: string, password: string) {
     resetActivitiesState()
     resetSuggestionFlowState()
-    user.value = await api<User>('/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    localStorage.setItem('unwind-user', 'true')
+    rememberSession(
+      await api<User>('/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+    )
     localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
-    setSentryUser(user.value)
   }
 
   async function deviceLogin(deviceId: string) {
     resetActivitiesState()
     resetSuggestionFlowState()
-    user.value = await api<User>('/auth/device', {
-      method: 'POST',
-      body: JSON.stringify({ device_id: deviceId }),
-    })
-    localStorage.setItem('unwind-user', 'true')
+    rememberSession(
+      await api<User>('/auth/device', {
+        method: 'POST',
+        body: JSON.stringify({ device_id: deviceId }),
+      }),
+    )
     localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
-    setSentryUser(user.value)
   }
 
   async function upgrade(email: string, password: string) {
@@ -124,6 +161,7 @@ export function useAuth() {
       body: JSON.stringify({ email, password }),
     })
     user.value = result
+    cacheUser(result)
     localStorage.removeItem(DEVICE_ID_KEY)
   }
 
@@ -134,6 +172,7 @@ export function useAuth() {
     })
     if (user.value) {
       user.value = { ...user.value, memory_enabled: result.memory_enabled }
+      cacheUser(user.value)
     }
     if (!result.memory_enabled) {
       // Backend wiped user_memories; mirror that locally so any page
@@ -143,31 +182,36 @@ export function useAuth() {
   }
 
   async function logout() {
-    await api('/logout', { method: 'POST' })
-    user.value = null
-    localStorage.removeItem('unwind-user')
+    // Logout must work offline. The server call is best-effort: offline the session
+    // cookie can't be revoked and lives until it expires. Real server errors still surface.
+    try {
+      await api('/logout', { method: 'POST' })
+    } catch (logoutFailure) {
+      if (!(logoutFailure instanceof NetworkError)) throw logoutFailure
+    }
+    forgetSession()
     localStorage.setItem(EXPLICIT_LOGOUT_KEY, '1')
-    setSentryUser(null)
     resetSuggestionFlowState()
+    resetPostActivityFeedback()
     resetActivitiesState()
     resetMemoriesState()
+    await wipeLocalData()
   }
 
   async function deleteAccount() {
     await api('/me', { method: 'DELETE' })
-    user.value = null
-    localStorage.removeItem('unwind-user')
-    setSentryUser(null)
+    forgetSession()
     resetSuggestionFlowState()
+    resetPostActivityFeedback()
     resetActivitiesState()
     resetMemoriesState()
+    await wipeLocalData()
   }
 
   return {
     user,
     isLoggedIn,
     isAnonymous,
-    needsOnboarding,
     initialize,
     fetchMe,
     login,

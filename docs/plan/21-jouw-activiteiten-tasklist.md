@@ -1,5 +1,7 @@
 # Jouw activiteiten restructure — implementation tasklist
 
+> **Note (2026-10-29):** the onboarding feature this plan describes was removed in [plan 28](28-remove-onboarding.md). The text below is kept as history of what was true when it was written.
+
 **Status: implementation plan, derived from `20-jouw-activiteiten-restructure.md` (2026-06-11).**
 **Reads on top of:** plan 20 (confirmed scope), report `007-jouw-activiteiten-restructure.md` (panel),
 plan 19 (superseded where it conflicts), ADR-006 (model strategy), ADR-007 (offline-first),

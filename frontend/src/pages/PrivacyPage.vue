@@ -14,6 +14,7 @@
           <li>{{ $t('privacy.storeAccount') }}</li>
           <li>{{ $t('privacy.storeActivities') }}</li>
           <li>{{ $t('privacy.storeUsage') }}</li>
+          <li>{{ $t('privacy.storeFeedback') }}</li>
           <li>{{ $t('privacy.storeMemories') }}</li>
         </ul>
       </section>

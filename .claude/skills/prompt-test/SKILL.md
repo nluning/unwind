@@ -1,6 +1,6 @@
 ---
 name: prompt-test
-description: Test a system prompt against multiple user scenarios and produce an evaluation report. Use when developing or refining prompts for Mode 4 chat or onboarding.
+description: Test a system prompt against multiple user scenarios and produce an evaluation report. Use when developing or refining prompts for Mode 4 chat or the suggest-from-answers / suggest-from-list prompts.
 ---
 
 # Prompt Test

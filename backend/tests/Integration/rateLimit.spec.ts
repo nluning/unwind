@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import type { FastifyInstance } from 'fastify'
 import { getApp, truncateAll, closeApp } from './setup.js'
 
-// Stub the Anthropic SDK so onboarding requests that get past the rate
+// Stub the Anthropic SDK so requests that get past the rate
 // limiter don't hang on the real API. The actual response shape doesn't
 // matter for rate-limit assertions — we only care which requests get
 // admitted.
@@ -14,7 +14,7 @@ vi.mock('@anthropic-ai/sdk', () => ({
   },
 }))
 
-const fakeOnboardingResponse = {
+const fakeClaudeResponse = {
   content: [
     {
       type: 'text',
@@ -47,7 +47,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   await truncateAll(app)
   mockCreate.mockReset()
-  mockCreate.mockResolvedValue(fakeOnboardingResponse)
+  mockCreate.mockResolvedValue(fakeClaudeResponse)
 
   const response = await app.inject({
     method: 'POST',
@@ -110,11 +110,11 @@ describe('Chat rate limiting', () => {
     expect(response.json().error).toContain('limiet')
   })
 
-  it('does not count onboarding usage against chat limit', async () => {
-    // Seed 70 onboarding records
+  it('does not count other endpoints against chat limit', async () => {
+    // Seed 70 usage records for a different endpoint
     for (let index = 0; index < 70; index++) {
       await app.pg.query(
-        "INSERT INTO api_usage (user_id, endpoint) VALUES ($1, 'onboarding')",
+        "INSERT INTO api_usage (user_id, endpoint) VALUES ($1, 'suggest_from_list')",
         [userId]
       )
     }
@@ -131,69 +131,5 @@ describe('Chat rate limiting', () => {
 
     // Should NOT be 429 — it'll be 503 (Claude API not available in tests)
     expect(response.statusCode).not.toBe(429)
-  })
-})
-
-// ---------- Onboarding rate limiting ----------
-
-describe('Onboarding rate limiting', () => {
-  it('returns 429 after 3 onboarding attempts in the last 7 days', async () => {
-    // Seed 3 usage records dated within the rolling window
-    for (let index = 0; index < 3; index++) {
-      await app.pg.query(
-        "INSERT INTO api_usage (user_id, endpoint) VALUES ($1, 'onboarding')",
-        [userId]
-      )
-    }
-
-    const response = await app.inject({
-      method: 'POST',
-      url: '/onboarding/generate',
-      headers: { cookie },
-      payload: {
-        setting: 'indoor',
-        social: 'alone',
-        interests: ['Creatief'],
-        memory_consent: false,
-      },
-    })
-
-    expect(response.statusCode).toBe(429)
-    expect(response.json().error).toContain('limiet')
-  })
-
-  it('does not count onboarding attempts older than 7 days', async () => {
-    // Seed 3 records dated 8 days ago — outside the rolling 7-day window
-    for (let index = 0; index < 3; index++) {
-      await app.pg.query(
-        `INSERT INTO api_usage (user_id, endpoint, created_at)
-         VALUES ($1, 'onboarding', now() - interval '8 days')`,
-        [userId]
-      )
-    }
-
-    const response = await app.inject({
-      method: 'POST',
-      url: '/onboarding/generate',
-      headers: { cookie },
-      payload: {
-        setting: 'indoor',
-        social: 'alone',
-        interests: ['Creatief'],
-        memory_consent: false,
-      },
-    })
-
-    // Should not 429 — old records are outside the window, so the limiter
-    // admits the request and the mocked Anthropic SDK returns a successful
-    // response.
-    expect(response.statusCode).not.toBe(429)
-
-    // And the new attempt got recorded
-    const count = await app.pg.query(
-      "SELECT count(*)::int AS count FROM api_usage WHERE user_id = $1 AND endpoint = 'onboarding'",
-      [userId]
-    )
-    expect(count.rows[0].count).toBe(4)
   })
 })

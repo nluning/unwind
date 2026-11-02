@@ -1,7 +1,8 @@
 import { ref, type Ref, type ComputedRef, watch } from 'vue'
 import { useActivities } from './useActivities.js'
 import type { Activity } from '../types/activity.js'
-import { api } from '../api/client.js'
+import { usePostActivityFeedback } from './usePostActivityFeedback.js'
+import { queueRequest } from './useOutbox.js'
 
 interface SuggestionFlowOptions {
   mode: 'mode1' | 'mode2' | 'mode3' | 'mode4'
@@ -50,8 +51,15 @@ export function resetSuggestionFlowState() {
 }
 
 export function useSuggestionFlow(options: SuggestionFlowOptions) {
-  const { suggest, markAccepted } = useActivities()
+  const { suggest, markAccepted, recordLocalEvent } = useActivities()
+  const { trackAccepted, answered } = usePostActivityFeedback()
   const { current, accepted } = getFlowState(options.mode)
+
+  // The user answered "hoe voel je je nu?" while the 'tot zo' confirmation was
+  // still showing: the activity is done, so move on to the next suggestion.
+  watch(answered, () => {
+    if (accepted.value) next()
+  })
 
   // Tracks whether this composable instance has seen a non-empty pool yet, so
   // the first non-empty pool can clear any sticky confirmation from a previous
@@ -95,7 +103,8 @@ export function useSuggestionFlow(options: SuggestionFlowOptions) {
     if (!current.value) return
 
     markAccepted(current.value.id)
-    logEvent(current.value.id, 'accepted')
+    // Remember the event so the 'klaar' button can ask how it went.
+    trackAccepted(current.value, logEvent(current.value.id, 'accepted'))
     current.value = null
     accepted.value = true
   }
@@ -107,17 +116,21 @@ export function useSuggestionFlow(options: SuggestionFlowOptions) {
     next()
   }
 
-  function logEvent(activityId: string, action: 'accepted' | 'skipped') {
+  // The id is minted here, so the event can be referenced (feedback) and retried
+  // safely before the server has ever seen it.
+  function logEvent(activityId: string, action: 'accepted' | 'skipped'): string {
+    const eventId = crypto.randomUUID()
     const extra = options.extraEventData?.() ?? {}
-    api('/usage-events', {
-      method: 'POST',
-      body: JSON.stringify({
-        activity_id: activityId,
-        action,
-        mode: options.mode,
-        ...extra,
-      }),
+    recordLocalEvent(activityId, action)
+    void queueRequest('POST', '/usage-events', {
+      id: eventId,
+      created_at: new Date().toISOString(),
+      activity_id: activityId,
+      action,
+      mode: options.mode,
+      ...extra,
     })
+    return eventId
   }
 
   return {

@@ -1,5 +1,7 @@
 # Device-first auth + no onboarding gate
 
+> **Note (2026-10-29):** the onboarding feature this plan describes was removed in [plan 28](28-remove-onboarding.md). The text below is kept as history of what was true when it was written.
+
 **Status: planned, not started.**
 
 ## What this document covers

@@ -6,10 +6,24 @@
       </p>
     </div>
 
-    <div class="mb-12 px-[22px]">
+    <div class="uw-actions mb-12">
       <button class="uw-actions__secondary" @click="$emit('back')">
         <ForwardIcon class="-scale-x-100" />
         {{ $t('nav.back') }}
+      </button>
+
+      <!-- "Klaar": the user says they've done it, so ask how it went right away
+           instead of waiting for the next app open. -->
+      <button
+        v-if="canFinish"
+        class="uw-actions__primary"
+        data-test="done"
+        @click="openForLastAccepted"
+      >
+        <span class="uw-badge" aria-hidden="true">
+          <CheckIcon />
+        </span>
+        {{ $t('suggest.done') }}
       </button>
     </div>
   </div>
@@ -17,8 +31,12 @@
 
 <script setup lang="ts">
 import ForwardIcon from './icons/ForwardIcon.vue'
+import CheckIcon from './icons/CheckIcon.vue'
+import { usePostActivityFeedback } from '../composables/usePostActivityFeedback.js'
 
 defineEmits<{
   back: []
 }>()
+
+const { canFinish, openForLastAccepted } = usePostActivityFeedback()
 </script>
