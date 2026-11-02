@@ -5,6 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import UnoCSS from 'unocss/vite'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // Upload source maps to Sentry only when an auth token is present — i.e. in CI
 // (see deploy.yml). Local and token-less builds skip the plugin entirely, so
@@ -32,6 +33,19 @@ export default defineConfig({
     UnoCSS(),
     vue(),
     vueDevTools(),
+    VitePWA({
+      registerType: 'prompt',
+      // The hand-written public/manifest.json (linked in index.html) stays the source of truth.
+      manifest: false,
+      injectRegister: false,
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,woff2,png,svg,ico,json}'],
+        globIgnores: ['**/og-image.png', '**/*.map'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/sentry-tunnel/],
+        cleanupOutdatedCaches: true,
+      },
+    }),
     ...sentryPlugins,
   ],
   build: {

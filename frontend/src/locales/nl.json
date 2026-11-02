@@ -102,6 +102,12 @@
     "body": "Unwind stelt ontspannende activiteiten voor als je brein niet uit wil.",
     "dismiss": "Begin"
   },
+  "pwa": {
+    "offline": "Offline",
+    "updateAvailable": "Er is een nieuwe versie van Unwind.",
+    "later": "Later",
+    "reload": "Vernieuwen"
+  },
   "menu": {
     "label": "Menu",
     "close": "Sluiten",
