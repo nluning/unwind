@@ -13,10 +13,8 @@ export class ApiError extends Error {
   }
 }
 
-// The request never got an HTTP response: offline, DNS failure, dropped
-// connection, CORS block. Distinct from ApiError ("the server answered, and said
-// no") because callers react differently: a network failure is worth retrying
-// later, a 4xx is not.
+// No HTTP response at all (offline, DNS, dropped connection, CORS block). Distinct
+// from ApiError because callers retry a network failure later, but not a 4xx.
 export class NetworkError extends Error {
   constructor(public cause: unknown) {
     super('Network unavailable')
@@ -33,9 +31,8 @@ export async function api<T>(
       headers['Content-Type'] = 'application/json'
     }
 
-    // Only this call is wrapped: fetch() rejects (with a TypeError) exactly when
-    // no response came back, so a TypeError from our own code further down is
-    // never mistaken for "offline".
+    // Only fetch() is wrapped: it rejects exactly when no response came back, so a
+    // TypeError from our own code is never mistaken for "offline".
     let response: Response
     try {
       response = await fetch(`${BASE_URL}${path}`, {
@@ -70,11 +67,9 @@ export async function api<T>(
 
     return await response.json() as T
   } catch (err) {
-    // Expected, user-facing states are not bugs, so don't report them:
-    // - 401 (session expired -> redirect to login) and 429 (rate limit reached)
-    // - a network failure while the device itself says it is offline (airplane
-    //   mode, tunnel). A network failure while the device thinks it IS online
-    //   (CORS, DNS, server down) stays reported: that's what #57 is about.
+    // Not bugs, so not reported: 401, 429, and a network failure while the device
+    // says it is offline. A failure while it thinks it IS online (CORS, DNS,
+    // server down) stays reported (#57).
     const isExpected =
       (err instanceof ApiError && (err.status === 401 || err.status === 429)) ||
       (err instanceof NetworkError && !navigator.onLine)

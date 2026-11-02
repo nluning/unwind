@@ -29,9 +29,8 @@ export function useActivities() {
   const sessionSuggested = ref<Set<string>>(new Set())
   const sessionAccepted = ref<Set<string>>(new Set())
 
-  // Stale-while-revalidate: show the last snapshot from IndexedDB at once, then
-  // replace it with what the server says. The request starts first so reading
-  // the snapshot never delays it.
+  // Stale-while-revalidate: snapshot first, then the server's answer. The request
+  // starts first so reading the snapshot never delays it.
   async function fetchActivities() {
     error.value = false
     const ownerId = useAuth().user.value?.id
@@ -109,8 +108,7 @@ export function useActivities() {
     sessionAccepted.value.add(activityId)
   }
 
-  // Mirrors what the server does when it receives the event, so the weighting
-  // stays right while the event is still waiting in the outbox.
+  // Mirrors the server's counter bump so weighting stays right while the event is queued.
   function recordLocalEvent(activityId: string, action: 'accepted' | 'skipped') {
     const counter = action === 'accepted' ? 'times_accepted' : 'times_skipped'
     activities.value = activities.value.map((activity) =>

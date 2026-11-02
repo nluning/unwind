@@ -4,9 +4,8 @@
 
   let app: FastifyInstance
 
-  // These tests TRUNCATE users, activities, categories, ... on every run. If
-  // .env.test is missing, the app silently falls back to .env (the dev database)
-  // and wipes it. Refuse to touch any database that isn't clearly a test one.
+  // Tests TRUNCATE tables every run; without .env.test the app falls back to .env
+  // (the dev database). Refuse any database that isn't clearly a test one.
   function assertTestDatabase() {
     const databaseName = process.env.DB_NAME ?? ''
     if (!databaseName.endsWith('_test')) {

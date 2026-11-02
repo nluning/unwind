@@ -34,9 +34,8 @@ export function isExplicitlyLoggedOut(): boolean {
   return !!localStorage.getItem(EXPLICIT_LOGOUT_KEY)
 }
 
-// Logout and account deletion must leave nothing of the user on the device
-// (shared phones). A failed wipe must not block the logout itself; the owner tag
-// on the snapshot still stops it being shown to a different user.
+// Logout and deletion must leave nothing on the device (shared phones). A failed
+// wipe must not block logout; the owner tag still keeps the snapshot from other users.
 async function wipeLocalData() {
   try {
     await clearLocalData()
@@ -92,9 +91,8 @@ export function useAuth() {
         forgetSession()
         return
       }
-      // No answer from the server is not "no session": a device login would fail
-      // too, and would wrongly end the session. Trust the last confirmed one; the
-      // first request that gets a 401 sends the user back through re-auth.
+      // No answer is not "no session": a device login would fail too and wrongly end
+      // it. Trust the last confirmed session; the first 401 triggers re-auth.
       if (fetchFailure instanceof NetworkError) {
         const cachedUser = readCachedUser()
         if (cachedUser && localStorage.getItem('unwind-user')) {
@@ -184,10 +182,8 @@ export function useAuth() {
   }
 
   async function logout() {
-    // Logging out must work offline, or on a shared phone "log out" would leave
-    // the data on screen. The server call is best-effort: offline we can't revoke
-    // the session cookie, which then lives until it expires. Real server errors
-    // still surface.
+    // Logout must work offline. The server call is best-effort: offline the session
+    // cookie can't be revoked and lives until it expires. Real server errors still surface.
     try {
       await api('/logout', { method: 'POST' })
     } catch (logoutFailure) {

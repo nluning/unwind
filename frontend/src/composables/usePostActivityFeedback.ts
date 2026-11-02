@@ -92,9 +92,7 @@ export function usePostActivityFeedback() {
     }
   }
 
-  // Answering and dismissing close the question straight away. The PATCH goes
-  // through the outbox: it queues behind the POST of the same event, so the
-  // server always has the event before the feedback about it.
+  // The PATCH goes through the outbox, queued behind the POST of the same event.
   function finish(body: { outcome: FeedbackOutcome } | { dismissed: true }) {
     const current = target.value
     if (!current) return

@@ -163,10 +163,8 @@ async function activityRoutes(fastify: FastifyInstance) {
             )
     // ── Usage events ──────────────────────────────────────────────
 
-    // An event logged offline reaches the server hours later. created_at lets the
-    // client say when it really happened, but a device clock can't be trusted, so
-    // the server clamps it into [now - MAX_EVENT_BACKDATE_DAYS, now]. Clamp rather
-    // than reject: a 4xx would make the client's outbox drop the event for good.
+    // Offline events arrive late, but device clocks can't be trusted: clamp created_at
+    // into [now - MAX_EVENT_BACKDATE_DAYS, now]. Clamp, don't reject: a 4xx makes the outbox drop the event.
     const MAX_EVENT_BACKDATE_DAYS = 7
 
     const usageEventSchema = {
@@ -174,8 +172,6 @@ async function activityRoutes(fastify: FastifyInstance) {
             type: 'object',
             required: ['activity_id', 'action', 'mode'],
             properties: {
-                // Client-generated so an event can be referenced (feedback PATCH)
-                // and retried safely before the server has ever seen it.
                 id: { type: 'string', format: 'uuid' },
                 created_at: { type: 'string', format: 'date-time' },
                 activity_id: { type: 'string', format: 'uuid' },
@@ -210,11 +206,8 @@ async function activityRoutes(fastify: FastifyInstance) {
         }
         const column = columnMap[action]
 
-        // Idempotent: the client may send the same event more than once (an offline
-        // outbox retries until it gets an answer). ON CONFLICT (id) DO NOTHING turns
-        // a repeat into a no-op, and the counter bump is chained to the INSERT's
-        // RETURNING, so it only happens when a row was actually inserted. One
-        // statement = one atomic unit; no check-then-insert race between two tabs.
+        // ON CONFLICT DO NOTHING makes a retried event a no-op; the counter bump hangs off
+        // the INSERT's RETURNING, so it only runs for a new row (one atomic statement).
         // `column` comes from the fixed map above, never from user input.
         await fastify.pg.query(
             `WITH inserted AS (
@@ -234,10 +227,8 @@ async function activityRoutes(fastify: FastifyInstance) {
             [eventId, userId, activity_id, action, mode, stress_level_before ?? null, stress_level_after ?? null, created_at ?? null, MAX_EVENT_BACKDATE_DAYS]
         )
 
-        // The id is echoed back so the client can answer the post-activity feedback
-        // question for this exact event ('klaar' button). Same answer for a fresh
-        // insert and a duplicate: a repeat is a success, and an id that collides
-        // with another user's event must not reveal that it exists.
+        // Same answer for a new event and a duplicate: an id colliding with another
+        // user's event must not reveal that it exists.
         reply.status(201).send({ ok: true, id: eventId })
     })
 

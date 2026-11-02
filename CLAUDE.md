@@ -24,6 +24,7 @@ Dutch-only UI with vue-i18n. See `docs/plan/` for detailed design docs and
 ## Project status
 
 **Stage 6 — Deployment (complete).** App live at https://unwind.nu with full CI/CD via GitHub Actions: push to `main` triggers tests → builds + pushes images to GHCR → SSH-deploys to the Hetzner VPS (compose pull, migrate, up -d). Branching: `development` → PR → protected `main`.
+**Offline mode (plan 29, issue #122, branch `feat/offline-mode`):** chunks 1-7 done (idempotent usage events, IndexedDB layer, offline-aware api client, activity snapshot, outbox, offline auth boot, PWA shell via `vite-plugin-pwa`); chunk 8 is docs/wrap-up. Scope is the "Verras me" loop only. See `docs/ops/offline-pwa.md`.
 Stages 0-3 complete (API, database, auth, modes 1-3 frontend, UnoCSS migration,
 themes, loading/error states). Three colour themes (calm/warm/playful) with
 `useTheme` composable — no separate light/dark mode. `LinkButton` shared
@@ -100,7 +101,7 @@ area of code it governs. **Before modifying code in an area covered by an ADR,
 read the relevant ADR first.** Summary:
 
 - Vue 3 + Fastify + PostgreSQL + Claude API
-- PWA, offline-first for modes 1-3
+- PWA, offline-first for the "Verras me" loop (ADR-007 amended)
 - Raw SQL (no ORM) — intentional; direct control over queries
 - Claude Haiku for Mode 4 chat (retired), Sonnet for AI activity generation (`suggest-from-answers` / `suggest-from-list`)
 - Docker on VPS, incremental deployment from Stage 0

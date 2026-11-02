@@ -68,7 +68,7 @@ Ships through the normal CI pipeline (one-file edit → push → deploy).
    manual clear needed: iOS Settings → Safari → Clear History and Website Data,
    or delete + re-add the home-screen icon. Future deploys come through on their
    own once the headers are live.
-2. **The manifest/SW gap contradicts CLAUDE.md**, which lists "PWA,
+2. **(Resolved by plan 29, 2026-11-02: a service worker now exists, with a prompt-based update toast.)** **The manifest/SW gap contradicts CLAUDE.md**, which lists "PWA,
    offline-first for modes 1-3" as a decision. That's not built yet. If/when we
    add `vite-plugin-pwa`, we re-introduce the service-worker version of this
    exact problem and will want `registerType: 'autoUpdate'` + an "update

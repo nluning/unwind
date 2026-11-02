@@ -3,16 +3,14 @@ import { api, ApiError, NetworkError } from '../api/client.js'
 import { enqueue, listOutbox, removeFromOutbox } from '../utils/localDb.js'
 import { useAuth } from './useAuth.js'
 
-// The outbox is an at-least-once queue: an entry is only removed once the server
-// has answered it. Delivery is effectively-once because the server inserts
-// usage events idempotently on the client-minted id (plan 29, chunk 1).
+// At-least-once: an entry is removed only once the server has answered. The
+// idempotent insert on the client-minted id makes that effectively-once.
 
 let flushing = false
 let flushRequestedWhileRunning = false
 
-// Network trouble, an expired session and rate limiting all heal on their own, so
-// the entry stays and the queue pauses. Any other 4xx is a request the server
-// will never accept; retrying it forever would block everything behind it.
+// Network trouble, an expired session and rate limiting heal on their own: keep the
+// entry and pause. Any other 4xx will never be accepted and would block the queue.
 function shouldRetryLater(error: unknown): boolean {
   if (error instanceof NetworkError) return true
   if (error instanceof ApiError) {
@@ -69,9 +67,8 @@ export async function queueRequest(method: string, path: string, payload: object
   void flushOutbox()
 }
 
-// Mount once at app level. Triggers: a session becoming available (app start),
-// the connection coming back, and the app returning to the foreground. There is
-// no Background Sync API on iOS, so nothing is delivered while the app is closed.
+// Mount once at app level. Flush triggers: session available, `online`, tab visible.
+// No Background Sync on iOS, so nothing is delivered while the app is closed.
 export function useOutboxSync() {
   const { user } = useAuth()
 
