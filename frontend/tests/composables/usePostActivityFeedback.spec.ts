@@ -1,9 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
 import { api } from '../../src/api/client'
+import { queueRequest } from '../../src/composables/useOutbox'
 import {
   usePostActivityFeedback,
   resetPostActivityFeedback,
 } from '../../src/composables/usePostActivityFeedback'
+
+vi.mock('../../src/composables/useOutbox')
 
 describe('usePostActivityFeedback', () => {
   it('should ask about the activity the server says is waiting for an answer', async () => {
@@ -91,7 +94,6 @@ describe('usePostActivityFeedback', () => {
     vi.mocked(api).mockResolvedValueOnce({
       pending: { id: 'event-1', activity: { id: 'a1', title: 'Walk', source: 'base' } },
     })
-    vi.mocked(api).mockResolvedValueOnce({ ok: true })
     const { target, checkPending, answer } = usePostActivityFeedback()
     await checkPending()
 
@@ -99,10 +101,7 @@ describe('usePostActivityFeedback', () => {
     answer('better')
 
     // Assert
-    expect(vi.mocked(api)).toHaveBeenLastCalledWith('/usage-events/event-1', {
-      method: 'PATCH',
-      body: JSON.stringify({ outcome: 'better' }),
-    })
+    expect(queueRequest).toHaveBeenLastCalledWith('PATCH', '/usage-events/event-1', { outcome: 'better' })
     expect(target.value).toBeNull()
   })
 
@@ -113,7 +112,6 @@ describe('usePostActivityFeedback', () => {
     vi.mocked(api).mockResolvedValueOnce({
       pending: { id: 'event-3', activity: { id: 'a1', title: 'Walk', source: 'base' } },
     })
-    vi.mocked(api).mockResolvedValueOnce({ ok: true })
     const { answered, checkPending, answer } = usePostActivityFeedback()
     await checkPending()
     const before = answered.value
@@ -132,7 +130,6 @@ describe('usePostActivityFeedback', () => {
     vi.mocked(api).mockResolvedValueOnce({
       pending: { id: 'event-4', activity: { id: 'a1', title: 'Walk', source: 'base' } },
     })
-    vi.mocked(api).mockResolvedValueOnce({ ok: true })
     const { answered, checkPending, dismiss } = usePostActivityFeedback()
     await checkPending()
     const before = answered.value
@@ -151,7 +148,6 @@ describe('usePostActivityFeedback', () => {
     vi.mocked(api).mockResolvedValueOnce({
       pending: { id: 'event-2', activity: { id: 'a1', title: 'Walk', source: 'base' } },
     })
-    vi.mocked(api).mockResolvedValueOnce({ ok: true })
     const { checkPending, dismiss } = usePostActivityFeedback()
     await checkPending()
 
@@ -159,9 +155,6 @@ describe('usePostActivityFeedback', () => {
     dismiss()
 
     // Assert
-    expect(vi.mocked(api)).toHaveBeenLastCalledWith('/usage-events/event-2', {
-      method: 'PATCH',
-      body: JSON.stringify({ dismissed: true }),
-    })
+    expect(queueRequest).toHaveBeenLastCalledWith('PATCH', '/usage-events/event-2', { dismissed: true })
   })
 })

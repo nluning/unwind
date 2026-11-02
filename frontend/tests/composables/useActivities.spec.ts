@@ -1,9 +1,18 @@
-import { describe, it, expect, vi } from 'vitest'
-import { api } from '../../src/api/client'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { ref } from 'vue'
+import { api, NetworkError } from '../../src/api/client'
 import { useActivities, resetActivitiesState } from '../../src/composables/useActivities'
 import { pickWeighted } from '../../src/composables/suggestionWeighting'
+import { useAuth } from '../../src/composables/useAuth'
+import { loadActivities, saveActivities } from '../../src/utils/localDb'
+import type { Activity } from '../../src/types/activity'
 
 vi.mock('../../src/composables/suggestionWeighting', () => ({ pickWeighted: vi.fn() }))
+vi.mock('../../src/composables/useAuth', () => ({ useAuth: vi.fn(() => ({ user: ref(null) })) }))
+vi.mock('../../src/utils/localDb', () => ({
+  loadActivities: vi.fn().mockResolvedValue(null),
+  saveActivities: vi.fn().mockResolvedValue(undefined),
+}))
 
 describe('useActivities', () => {
   it('should populate activities and mark them loaded on a successful fetch', async () => {
@@ -206,5 +215,136 @@ describe('useActivities', () => {
 
     // Assert
     expect(suggestion?.id).toBe('1')
+  })
+
+  describe('offline snapshot', () => {
+    const snapshot = [{ id: 's1', title: 'Uit snapshot' }] as Activity[]
+    const fresh = [{ id: 'f1', title: 'Van server' }] as Activity[]
+
+    beforeEach(() => {
+      resetActivitiesState()
+      vi.mocked(loadActivities).mockReset().mockResolvedValue(null)
+      vi.mocked(saveActivities).mockReset().mockResolvedValue(undefined)
+      vi.mocked(useAuth).mockReturnValue({ user: ref({ id: 'user-1' }) } as unknown as ReturnType<typeof useAuth>)
+    })
+
+    it('should show the snapshot while the server has not answered yet', async () => {
+      // Arrange
+      vi.mocked(loadActivities).mockResolvedValue(snapshot)
+      let answer!: (value: Activity[]) => void
+      vi.mocked(api).mockReturnValueOnce(new Promise((resolve) => { answer = resolve }))
+      const { activities, loaded, fetchActivities } = useActivities()
+
+      // Act
+      const pending = fetchActivities()
+      await vi.waitFor(() => expect(loaded.value).toBe(true))
+
+      // Assert
+      expect(activities.value).toEqual(snapshot)
+      answer(fresh)
+      await pending
+    })
+
+    it('should replace the snapshot with the server data and save it for this user', async () => {
+      // Arrange
+      vi.mocked(loadActivities).mockResolvedValue(snapshot)
+      vi.mocked(api).mockResolvedValueOnce(fresh)
+      const { activities, fetchActivities } = useActivities()
+
+      // Act
+      await fetchActivities()
+
+      // Assert
+      expect(activities.value).toEqual(fresh)
+      expect(saveActivities).toHaveBeenCalledWith('user-1', fresh)
+    })
+
+    it('should keep showing the snapshot without an error when offline', async () => {
+      // Arrange
+      vi.mocked(loadActivities).mockResolvedValue(snapshot)
+      vi.mocked(api).mockRejectedValueOnce(new NetworkError(new TypeError('Failed to fetch')))
+      const { activities, error, loaded, fetchActivities } = useActivities()
+
+      // Act
+      await fetchActivities()
+
+      // Assert
+      expect(activities.value).toEqual(snapshot)
+      expect(loaded.value).toBe(true)
+      expect(error.value).toBe(false)
+    })
+
+    it('should flag an error when offline with no snapshot', async () => {
+      // Arrange
+      vi.mocked(api).mockRejectedValueOnce(new NetworkError(new TypeError('Failed to fetch')))
+      const { loaded, error, fetchActivities } = useActivities()
+
+      // Act
+      await fetchActivities()
+
+      // Assert
+      expect(loaded.value).toBe(false)
+      expect(error.value).toBe(true)
+    })
+
+    it('should bump the local counter of an accepted or skipped activity and persist it', async () => {
+      // Arrange
+      const counted = [
+        { id: 'a1', times_accepted: 2, times_skipped: 0 },
+        { id: 'a2', times_accepted: 0, times_skipped: 1 },
+      ] as Activity[]
+      vi.mocked(api).mockResolvedValueOnce(counted)
+      const { activities, fetchActivities, recordLocalEvent } = useActivities()
+      await fetchActivities()
+
+      // Act
+      recordLocalEvent('a1', 'accepted')
+      recordLocalEvent('a2', 'skipped')
+
+      // Assert
+      expect(activities.value.map((activity) => [activity.times_accepted, activity.times_skipped]))
+        .toEqual([[3, 0], [0, 2]])
+      expect(saveActivities).toHaveBeenLastCalledWith('user-1', activities.value)
+    })
+
+    it('should not read or write a snapshot without a signed-in user', async () => {
+      // Arrange
+      vi.mocked(useAuth).mockReturnValue({ user: ref(null) } as unknown as ReturnType<typeof useAuth>)
+      vi.mocked(api).mockResolvedValueOnce(fresh)
+      const { fetchActivities } = useActivities()
+
+      // Act
+      await fetchActivities()
+
+      // Assert
+      expect(loadActivities).not.toHaveBeenCalled()
+      expect(saveActivities).not.toHaveBeenCalled()
+    })
+
+    it('should still succeed when saving the snapshot fails', async () => {
+      // Arrange
+      vi.mocked(saveActivities).mockRejectedValue(new Error('QuotaExceededError'))
+      vi.mocked(api).mockResolvedValueOnce(fresh)
+      const { activities, error, fetchActivities } = useActivities()
+
+      // Act
+      await fetchActivities()
+
+      // Assert
+      expect(activities.value).toEqual(fresh)
+      expect(error.value).toBe(false)
+    })
+
+    it('should let a NetworkError from a failed create reach the caller', async () => {
+      // Arrange
+      const offline = new NetworkError(new TypeError('Failed to fetch'))
+      vi.mocked(api).mockRejectedValueOnce(offline)
+      const { createActivity } = useActivities()
+
+      // Act + Assert
+      await expect(
+        createActivity({ title: 'x', description: null, suggested_duration: 5, min_stress_level: 1, max_stress_level: 5, category_ids: [] }),
+      ).rejects.toBe(offline)
+    })
   })
 })

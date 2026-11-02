@@ -320,6 +320,11 @@ the VPS. Tests pass.
 
 ## Stage 4 — PWA & offline support
 
+> **Superseded (2026-11-02).** Written around modes 1-3, which are gone. Offline
+> support was built as plan 29 (`docs/plan/29-offline-mode.md`) around the
+> "Verras me" loop; see the amendment in ADR-007. Kept below for the learning
+> rationale.
+
 ### Why this stage matters
 Your target users may want to use this app anywhere — on the couch without WiFi,
 on a train in a tunnel, or simply when their internet is flaky. Making modes 1-3

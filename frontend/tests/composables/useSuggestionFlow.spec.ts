@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ref, computed, nextTick } from 'vue'
-import { api } from '../../src/api/client'
+import { queueRequest } from '../../src/composables/useOutbox'
 import { useActivities } from '../../src/composables/useActivities'
 import { makeUseActivitiesMock } from '../../src/composables/__mocks__/useActivities'
 import {
@@ -14,6 +14,9 @@ import {
 import type { Activity } from '../../src/types/activity'
 
 vi.mock('../../src/composables/useActivities')
+vi.mock('../../src/composables/useOutbox')
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 describe('useSuggestionFlow', () => {
   it('should keep the current suggestion when the pool grows (e.g. after adding one)', async () => {
@@ -74,7 +77,6 @@ describe('useSuggestionFlow', () => {
   it('should show the confirmation and stop offering a suggestion once accepted', () => {
     // Arrange
     resetSuggestionFlowState()
-    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
     const suggest = vi.fn().mockReturnValue({ id: 'picked' })
     vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
     const activities: Activity[] = [
@@ -95,7 +97,6 @@ describe('useSuggestionFlow', () => {
   it('should record an accepted activity as a usage event', () => {
     // Arrange
     resetSuggestionFlowState()
-    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
     const suggest = vi.fn().mockReturnValue({ id: 'picked' })
     vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
     const activities: Activity[] = [
@@ -109,9 +110,12 @@ describe('useSuggestionFlow', () => {
     handleAccept()
 
     // Assert
-    expect(vi.mocked(api)).toHaveBeenCalledWith('/usage-events', {
-      method: 'POST',
-      body: JSON.stringify({ activity_id: 'picked', action: 'accepted', mode: 'mode2' }),
+    expect(queueRequest).toHaveBeenCalledWith('POST', '/usage-events', {
+      id: expect.stringMatching(UUID_PATTERN),
+      created_at: expect.any(String),
+      activity_id: 'picked',
+      action: 'accepted',
+      mode: 'mode2',
     })
   })
 
@@ -119,7 +123,6 @@ describe('useSuggestionFlow', () => {
     // Arrange
     resetSuggestionFlowState()
     resetPostActivityFeedback()
-    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' })
     const suggest = vi.fn().mockReturnValue({ id: 'picked', title: 'Walk', source: 'base' })
     vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ suggest }))
     const activities: Activity[] = [
@@ -136,7 +139,7 @@ describe('useSuggestionFlow', () => {
 
     // Assert
     expect(target.value).toEqual({
-      eventId: 'event-1',
+      eventId: expect.stringMatching(UUID_PATTERN),
       activity: { id: 'picked', title: 'Walk', source: 'base' },
     })
   })
@@ -145,8 +148,6 @@ describe('useSuggestionFlow', () => {
     // Arrange
     resetSuggestionFlowState()
     resetPostActivityFeedback()
-    vi.mocked(api).mockResolvedValueOnce({ id: 'event-1' }) // accept
-    vi.mocked(api).mockResolvedValueOnce({ ok: true }) // answer
     const suggest = vi
       .fn()
       .mockReturnValueOnce({ id: 'picked', title: 'Walk', source: 'base' })
@@ -189,9 +190,12 @@ describe('useSuggestionFlow', () => {
     handleSkip()
 
     // Assert
-    expect(vi.mocked(api)).toHaveBeenCalledWith('/usage-events', {
-      method: 'POST',
-      body: JSON.stringify({ activity_id: 'picked', action: 'skipped', mode: 'mode3' }),
+    expect(queueRequest).toHaveBeenCalledWith('POST', '/usage-events', {
+      id: expect.stringMatching(UUID_PATTERN),
+      created_at: expect.any(String),
+      activity_id: 'picked',
+      action: 'skipped',
+      mode: 'mode3',
     })
   })
 })

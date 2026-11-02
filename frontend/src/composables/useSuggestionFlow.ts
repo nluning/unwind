@@ -1,8 +1,8 @@
 import { ref, type Ref, type ComputedRef, watch } from 'vue'
 import { useActivities } from './useActivities.js'
 import type { Activity } from '../types/activity.js'
-import { api } from '../api/client.js'
 import { usePostActivityFeedback } from './usePostActivityFeedback.js'
+import { queueRequest } from './useOutbox.js'
 
 interface SuggestionFlowOptions {
   mode: 'mode1' | 'mode2' | 'mode3' | 'mode4'
@@ -51,7 +51,7 @@ export function resetSuggestionFlowState() {
 }
 
 export function useSuggestionFlow(options: SuggestionFlowOptions) {
-  const { suggest, markAccepted } = useActivities()
+  const { suggest, markAccepted, recordLocalEvent } = useActivities()
   const { trackAccepted, answered } = usePostActivityFeedback()
   const { current, accepted } = getFlowState(options.mode)
 
@@ -116,17 +116,21 @@ export function useSuggestionFlow(options: SuggestionFlowOptions) {
     next()
   }
 
-  function logEvent(activityId: string, action: 'accepted' | 'skipped') {
+  // The id is minted here, so the event can be referenced (feedback) and retried
+  // safely before the server has ever seen it.
+  function logEvent(activityId: string, action: 'accepted' | 'skipped'): string {
+    const eventId = crypto.randomUUID()
     const extra = options.extraEventData?.() ?? {}
-    return api<{ id: string }>('/usage-events', {
-      method: 'POST',
-      body: JSON.stringify({
-        activity_id: activityId,
-        action,
-        mode: options.mode,
-        ...extra,
-      }),
+    recordLocalEvent(activityId, action)
+    void queueRequest('POST', '/usage-events', {
+      id: eventId,
+      created_at: new Date().toISOString(),
+      activity_id: activityId,
+      action,
+      mode: options.mode,
+      ...extra,
     })
+    return eventId
   }
 
   return {

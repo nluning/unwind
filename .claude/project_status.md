@@ -99,3 +99,8 @@ Unwind is an activity suggestion app for neurodivergent brains that struggle to 
 - Deleted `/onboarding/generate` + `/onboarding/skip`, the onboarding prompt/script/tests, `OnboardingPage.vue` + route, `needsOnboarding`, and the `onboarding` i18n namespace. It had no UI entry point since plan 20 §1.
 - Renamed the shared question components used by "Voor hier en nu": `OptionPills`, `QuestionStepHeader`, `StepActions` (i18n keys now `steps.*`).
 - **Deliberately left for a follow-up migration:** `users.onboarding_completed_at` (still in auth responses / `User` type, unread), `'onboarding'` in the `api_usage.endpoint` and `user_memories.source` CHECK constraints and the memory route enums, and the `'week'` / `'total'` windows in `createRateLimiter` (no live limiter uses them now).
+
+**Offline mode (plan 29, issue #122, branch `feat/offline-mode`) — 2026-11-02:**
+- Chunks 1-7 done: idempotent `POST /usage-events` (client UUID, `created_at` clamped to 7 days), IndexedDB layer, offline-aware api client + `useOnline`, activity snapshot (stale-while-revalidate), outbox + flush, offline auth boot, PWA shell (`vite-plugin-pwa`, prompt-based update toast, offline pill, nginx `no-cache` for `sw.js`/`manifest.json`).
+- Chunk 8 (docs): ADR-007 amended, Stage 4 marked superseded, plan 23 caveat resolved, `docs/ops/offline-pwa.md` written. Still open: real iOS/Android device pass (checklist in that doc).
+- Known gap, left on purpose: no outbox retry timer; Firefox DevTools "Offline" does not fire `online`, so test flush via tab switch.

@@ -27,6 +27,7 @@ export function makeUseActivitiesMock(
     filterByIncludedCategories: vi.fn(() => []),
     suggest: vi.fn(() => null),
     markAccepted: vi.fn(),
+    recordLocalEvent: vi.fn(),
     resetSession: vi.fn(),
     ...overrides,
   }

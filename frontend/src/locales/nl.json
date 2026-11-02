@@ -102,6 +102,12 @@
     "body": "Unwind stelt ontspannende activiteiten voor als je brein niet uit wil.",
     "dismiss": "Begin"
   },
+  "pwa": {
+    "offline": "Offline",
+    "updateAvailable": "Er is een nieuwe versie van Unwind.",
+    "later": "Later",
+    "reload": "Vernieuwen"
+  },
   "menu": {
     "label": "Menu",
     "close": "Sluiten",
@@ -183,6 +189,8 @@
     "dangerSectionHeading": "Account",
     "logout": "Uitloggen",
     "deleteAccount": "Account verwijderen",
+    "deleteOffline": "Je bent offline. Je account verwijderen kan pas als je weer verbinding hebt.",
+    "actionError": "Dat lukte niet. Probeer het opnieuw.",
     "deleteConfirm": "Weet je het zeker? Dit kan niet ongedaan worden."
   },
   "privacy": {
@@ -230,6 +238,7 @@
     "editButton": "Bewerk",
     "deleteButton": "Verwijder",
     "deleteConfirm": "Zeker weten?",
+    "deleteOffline": "Je bent offline. Verwijderen kan pas als je weer verbinding hebt.",
     "cancelButton": "Annuleer",
     "saveButton": "Opslaan",
     "stressRangeLabel": "Stress {min}–{max}",
@@ -240,7 +249,8 @@
       "stressRange": "Stressniveau (min – max)",
       "categories": "Categorieën",
       "stressOrder": "Minimum moet kleiner of gelijk zijn aan maximum.",
-      "saveError": "Kon niet opslaan. Probeer opnieuw."
+      "saveError": "Kon niet opslaan. Probeer opnieuw.",
+      "offlineError": "Je bent offline. Opslaan kan pas als je weer verbinding hebt."
     }
   },
   "activities": {

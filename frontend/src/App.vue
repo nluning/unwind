@@ -5,10 +5,13 @@ import UserMenu from './components/UserMenu.vue'
 import HomeButton from './components/HomeButton.vue'
 import MenuHintTooltip from './components/MenuHintTooltip.vue'
 import FeedbackInterstitial from './components/FeedbackInterstitial.vue'
+import OfflineIndicator from './components/OfflineIndicator.vue'
+import UpdateToast from './components/UpdateToast.vue'
 import { useWelcome } from './composables/useWelcome.js'
 import { useAuth } from './composables/useAuth.js'
 import { usePostActivityFeedback, type FeedbackOutcome } from './composables/usePostActivityFeedback.js'
 import { useFeedbackOnResume } from './composables/useFeedbackOnResume.js'
+import { useOutboxSync } from './composables/useOutbox.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +35,8 @@ function handleAnswer(outcome: FeedbackOutcome) {
   if (route.name !== 'suggest') router.push({ name: 'suggest' })
 }
 
+useOutboxSync()
+
 // Only ask once there is a session, and never on login/privacy/onboarding.
 useFeedbackOnResume(
   () => !!user.value && route.meta.public !== true && route.meta.onboarding !== true
@@ -41,6 +46,8 @@ useFeedbackOnResume(
 <template>
   <div>
     <RouterView />
+    <OfflineIndicator />
+    <UpdateToast />
     <UserMenu v-if="showChrome" />
     <HomeButton v-if="showHome" />
     <MenuHintTooltip v-if="showChrome && showMenuHint" />

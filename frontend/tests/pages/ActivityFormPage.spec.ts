@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import ActivityFormPage from '../../src/pages/ActivityFormPage.vue'
 import ToggleButton from '../../src/components/ToggleButton.vue'
 import TextField from '../../src/components/TextField.vue'
+import { NetworkError } from '../../src/api/client'
 import { useActivities } from '../../src/composables/useActivities'
 import { makeUseActivitiesMock } from '../../src/composables/__mocks__/useActivities'
 import type { Activity } from '../../src/types/activity'
@@ -122,6 +123,42 @@ describe('ActivityFormPage', () => {
     // Assert
     expect(createActivity).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('activitiesList.form.stressOrder')
+  })
+
+  it('should tell the user they are offline when saving fails without a connection', async () => {
+    // Arrange
+    mockRoute()
+    const createActivity = vi.fn().mockRejectedValue(new NetworkError(new TypeError('Failed to fetch')))
+    vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ createActivity }))
+    const push = vi.fn()
+    vi.mocked(useRouter).mockReturnValue({ push, replace: vi.fn() } as unknown as ReturnType<typeof useRouter>)
+    const wrapper = await mountPage()
+    await wrapper.findComponent(ToggleButton).vm.$emit('click')
+
+    // Act
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    // Assert
+    expect(wrapper.text()).toContain('activitiesList.form.offlineError')
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('should show the generic save error when the server rejects the save', async () => {
+    // Arrange
+    mockRoute()
+    const createActivity = vi.fn().mockRejectedValue(new Error('boom'))
+    vi.mocked(useActivities).mockReturnValue(makeUseActivitiesMock({ createActivity }))
+    vi.mocked(useRouter).mockReturnValue({ push: vi.fn(), replace: vi.fn() } as unknown as ReturnType<typeof useRouter>)
+    const wrapper = await mountPage()
+    await wrapper.findComponent(ToggleButton).vm.$emit('click')
+
+    // Act
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    // Assert
+    expect(wrapper.text()).toContain('activitiesList.form.saveError')
   })
 
   it('should let the user cancel back to the list', async () => {

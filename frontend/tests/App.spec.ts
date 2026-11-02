@@ -21,6 +21,7 @@ vi.mock('../src/composables/useAuth')
 vi.mock('../src/composables/useWelcome')
 vi.mock('../src/composables/usePostActivityFeedback')
 vi.mock('../src/composables/useFeedbackOnResume')
+vi.mock('../src/components/UpdateToast.vue', () => ({ default: { render: () => null } }))
 
 function mountApp(routeName: string) {
   route.name = routeName

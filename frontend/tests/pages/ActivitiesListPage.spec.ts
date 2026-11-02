@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { shallowMount } from '@vue/test-utils'
+import { flushPromises, shallowMount } from '@vue/test-utils'
+import { NetworkError } from '../../src/api/client'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ActivitiesListPage from '../../src/pages/ActivitiesListPage.vue'
@@ -112,5 +113,37 @@ describe('ActivitiesListPage', () => {
 
     // Assert
     expect(deleteActivity).toHaveBeenCalledWith('1')
+  })
+
+  it('should tell the user they are offline when a delete fails without a connection', async () => {
+    // Arrange
+    const deleteActivity = vi.fn().mockRejectedValue(new NetworkError(new TypeError('Failed to fetch')))
+    vi.mocked(useActivities).mockReturnValue(
+      makeUseActivitiesMock({ activities: ref([baseActivity]), deleteActivity }),
+    )
+    const wrapper = mountPage()
+
+    // Act
+    wrapper.findComponent(ConfirmDeleteButton).vm.$emit('confirm')
+    await flushPromises()
+
+    // Assert
+    expect(wrapper.text()).toContain('activitiesList.deleteOffline')
+  })
+
+  it('should not claim to be offline when a delete fails for another reason', async () => {
+    // Arrange
+    const deleteActivity = vi.fn().mockRejectedValue(new Error('boom'))
+    vi.mocked(useActivities).mockReturnValue(
+      makeUseActivitiesMock({ activities: ref([baseActivity]), deleteActivity }),
+    )
+    const wrapper = mountPage()
+
+    // Act
+    wrapper.findComponent(ConfirmDeleteButton).vm.$emit('confirm')
+    await flushPromises()
+
+    // Assert
+    expect(wrapper.text()).not.toContain('activitiesList.deleteOffline')
   })
 })

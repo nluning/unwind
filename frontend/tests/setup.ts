@@ -23,4 +23,9 @@ vi.mock('../src/api/client', () => ({
       super(`API error ${status}`)
     }
   },
+  NetworkError: class NetworkError extends Error {
+    constructor(public cause: unknown) {
+      super('Network unavailable')
+    }
+  },
 }))
