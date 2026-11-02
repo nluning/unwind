@@ -53,6 +53,7 @@ export async function api<T>(
     if (response.status === 401) {
       if (localStorage.getItem('unwind-user')) {
         localStorage.removeItem('unwind-user')
+        localStorage.removeItem('unwind-cached-user')
         router.push({ name: 'login' })
       }
       throw new ApiError(401, null)

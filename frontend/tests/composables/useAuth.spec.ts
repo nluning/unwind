@@ -140,6 +140,122 @@ describe('useAuth', () => {
     expect(localStorage.getItem('unwind-user')).toBeNull()
   })
 
+  it('should trust the cached session when the server is unreachable', async () => {
+    // Arrange
+    reset()
+    const cachedUser = { id: 'c1', email: null, onboarding_completed_at: null, memory_enabled: false }
+    localStorage.setItem('unwind-user', 'true')
+    localStorage.setItem('unwind-cached-user', JSON.stringify(cachedUser))
+    vi.mocked(api).mockRejectedValueOnce(new NetworkError(new TypeError('Failed to fetch')))
+    const { user, fetchMe } = useAuth()
+
+    // Act
+    await fetchMe()
+
+    // Assert
+    expect(api).toHaveBeenCalledTimes(1)
+    expect(user.value).toEqual(cachedUser)
+    expect(localStorage.getItem('unwind-user')).toBe('true')
+  })
+
+  it('should stay logged out offline when there is no cached session, without a device login', async () => {
+    // Arrange
+    reset()
+    vi.mocked(api).mockRejectedValueOnce(new NetworkError(new TypeError('Failed to fetch')))
+    const { user, fetchMe } = useAuth()
+
+    // Act
+    await fetchMe()
+
+    // Assert
+    expect(api).toHaveBeenCalledTimes(1)
+    expect(user.value).toBeNull()
+  })
+
+  it('should not trust the cached session after an explicit logout or when the session flag is gone', async () => {
+    // Arrange
+    reset()
+    const cachedUser = { id: 'c2', email: 'a@b.nl', onboarding_completed_at: null, memory_enabled: false }
+    localStorage.setItem('unwind-cached-user', JSON.stringify(cachedUser))
+    vi.mocked(api).mockRejectedValue(new NetworkError(new TypeError('Failed to fetch')))
+    const { user, fetchMe } = useAuth()
+
+    // Act + Assert: flag missing (401 handler removed it)
+    await fetchMe()
+    expect(user.value).toBeNull()
+
+    // Act + Assert: explicit logout wins over a leftover cache
+    localStorage.setItem('unwind-user', 'true')
+    localStorage.setItem('unwind-explicit-logout', '1')
+    await fetchMe()
+    expect(user.value).toBeNull()
+    expect(localStorage.getItem('unwind-cached-user')).toBeNull()
+  })
+
+  it('should ignore a corrupt cached session', async () => {
+    // Arrange
+    reset()
+    localStorage.setItem('unwind-user', 'true')
+    localStorage.setItem('unwind-cached-user', '{not json')
+    vi.mocked(api).mockRejectedValueOnce(new NetworkError(new TypeError('Failed to fetch')))
+    const { user, fetchMe } = useAuth()
+
+    // Act
+    await fetchMe()
+
+    // Assert
+    expect(user.value).toBeNull()
+  })
+
+  it('should still fall back to a device login on a real server rejection', async () => {
+    // Arrange
+    reset()
+    localStorage.setItem('unwind-user', 'true')
+    localStorage.setItem(
+      'unwind-cached-user',
+      JSON.stringify({ id: 'stale', email: null, onboarding_completed_at: null, memory_enabled: false }),
+    )
+    vi.mocked(api).mockRejectedValueOnce(new Error('401'))
+    vi.mocked(api).mockResolvedValueOnce({
+      id: 'fresh',
+      email: null,
+      onboarding_completed_at: null,
+      memory_enabled: false,
+    })
+    const { user, fetchMe } = useAuth()
+
+    // Act
+    await fetchMe()
+
+    // Assert
+    expect(user.value?.id).toBe('fresh')
+  })
+
+  it('should cache the confirmed user and remove the cache on logout and account deletion', async () => {
+    // Arrange
+    reset()
+    vi.mocked(api).mockResolvedValueOnce({
+      id: 'c3',
+      email: null,
+      onboarding_completed_at: null,
+      memory_enabled: false,
+    })
+    const { fetchMe, logout, deleteAccount } = useAuth()
+
+    // Act + Assert
+    await fetchMe()
+    expect(JSON.parse(localStorage.getItem('unwind-cached-user')!).id).toBe('c3')
+
+    vi.mocked(api).mockResolvedValueOnce(undefined)
+    await logout()
+    expect(localStorage.getItem('unwind-cached-user')).toBeNull()
+
+    localStorage.setItem('unwind-cached-user', '{"id":"c3"}')
+    vi.mocked(api).mockResolvedValueOnce(undefined)
+    await deleteAccount()
+    expect(localStorage.getItem('unwind-cached-user')).toBeNull()
+  })
+
   it('should upgrade an anonymous account and drop the device id', async () => {
     // Arrange
     reset()

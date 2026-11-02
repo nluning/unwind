@@ -49,20 +49,58 @@ function setSentryUser(authedUser: User | null) {
   Sentry.setUser(authedUser ? { id: authedUser.id } : null)
 }
 
+// Lets the app boot with no signal: the server stays authoritative, this is only
+// the last session it confirmed. Removed on logout, deletion and a 401.
+const CACHED_USER_KEY = 'unwind-cached-user'
+
+function cacheUser(authedUser: User) {
+  localStorage.setItem(CACHED_USER_KEY, JSON.stringify(authedUser))
+}
+
+function readCachedUser(): User | null {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CACHED_USER_KEY) ?? 'null')
+    return typeof parsed?.id === 'string' ? (parsed as User) : null
+  } catch {
+    return null
+  }
+}
+
+function rememberSession(authedUser: User) {
+  user.value = authedUser
+  localStorage.setItem('unwind-user', 'true')
+  cacheUser(authedUser)
+  setSentryUser(authedUser)
+}
+
+function forgetSession() {
+  user.value = null
+  localStorage.removeItem('unwind-user')
+  localStorage.removeItem(CACHED_USER_KEY)
+  setSentryUser(null)
+}
+
 export function useAuth() {
   const isLoggedIn = computed(() => user.value !== null)
   const isAnonymous = computed(() => user.value !== null && user.value.email === null)
 
   async function fetchMe() {
     try {
-      user.value = await api<User>('/me')
-      localStorage.setItem('unwind-user', 'true')
-      setSentryUser(user.value)
-    } catch {
+      rememberSession(await api<User>('/me'))
+    } catch (fetchFailure) {
       if (localStorage.getItem(EXPLICIT_LOGOUT_KEY)) {
-        user.value = null
-        localStorage.removeItem('unwind-user')
-        setSentryUser(null)
+        forgetSession()
+        return
+      }
+      // No answer from the server is not "no session": a device login would fail
+      // too, and would wrongly end the session. Trust the last confirmed one; the
+      // first request that gets a 401 sends the user back through re-auth.
+      if (fetchFailure instanceof NetworkError) {
+        const cachedUser = readCachedUser()
+        if (cachedUser && localStorage.getItem('unwind-user')) {
+          user.value = cachedUser
+          setSentryUser(cachedUser)
+        }
         return
       }
       // NOTE: also fires when an email user's session expires, silently
@@ -71,9 +109,7 @@ export function useAuth() {
       try {
         await deviceLogin(getOrCreateDeviceId())
       } catch {
-        user.value = null
-        localStorage.removeItem('unwind-user')
-        setSentryUser(null)
+        forgetSession()
       }
     }
   }
@@ -88,37 +124,37 @@ export function useAuth() {
   async function login(email: string, password: string) {
     resetActivitiesState()
     resetSuggestionFlowState()
-    user.value = await api<User>('/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    localStorage.setItem('unwind-user', 'true')
+    rememberSession(
+      await api<User>('/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+    )
     localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
-    setSentryUser(user.value)
   }
 
   async function register(email: string, password: string) {
     resetActivitiesState()
     resetSuggestionFlowState()
-    user.value = await api<User>('/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-    localStorage.setItem('unwind-user', 'true')
+    rememberSession(
+      await api<User>('/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
+    )
     localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
-    setSentryUser(user.value)
   }
 
   async function deviceLogin(deviceId: string) {
     resetActivitiesState()
     resetSuggestionFlowState()
-    user.value = await api<User>('/auth/device', {
-      method: 'POST',
-      body: JSON.stringify({ device_id: deviceId }),
-    })
-    localStorage.setItem('unwind-user', 'true')
+    rememberSession(
+      await api<User>('/auth/device', {
+        method: 'POST',
+        body: JSON.stringify({ device_id: deviceId }),
+      }),
+    )
     localStorage.removeItem(EXPLICIT_LOGOUT_KEY)
-    setSentryUser(user.value)
   }
 
   async function upgrade(email: string, password: string) {
@@ -127,6 +163,7 @@ export function useAuth() {
       body: JSON.stringify({ email, password }),
     })
     user.value = result
+    cacheUser(result)
     localStorage.removeItem(DEVICE_ID_KEY)
   }
 
@@ -137,6 +174,7 @@ export function useAuth() {
     })
     if (user.value) {
       user.value = { ...user.value, memory_enabled: result.memory_enabled }
+      cacheUser(user.value)
     }
     if (!result.memory_enabled) {
       // Backend wiped user_memories; mirror that locally so any page
@@ -155,10 +193,8 @@ export function useAuth() {
     } catch (logoutFailure) {
       if (!(logoutFailure instanceof NetworkError)) throw logoutFailure
     }
-    user.value = null
-    localStorage.removeItem('unwind-user')
+    forgetSession()
     localStorage.setItem(EXPLICIT_LOGOUT_KEY, '1')
-    setSentryUser(null)
     resetSuggestionFlowState()
     resetPostActivityFeedback()
     resetActivitiesState()
@@ -168,9 +204,7 @@ export function useAuth() {
 
   async function deleteAccount() {
     await api('/me', { method: 'DELETE' })
-    user.value = null
-    localStorage.removeItem('unwind-user')
-    setSentryUser(null)
+    forgetSession()
     resetSuggestionFlowState()
     resetPostActivityFeedback()
     resetActivitiesState()
