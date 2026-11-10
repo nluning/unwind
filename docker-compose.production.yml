@@ -52,10 +52,15 @@ services:
     volumes:
       - /var/www/certbot:/var/www/certbot:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/unwind/extra-sites:/etc/nginx/extra-sites:ro
+      - /var/www/site2:/usr/share/nginx/site2:ro
     # Ports 80 and 443 exposed to the outside world.
     # /var/www/certbot — webroot for Let's Encrypt HTTP-01 challenges
     # /etc/letsencrypt — issued certificates from certbot on the host
-    # Both mounted read-only — nginx never needs to write to them.
+    # /etc/unwind/extra-sites — host-only nginx server blocks for a second site
+    #   (kept out of this public repo), included from nginx.conf
+    # /var/www/site2 — static files for that second site
+    # All mounted read-only — nginx never needs to write to them.
 
 volumes:
   pgdata:
